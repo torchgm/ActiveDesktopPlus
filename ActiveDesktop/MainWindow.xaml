@@ -4,8 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
-        mc:Ignorable="d"
-        Title="Active Desktop Configurator" Height="450" KeyDown="OnKeyDownHandler" Width="260">
+        mc:Ignorable="d" Height="256" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -15,11 +14,10 @@
     </Window.TaskbarItemInfo>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="21*"/>
-            <ColumnDefinition Width="26*"/>
-            <ColumnDefinition Width="37*"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="7,320,70,60" Click="ApplyHwndButton_Click" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="HwndInputTextBox" HorizontalAlignment="Left" Height="23" Margin="7,162,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="112" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="45,169,45,18" Click="ApplyHwndButton_Click"/>
+        <TextBox x:Name="HwndInputTextBox" Height="23" Margin="70,17,70,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
+        <TextBox x:Name="textBox" Height="99" Margin="20,55,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
     </Grid>
 </Window>
