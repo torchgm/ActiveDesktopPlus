@@ -23,7 +23,8 @@ namespace ActiveDesktop
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
         IntPtr ActiveHandle = IntPtr.Zero;
-        List<string> ActiveHandles = new List<string>();
+        List<string> ActiveHandleStrings = new List<string>();
+        List<IntPtr> ActiveHandles = new List<IntPtr>();
 
         public MainWindow()
         {
@@ -53,20 +54,25 @@ namespace ActiveDesktop
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
             SetParent(TargetHandle, DesktopHandle);
-            ActiveHandles.Add(TargetHandle.ToString()); // Currently storing active handles as strings, will probably convert back to IntPtrs eventually
+            //ActiveHandles.Add(TargetHandle.ToString()); // Currently storing active handles as strings, will probably convert back to IntPtrs eventually
             //HandleListBox.Items.Add(TargetHandle.ToString());
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
+            StringBuilder lpString = new StringBuilder(100);
             HandleListBox.Items.Clear();
-            do
+            ActiveHandles = GetChildWindows(DesktopHandle);
+            for (int i = 0; i < ActiveHandles.Count; i++)
             {
-                ActiveHandle = FindWindowExA(DesktopHandle, ActiveHandle, "", "");
-                HandleListBox.Items.Add(ActiveHandle.ToString());
-            } while (ActiveHandle != IntPtr.Zero);
-            
+                int result = GetWindowText(ActiveHandles[i], lpString, 100);
+                if (result != 101)
+                {
+                    HandleListBox.Items.Add(lpString.ToString());
+                }
+            }
         }
+
 
         // ///////////////////////////////////////////////////////////// //
         // All the weird non-GUIey bits are here don't question it shhhh //
@@ -79,6 +85,9 @@ namespace ActiveDesktop
         public static extern IntPtr WindowFromPoint(int xPoint, int yPoint);
         [DllImport("user32.dll")]
         public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndParent);
+        [DllImport("user32.dll")]
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
 
         // Stuff for acquiring mouse position because Cursor.Position failed me
         [StructLayout(LayoutKind.Sequential)]
@@ -101,6 +110,43 @@ namespace ActiveDesktop
             POINT lpPoint;
             GetCursorPos(out lpPoint);
             return lpPoint;
+        }
+
+        public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
+
+    
+        public static List<IntPtr> GetChildWindows(IntPtr parent)
+        {
+            List<IntPtr> AllActiveHandles = new List<IntPtr>();
+            GCHandle listHandle = GCHandle.Alloc(AllActiveHandles);
+            try
+            {
+                EnumWindowsProc childProc = new EnumWindowsProc(EnumWindow);
+                EnumChildWindows(parent, childProc, GCHandle.ToIntPtr(listHandle));
+            }
+            finally
+            {
+                if (listHandle.IsAllocated)
+                    listHandle.Free();
+            }
+            return AllActiveHandles;
+        }
+
+        private static bool EnumWindow(IntPtr handle, IntPtr pointer)
+        {
+            GCHandle gch = GCHandle.FromIntPtr(pointer);
+            List<IntPtr> list = gch.Target as List<IntPtr>;
+            if (list == null)
+            {
+                throw new InvalidCastException("GCHandle Target could not be cast as List<IntPtr>");
+            }
+            list.Add(handle);
+            //  You can modify this to check to see if you want to cancel the operation, then return a null here
+            return true;
         }
 
     }

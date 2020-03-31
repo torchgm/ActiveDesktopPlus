@@ -30,14 +30,15 @@
             </TabItem>
             <TabItem Header="Current apps">
                 <Grid>
-                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55" Grid.RowSpan="2"/>
-                    <Button x:Name="RefreshButton" Content="Refresh&#xD;&#xA;List" Margin="10,192,169,10" HorizontalContentAlignment="Center" FontSize="10" Click="RefreshButton_Click"/>
-                    <Button x:Name="BorderlessButton" Content="Toggle&#xD;&#xA;Borderless" Margin="90,192,90,10" HorizontalContentAlignment="Center" FontSize="10"/>
-                    <Button x:Name="LockedButton" Content="Toggle&#xD;&#xA;Locked" Margin="169,192,9,10" HorizontalContentAlignment="Center" FontSize="10"/>
+                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55"/>
+                    <Button x:Name="RefreshButton" Content="Refresh&#xD;&#xA;List" Margin="10,0,169,10" HorizontalContentAlignment="Center" FontSize="10" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
+                    <Button x:Name="BorderlessButton" Content="Toggle&#xD;&#xA;Borderless" Margin="90,0,90,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom"/>
+                    <Button x:Name="LockedButton" Content="Toggle&#xD;&#xA;Locked" Margin="169,0,9,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom"/>
+
                 </Grid>
             </TabItem>
         </TabControl>
-       
+
 
     </Grid>
 </Window>
