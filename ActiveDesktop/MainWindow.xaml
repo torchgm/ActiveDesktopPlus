@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
-        mc:Ignorable="d" Height="256" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize">
+        mc:Ignorable="d" Height="299" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -13,11 +13,31 @@
         </TaskbarItemInfo>
     </Window.TaskbarItemInfo>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*"/>
+            <RowDefinition Height="7*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="45,169,45,18" Click="ApplyHwndButton_Click"/>
-        <TextBox x:Name="HwndInputTextBox" Height="23" Margin="70,17,70,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
-        <TextBox x:Name="textBox" Height="99" Margin="20,55,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
+        <TabControl x:Name="tabControl" Grid.RowSpan="2">
+            <TabItem Header="Add app">
+                <Grid>
+                    <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="45,170,45,20" Click="ApplyHwndButton_Click"/>
+                    <TextBox x:Name="HwndInputTextBox" Height="23" Margin="70,20,70,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
+                    <TextBox x:Name="textBox" Height="99" Margin="20,54,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Current apps">
+                <Grid>
+                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55" Grid.RowSpan="2"/>
+                    <Button x:Name="RefreshButton" Content="Refresh&#xD;&#xA;List" Margin="10,192,169,10" HorizontalContentAlignment="Center" FontSize="10" Click="RefreshButton_Click"/>
+                    <Button x:Name="BorderlessButton" Content="Toggle&#xD;&#xA;Borderless" Margin="90,192,90,10" HorizontalContentAlignment="Center" FontSize="10"/>
+                    <Button x:Name="LockedButton" Content="Toggle&#xD;&#xA;Locked" Margin="169,192,9,10" HorizontalContentAlignment="Center" FontSize="10"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+       
+
     </Grid>
 </Window>

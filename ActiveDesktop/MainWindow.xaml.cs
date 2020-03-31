@@ -22,6 +22,8 @@ namespace ActiveDesktop
 
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
+        IntPtr ActiveHandle = IntPtr.Zero;
+        List<string> ActiveHandles = new List<string>();
 
         public MainWindow()
         {
@@ -37,6 +39,7 @@ namespace ActiveDesktop
             }
         }
 
+
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
 
@@ -50,6 +53,19 @@ namespace ActiveDesktop
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
             SetParent(TargetHandle, DesktopHandle);
+            ActiveHandles.Add(TargetHandle.ToString()); // Currently storing active handles as strings, will probably convert back to IntPtrs eventually
+            //HandleListBox.Items.Add(TargetHandle.ToString());
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleListBox.Items.Clear();
+            do
+            {
+                ActiveHandle = FindWindowExA(DesktopHandle, ActiveHandle, "", "");
+                HandleListBox.Items.Add(ActiveHandle.ToString());
+            } while (ActiveHandle != IntPtr.Zero);
+            
         }
 
         // ///////////////////////////////////////////////////////////// //
@@ -86,5 +102,6 @@ namespace ActiveDesktop
             GetCursorPos(out lpPoint);
             return lpPoint;
         }
+
     }
 }
