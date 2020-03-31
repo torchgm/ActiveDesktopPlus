@@ -17,24 +17,13 @@ using System.Runtime.InteropServices;
 
 namespace ActiveDesktop
 {
-    
-    //public enum DesktopWindow
-    //{
-    //    ProgMan,
-    //    SHELLDLL_DefViewParent,
-    //    SHELLDLL_DefView,
-    //    SysListView32
-    //}
-    
-
-
     public partial class MainWindow : Window
     {
 
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
 
-        public MainWindow() 
+        public MainWindow()
         {
             InitializeComponent();
 
@@ -60,22 +49,14 @@ namespace ActiveDesktop
 
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
-            SetParent(TargetHandle, DesktopHandle); 
+            SetParent(TargetHandle, DesktopHandle);
         }
-
-        
-
-
-
 
         // ///////////////////////////////////////////////////////////// //
         // All the weird non-GUIey bits are here don't question it shhhh //
         // ///////////////////////////////////////////////////////////// //
 
-
-
         // Bits and bobs for finding and adjusting windows
-
         [DllImport("user32.dll")]
         public static extern IntPtr FindWindowExA(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
         [DllImport("user32.dll")]
@@ -83,10 +64,7 @@ namespace ActiveDesktop
         [DllImport("user32.dll")]
         public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndParent);
 
-
-
         // Stuff for acquiring mouse position because Cursor.Position failed me
-
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
         {
@@ -108,7 +86,5 @@ namespace ActiveDesktop
             GetCursorPos(out lpPoint);
             return lpPoint;
         }
-
-
     }
 }
