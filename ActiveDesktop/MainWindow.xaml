@@ -28,12 +28,19 @@
                     <TextBox x:Name="textBox" Height="99" Margin="20,54,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Current apps">
+            <TabItem Name ="AppList">
+                <TabItem.Header>
+                    <Label Content="Current Apps" 
+                MouseLeftButtonDown="AppList_Clicked" 
+                HorizontalAlignment="Stretch"/>
+                </TabItem.Header>
                 <Grid>
-                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55"/>
+                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55">
+                        <UniformGrid Columns="2"/>
+                    </ListBox>
                     <Button x:Name="RefreshButton" Content="Refresh&#xD;&#xA;List" Margin="10,0,169,10" HorizontalContentAlignment="Center" FontSize="10" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
-                    <Button x:Name="BorderlessButton" Content="Toggle&#xD;&#xA;Borderless" Margin="90,0,90,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom"/>
-                    <Button x:Name="LockedButton" Content="Toggle&#xD;&#xA;Locked" Margin="169,0,9,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom"/>
+                    <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
+                    <Button x:Name="LockedButton" Content="Unpin" Margin="169,0,9,10" HorizontalContentAlignment="Center" FontSize="10" Height="40" VerticalAlignment="Bottom"/>
 
                 </Grid>
             </TabItem>
