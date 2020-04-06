@@ -19,15 +19,20 @@ namespace ActiveDesktop
 {
     public partial class MainWindow : Window
     {
-
+        // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
+        // It's easier and I need them everywhere so shh it'll be fine I promise
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
         List<List<string>> WindowList;
+        List<int> WindowHandles = new List<int>();
+        List<uint> WindowProperties = new List<uint>();
+        List<uint> WindowPropertiesEx = new List<uint>();
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "WorkerW", "");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
 
@@ -36,13 +41,49 @@ namespace ActiveDesktop
                 RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
                 DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             }
+            // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
         }
 
+        public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
+        {
+            bool appears = false;
+            for (int i = 0; i < WindowHandles.Count; i++)
+            {
+                if (WindowHandles[i] == Handle)
+                {
+                    appears = true;
+                }
+            }
+            if (appears == false)
+            {
+                WindowHandles.Add(Handle);
+                WindowProperties.Add(Properties);
+                WindowPropertiesEx.Add(PropertiesEx);
+
+            }
+        }
+
+        public uint RetrieveWindowProperties(int Handle, int Ex)
+        {
+            for (int i = 0; i < WindowHandles.Count; i++)
+            {
+                if (WindowHandles[i] == Handle && Ex == 1)
+                {
+                    return WindowPropertiesEx[i];
+                }
+                else if (WindowHandles[i] == Handle)
+                {
+                    return WindowProperties[i];
+                }
+            }
+            return 0;
+        }
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
-
+            // Deals with finding the target window the user wants to send to the desktop
+            // I'll probably work out how to do it with the mouse at some point but 🅱
             if (e.Key == Key.B)
             {
                 TargetHandle = WindowFromPoint(Convert.ToInt32(GetCursorPosition().X), Convert.ToInt32(GetCursorPosition().Y));
@@ -52,13 +93,25 @@ namespace ActiveDesktop
 
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
+            // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
             SetParent(TargetHandle, DesktopHandle);
+
+        }
+
+        private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
+            try
+            {
+                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+            }
+            catch (Exception) { }
         }
 
         public void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-
-            StringBuilder lpString = new StringBuilder(100);
+            // Quite frankly I've forgotten how this bit works but it needs to be a StringBuilder and I just hope window titles aren't too long
+            StringBuilder WindowTitle = new StringBuilder(1000);
             int count = 0;
             WindowList = new List<List<string>>();
 
@@ -66,14 +119,18 @@ namespace ActiveDesktop
             HandleListBox.Items.Clear();
             for (IntPtr ChildHandle = FindWindowExA(DesktopHandle, IntPtr.Zero, null, null); ChildHandle != IntPtr.Zero; ChildHandle = FindWindowExA(DesktopHandle, ChildHandle, null, null))
             {
-                int result = GetWindowText(ChildHandle, lpString, 100);
-                if (result != 101)
+                int result = GetWindowText(ChildHandle, WindowTitle, 1000);
+                if (result != 1001 && WindowTitle.ToString() != "FolderView")
                 {
+                    // This bit is the clever bit that creates an entry for every window on the desktop
                     WindowList.Add(new List<string>()); 
                     WindowList[count].Add((1000 + count).ToString()); // ID - Nobody is ever going to have more than 1000 windows open, if they do this will break but hey idc
-                    WindowList[count].Add(lpString.ToString()); // Window Title
+                    WindowList[count].Add(WindowTitle.ToString()); // Window Title
                     WindowList[count].Add(ChildHandle.ToString()); // Window Handle
-                    WindowList[count].Add("2");  // Is borderless - defaulting to unknown
+                    StoreWindowProperties(ChildHandle.ToInt32(), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_STYLE), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_EXSTYLE));
+
+                    // WindowList[count].Add(((uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_STYLE)).ToString());  // Initial Window Style
+                    // WindowList[count].Add(((uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_EXSTYLE)).ToString()); // Intial Extended Window Style
 
                     HandleListBox.Items.Add(WindowList[count][1] + " " + WindowList[count][0]);
                     count++;
@@ -81,6 +138,8 @@ namespace ActiveDesktop
                 }
             }
         }
+
+
 
         private void BorderlessButton_Click(object sender, RoutedEventArgs e)
         { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
@@ -109,6 +168,11 @@ namespace ActiveDesktop
         public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndParent);
         [DllImport("user32.dll")]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowLong(int hWnd, int nIndex);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -129,9 +193,6 @@ namespace ActiveDesktop
             }
         }
 
-        [DllImport("user32.dll")]
-        public static extern bool GetCursorPos(out POINT lpPoint);
-
         public static Point GetCursorPosition()
         {
             POINT lpPoint;
@@ -139,14 +200,8 @@ namespace ActiveDesktop
             return lpPoint;
         }
 
-
         // This bit gets the titles of all the active windows. It's probably massively overcomplicated but it works and that's all I care about right now.
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
-
     
         public static List<IntPtr> GetChildWindows(IntPtr parent)
         {
@@ -179,23 +234,32 @@ namespace ActiveDesktop
 
         public void RemoveBorders(int TargetHandle)
         {
-            uint nStyle = (uint)GetWindowLong(TargetHandle, ValuesForStuff.GWL_STYLE);
-            nStyle = (nStyle | (ValuesForStuff.WS_THICKFRAME + ValuesForStuff.WS_DLGFRAME + ValuesForStuff.WS_BORDER)) ^ (ValuesForStuff.WS_THICKFRAME + ValuesForStuff.WS_DLGFRAME + ValuesForStuff.WS_BORDER);
-            SetWindowLong(TargetHandle, ValuesForStuff.GWL_STYLE, nStyle);
+            uint nStyle = (uint)GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE);
+            nStyle = (nStyle | (WeirdMagicalNumbers.WS_THICKFRAME + WeirdMagicalNumbers.WS_DLGFRAME + WeirdMagicalNumbers.WS_BORDER)) ^ (WeirdMagicalNumbers.WS_THICKFRAME + WeirdMagicalNumbers.WS_DLGFRAME + WeirdMagicalNumbers.WS_BORDER);
+            SetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE, nStyle);
 
-            nStyle = (uint)GetWindowLong(TargetHandle, ValuesForStuff.GWL_EXSTYLE);
-            nStyle = (nStyle | (ValuesForStuff.WS_EX_DLGMODALFRAME + ValuesForStuff.WS_EX_WINDOWEDGE + ValuesForStuff.WS_EX_CLIENTEDGE + ValuesForStuff.WS_EX_STATICEDGE)) ^ (ValuesForStuff.WS_EX_DLGMODALFRAME + ValuesForStuff.WS_EX_WINDOWEDGE + ValuesForStuff.WS_EX_CLIENTEDGE + ValuesForStuff.WS_EX_STATICEDGE);
-            SetWindowLong(TargetHandle, ValuesForStuff.GWL_EXSTYLE, nStyle);
+            nStyle = (uint)GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_EXSTYLE);
+            nStyle = (nStyle | (WeirdMagicalNumbers.WS_EX_DLGMODALFRAME + WeirdMagicalNumbers.WS_EX_WINDOWEDGE + WeirdMagicalNumbers.WS_EX_CLIENTEDGE + WeirdMagicalNumbers.WS_EX_STATICEDGE)) ^ (WeirdMagicalNumbers.WS_EX_DLGMODALFRAME + WeirdMagicalNumbers.WS_EX_WINDOWEDGE + WeirdMagicalNumbers.WS_EX_CLIENTEDGE + WeirdMagicalNumbers.WS_EX_STATICEDGE);
+            SetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_EXSTYLE, nStyle);
 
-            uint uFlags = ValuesForStuff.SWP_NOSIZE | ValuesForStuff.SWP_NOMOVE | ValuesForStuff.SWP_NOZORDER | ValuesForStuff.SWP_NOACTIVATE | ValuesForStuff.SWP_NOOWNERZORDER | ValuesForStuff.SWP_NOSENDCHANGING | ValuesForStuff.SWP_FRAMECHANGED;
+            uint uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
             SetWindowPos(TargetHandle, 0, 0, 0, 0, 0, uFlags);
         }
 
-        static class ValuesForStuff
+        public void AddBorders(int SelectedHandle, uint nStyle, uint nStyleEx)
+        {
+            SetWindowLong(SelectedHandle, WeirdMagicalNumbers.GWL_STYLE, nStyle);
+
+            SetWindowLong(SelectedHandle, WeirdMagicalNumbers.GWL_EXSTYLE, nStyleEx);
+
+            uint uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
+            SetWindowPos(SelectedHandle, 0, 0, 0, 0, 0, uFlags);
+        }
+
+        static class WeirdMagicalNumbers
         {
             public const int GWL_STYLE = -16; 
             public const int GWL_EXSTYLE = -20;
-
             public const uint SWP_NOSIZE = 0x01;
             public const uint SWP_NOMOVE = 0x02;
             public const uint SWP_NOZORDER = 0x04;
@@ -203,21 +267,19 @@ namespace ActiveDesktop
             public const uint SWP_NOOWNERZORDER = 0x200;
             public const uint SWP_NOSENDCHANGING = 0x400;
             public const uint SWP_FRAMECHANGED = 0x20;
-
             public const uint WS_THICKFRAME = 0x40000;
             public const uint WS_DLGFRAME = 0x400000; 
             public const uint WS_BORDER = 0x800000;
-
             public const uint WS_EX_DLGMODALFRAME = 1;
             public const uint WS_EX_WINDOWEDGE = 0x100;
             public const uint WS_EX_CLIENTEDGE = 0200;
             public const uint WS_EX_STATICEDGE = 0x20000;
-
             public const int SW_SHOWNOACTIVATE = 4;
             public const int SW_RESTORE = 9;
-
             public const int WM_EXITSIZEMOVE = 0x0232;
           
         }
+
+
     }
 }
