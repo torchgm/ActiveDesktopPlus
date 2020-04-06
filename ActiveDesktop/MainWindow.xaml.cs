@@ -36,11 +36,26 @@ namespace ActiveDesktop
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "WorkerW", "");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
 
-            while (DesktopHandle == IntPtr.Zero)
+            // Since this would go on forever but I have no idea how long it'll be, 10,000 will do fine.
+            for (int i = 0; i < 10000; i++)
             {
-                RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
-                DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+                if (DesktopHandle == IntPtr.Zero)
+                {
+                    RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
+                    DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+                }
+
             }
+            // This bit theoretically handles compatibility with older versions of Windows. No idea if it works.
+            if (RootHandle == IntPtr.Zero)
+            {
+                for (int i = 0; i < 10000; i++)
+                {
+                    RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "Program Manager", "");
+                    DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+                }
+            }
+            HwndInputTextBox.Text = DesktopHandle.ToString();
             // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
         }
@@ -103,7 +118,7 @@ namespace ActiveDesktop
             // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
             try
             {
-                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));                                                                           
             }
             catch (Exception) { }
         }
@@ -200,7 +215,6 @@ namespace ActiveDesktop
             return lpPoint;
         }
 
-        // This bit gets the titles of all the active windows. It's probably massively overcomplicated but it works and that's all I care about right now.
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
     
         public static List<IntPtr> GetChildWindows(IntPtr parent)
