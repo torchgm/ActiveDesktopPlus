@@ -33,29 +33,15 @@ namespace ActiveDesktop
             InitializeComponent();
 
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
-            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "WorkerW", "");
+            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Program Manager", "");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
-
-            // Since this would go on forever but I have no idea how long it'll be, 10,000 will do fine.
-            for (int i = 0; i < 10000; i++)
+            while (DesktopHandle == IntPtr.Zero)
             {
-                if (DesktopHandle == IntPtr.Zero)
-                {
-                    RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
-                    DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
-                }
-
-            }
-            // This bit theoretically handles compatibility with older versions of Windows. No idea if it works.
-            if (RootHandle == IntPtr.Zero)
-            {
-                for (int i = 0; i < 10000; i++)
-                {
-                    RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "Program Manager", "");
-                    DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
-                }
+                RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
+                DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             }
             HwndInputTextBox.Text = DesktopHandle.ToString();
+            
             // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
         }
