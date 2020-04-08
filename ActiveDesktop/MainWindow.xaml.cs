@@ -33,7 +33,7 @@ namespace ActiveDesktop
             InitializeComponent();
 
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
-            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Program Manager", "");
+            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             while (DesktopHandle == IntPtr.Zero)
             {
@@ -129,10 +129,6 @@ namespace ActiveDesktop
                     WindowList[count].Add(WindowTitle.ToString()); // Window Title
                     WindowList[count].Add(ChildHandle.ToString()); // Window Handle
                     StoreWindowProperties(ChildHandle.ToInt32(), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_STYLE), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_EXSTYLE));
-
-                    // WindowList[count].Add(((uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_STYLE)).ToString());  // Initial Window Style
-                    // WindowList[count].Add(((uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_EXSTYLE)).ToString()); // Intial Extended Window Style
-
                     HandleListBox.Items.Add(WindowList[count][1] + " " + WindowList[count][0]);
                     count++;
 
