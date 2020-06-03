@@ -21,11 +21,12 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <TabControl x:Name="tabControl" Grid.RowSpan="2">
-            <TabItem Header="Add app">
+            <TabItem Header="Add App">
                 <Grid>
                     <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="45,170,45,20" Click="ApplyHwndButton_Click"/>
-                    <TextBox x:Name="HwndInputTextBox" Height="23" Margin="70,20,70,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
+                    <TextBox x:Name="HwndInputTextBox" Height="23" Margin="120,14,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
                     <TextBox x:Name="textBox" Height="99" Margin="20,54,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
+                    <Label x:Name="label" Content="Selected handle: " HorizontalAlignment="Left" Margin="15,12,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Name ="AppList">
@@ -39,12 +40,40 @@
                         <UniformGrid Columns="2"/>
                     </ListBox>
                     <Button x:Name="RefreshButton" Content="Refresh" Margin="10,0,169,10" HorizontalContentAlignment="Center" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
-                    <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
-                    <Button x:Name="UnborderlessButton" Content="Unpin" Margin="169,0,9,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
+                    <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
+                    <Button x:Name="SaveButton" Content="Save" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="SaveButton_Click"/>
+                    <Button x:Name="UnborderlessButton" Content="Unpin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
 
                 </Grid>
             </TabItem>
+            <TabItem Name ="SaveList">
+                <TabItem.Header>
+                    <Label Content="Saved Apps" 
+                MouseLeftButtonDown="SaveList_Clicked"
+                HorizontalAlignment="Stretch"/>
+
+                </TabItem.Header>
+                <Grid>
+
+                    <ListBox x:Name="SavedListBox" Margin="10,24,10,55">
+                        <UniformGrid Columns="2"/>
+                    </ListBox>
+                    <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,129,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" />
+                    <Button x:Name="EditButton" Content="Edit" Margin="128,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
+                    <Expander x:Name="expander" Header="Add new..." Margin="10,2,10,55">
+                        <Grid Background="#ABADB3" Height="152">
+                            <TextBox x:Name="textBox1" Margin="116,39,10,91" TextWrapping="Wrap" Text="Y"/>
+                            <TextBox x:Name="textBox2" Margin="10,39,116,91" TextWrapping="Wrap" Text="X"/>
+                            <TextBox x:Name="textBox3" Margin="10,10,10,118" TextWrapping="Wrap" Text="Command Line"/>
+                            <Button x:Name="AddButton" Content="Add" Margin="10,111,10,12" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
+                        </Grid>
+                    </Expander>
+                </Grid>
+            </TabItem>
         </TabControl>
+
+
+
 
 
     </Grid>

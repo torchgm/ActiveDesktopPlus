@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,11 +24,12 @@ namespace ActiveDesktop
         // It's easier and I need them everywhere so shh it'll be fine I promise
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
+        string LocalFolder;
+        string[][] CSVArray;
         List<List<string>> WindowList;
         List<int> WindowHandles = new List<int>();
         List<uint> WindowProperties = new List<uint>();
         List<uint> WindowPropertiesEx = new List<uint>();
-
         public MainWindow()
         {
             InitializeComponent();
@@ -41,9 +43,15 @@ namespace ActiveDesktop
                 DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             }
             HwndInputTextBox.Text = DesktopHandle.ToString();
-            
+
             // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
+            FileSystem();
+
+            if (File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.csv")) == string.Empty)
+            {
+                CSVArray = ReadCSV();
+            }
         }
 
         public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
@@ -104,7 +112,7 @@ namespace ActiveDesktop
             // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
             try
             {
-                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));                                                                           
+                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
             }
             catch (Exception) { }
         }
@@ -124,7 +132,7 @@ namespace ActiveDesktop
                 if (result != 1001 && WindowTitle.ToString() != "FolderView")
                 {
                     // This bit is the clever bit that creates an entry for every window on the desktop
-                    WindowList.Add(new List<string>()); 
+                    WindowList.Add(new List<string>());
                     WindowList[count].Add((1000 + count).ToString()); // ID - Nobody is ever going to have more than 1000 windows open, if they do this will break but hey idc
                     WindowList[count].Add(WindowTitle.ToString()); // Window Title
                     WindowList[count].Add(ChildHandle.ToString()); // Window Handle
@@ -134,6 +142,21 @@ namespace ActiveDesktop
 
                 }
             }
+        }
+
+        private void SaveList_Clicked(object sender, RoutedEventArgs e)
+        {
+            // File.WriteAllText(@"testADP.csv", string.Join("§", CSVArray));
+        }
+
+        private void AddButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            
         }
 
 
@@ -156,6 +179,16 @@ namespace ActiveDesktop
         // All the weird non-GUIey bits are here don't question it shhhh //
         // ///////////////////////////////////////////////////////////// //
 
+
+        // Refresh the Saved Applications List with data from the array
+        private void UpdateSAL()
+        {
+            foreach (object name in CSVArray)
+            {
+                SavedListBox.Items.Add((string)name);
+            }
+        }
+
         // Bits and bobs for finding and adjusting windows
         [DllImport("user32.dll")]
         public static extern IntPtr FindWindowExA(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
@@ -170,6 +203,8 @@ namespace ActiveDesktop
         public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
         [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out POINT lpPoint);
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr Handle, Rect WinRect);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowLong(int hWnd, int nIndex);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -198,7 +233,7 @@ namespace ActiveDesktop
         }
 
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
-    
+
         public static List<IntPtr> GetChildWindows(IntPtr parent)
         {
             List<IntPtr> AllActiveHandles = new List<IntPtr>();
@@ -254,7 +289,8 @@ namespace ActiveDesktop
 
         static class WeirdMagicalNumbers
         {
-            public const int GWL_STYLE = -16; 
+            // Important magical numbers that make windows borderless
+            public const int GWL_STYLE = -16;
             public const int GWL_EXSTYLE = -20;
             public const uint SWP_NOSIZE = 0x01;
             public const uint SWP_NOMOVE = 0x02;
@@ -264,7 +300,7 @@ namespace ActiveDesktop
             public const uint SWP_NOSENDCHANGING = 0x400;
             public const uint SWP_FRAMECHANGED = 0x20;
             public const uint WS_THICKFRAME = 0x40000;
-            public const uint WS_DLGFRAME = 0x400000; 
+            public const uint WS_DLGFRAME = 0x400000;
             public const uint WS_BORDER = 0x800000;
             public const uint WS_EX_DLGMODALFRAME = 1;
             public const uint WS_EX_WINDOWEDGE = 0x100;
@@ -273,9 +309,45 @@ namespace ActiveDesktop
             public const int SW_SHOWNOACTIVATE = 4;
             public const int SW_RESTORE = 9;
             public const int WM_EXITSIZEMOVE = 0x0232;
-          
+
         }
 
+
+        // Checks for AppData directory/CSV and creates it if it doesnt exist
+        private void FileSystem()
+        {
+            string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            LocalFolder = System.IO.Path.Combine(AppData, "ActiveDesktopPlus");
+
+            Directory.CreateDirectory(LocalFolder);
+
+            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.csv")))
+            {
+                _ = File.Create(System.IO.Path.Combine(LocalFolder, "saved.csv"));
+            }
+        }
+
+
+        // Reads data from the CSV, stolen from my other project VRMID
+        public string[][] ReadCSV()
+        {
+            int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Length;
+            string[][] daCSVData = new string[lineCount][];
+            int n = 0;
+            string lineToBeProcessed;
+            string[] values;
+            do
+            {
+                lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
+                lineToBeProcessed = lineToBeProcessed.Replace(" ", string.Empty);
+                values = lineToBeProcessed.Split('§');
+                daCSVData[n] = values;
+                n++;
+            }
+            while (n <= lineCount - 1);
+            return daCSVData;
+        }
 
     }
 }
