@@ -26,7 +26,6 @@ namespace ActiveDesktop
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
         string LocalFolder;
-        string[][] CSVArray;
         ArrayList CSVAl = new ArrayList();
         List<List<string>> WindowList;
         List<int> WindowHandles = new List<int>();
@@ -48,8 +47,12 @@ namespace ActiveDesktop
 
             // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
+            SavedList_Click(null, null);
             FileSystem();
             CSVAl = ReadCSV();
+            AddExpander.IsExpanded = false;
+            AddExpander.IsHitTestVisible = false;
+
         }
 
         public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
@@ -142,7 +145,7 @@ namespace ActiveDesktop
             }
         }
 
-        private void SaveList_Clicked(object sender, RoutedEventArgs e)
+        private void SavedList_Click(object sender, RoutedEventArgs e)
         {
             SavedListBox.Items.Clear();
             foreach (string[] i in CSVAl)
@@ -155,16 +158,10 @@ namespace ActiveDesktop
         {
             string[] values = { CmdBox.Text, XBox.Text, YBox.Text };
             CSVAl.Add(values);
-            SaveList_Clicked(null, null);
+            SavedList_Click(null, null);
             AddExpander.IsExpanded = false;
+            AddExpander.IsHitTestVisible = false;
         }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-
 
         private void BorderlessButton_Click(object sender, RoutedEventArgs e)
         { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
@@ -179,20 +176,10 @@ namespace ActiveDesktop
             RefreshButton_Click(null, null);
         }
 
-
         // ///////////////////////////////////////////////////////////// //
         // All the weird non-GUIey bits are here don't question it shhhh //
         // ///////////////////////////////////////////////////////////// //
 
-
-        // Refresh the Saved Applications List with data from the array
-        private void UpdateSAL()
-        {
-            foreach (object name in CSVArray)
-            {
-                SavedListBox.Items.Add((string)name);
-            }
-        }
 
         // Bits and bobs for finding and adjusting windows
         [DllImport("user32.dll")]
@@ -318,7 +305,7 @@ namespace ActiveDesktop
         }
 
 
-        // Checks for AppData directory/CSV and creates it if it doesnt exist
+        // Checks for AppData directory/CSV and creates it if it doesn't exist
         private void FileSystem()
         {
             string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -333,28 +320,67 @@ namespace ActiveDesktop
             }
         }
 
+        // Writes stuff in the array to the CSV
+        private void WriteCSV()
+        {
+            File.Create(System.IO.Path.Combine(LocalFolder, "saved.csv")).Close();
+            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(LocalFolder, "saved.csv")))
+            {
+                foreach (string[] i in CSVAl)
+                {
+                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2]);
+                }
+            }
+        }
+
 
         // Reads data from the CSV, stolen from my other project VRMID
         public ArrayList ReadCSV()
         {
             int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Length;
             ArrayList al = new ArrayList();
-            //string[][] daCSVData = new string[lineCount][];
             int n = 0;
             string lineToBeProcessed;
             string[] values;
             do
             {
                 lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
-                lineToBeProcessed = lineToBeProcessed.Replace(" ", string.Empty);
                 values = lineToBeProcessed.Split('§');
                 al.Add(values);
-                //daCSVData[n] = values;
                 n++;
             }
             while (n <= lineCount - 1);
             return al;
         }
 
+        private void ExpanderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AddExpander.IsExpanded)
+            {
+                AddExpander.IsExpanded = false;
+                AddExpander.IsHitTestVisible = false;
+            }
+            else
+            {
+                AddExpander.IsExpanded = true;
+                AddExpander.IsHitTestVisible = true;
+            }
+        }
+
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            // (System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
+            if (SavedListBox.SelectedIndex != -1)
+            {
+                CSVAl.RemoveAt(SavedListBox.SelectedIndex);
+                SavedList_Click(null, null);
+            }
+
+        }
+
+        private void WriteButton_Click(object sender, RoutedEventArgs e)
+        {
+            WriteCSV();
+        }
     }
 }

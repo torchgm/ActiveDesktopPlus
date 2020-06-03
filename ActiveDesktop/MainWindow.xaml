@@ -41,26 +41,25 @@
                     </ListBox>
                     <Button x:Name="RefreshButton" Content="Refresh" Margin="10,0,169,10" HorizontalContentAlignment="Center" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
                     <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
-                    <Button x:Name="SaveButton" Content="Save" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="SaveButton_Click"/>
+                    <Button x:Name="SaveButton" Content="Save" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
                     <Button x:Name="UnborderlessButton" Content="Unpin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
 
                 </Grid>
             </TabItem>
-            <TabItem Name ="SaveList">
+            <TabItem Name ="SavedList">
                 <TabItem.Header>
                     <Label Content="Saved Apps" 
-                MouseLeftButtonDown="SaveList_Clicked"
+                MouseLeftButtonDown="SavedList_Click"
                 HorizontalAlignment="Stretch"/>
 
                 </TabItem.Header>
                 <Grid>
-
                     <ListBox x:Name="SavedListBox" Margin="10,24,10,55">
                         <UniformGrid Columns="2"/>
                     </ListBox>
-                    <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,129,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" />
-                    <Button x:Name="TestButton" Content="Test" Margin="128,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
-                    <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55">
+                    <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,169,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="RemoveButton_Click" />
+                    <Button x:Name="TestButton" Content="Test" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
+                    <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55" IsExpanded="True">
                         <Grid Background="#ABADB3" Height="152">
                             <TextBox x:Name="YBox" Margin="116,39,10,91" TextWrapping="Wrap" Text="Y"/>
                             <TextBox x:Name="XBox" Margin="10,39,116,91" TextWrapping="Wrap" Text="X"/>
@@ -68,6 +67,8 @@
                             <Button x:Name="AddButton" Content="Add" Margin="10,111,10,12" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
                         </Grid>
                     </Expander>
+                    <Button x:Name="ExpanderButton" Content="Add new..." HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Width="90" Height="22" Click="ExpanderButton_Click"/>
+                    <Button x:Name="WriteButton" Content="Write" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="WriteButton_Click"/>
                 </Grid>
             </TabItem>
         </TabControl>
