@@ -22,7 +22,7 @@ namespace ActiveDesktop
     public partial class MainWindow : Window
     {
         // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
-        // It's easier and I need them everywhere so shh it'll be fine I promise
+        // It's easier and I need them everywhere so shh it'll be fine I promise aaaa
         IntPtr DesktopHandle;
         IntPtr TargetHandle;
         string LocalFolder;
