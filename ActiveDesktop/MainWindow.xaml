@@ -58,13 +58,17 @@
                         <UniformGrid Columns="2"/>
                     </ListBox>
                     <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,169,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="RemoveButton_Click" />
-                    <Button x:Name="TestButton" Content="Test" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
+                    <Button x:Name="TestButton" Content="Test" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="TestButton_Click"/>
                     <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55" IsExpanded="True">
                         <Grid Background="#ABADB3" Height="152">
-                            <TextBox x:Name="YBox" Margin="116,39,10,91" TextWrapping="Wrap" Text="Y"/>
-                            <TextBox x:Name="XBox" Margin="10,39,116,91" TextWrapping="Wrap" Text="X"/>
-                            <TextBox x:Name="CmdBox" Margin="10,10,10,118" TextWrapping="Wrap" Text="Command Line"/>
+                            <TextBox x:Name="CmdBox" Margin="10,10,116,118" Text="Command Line"/>
+                            <TextBox x:Name="FlagBox" Margin="116,10,10,118" Text="Flags"/>
+                            <TextBox x:Name="XBox" Margin="10,39,116,91" Text="X"/>
+                            <TextBox x:Name="YBox" Margin="116,39,10,91" Text="Y"/>
+                            <TextBox x:Name="WidthBox" Margin="10,66,116,62" Text="Width"/>
+                            <TextBox x:Name="HeightBox" Margin="115,66,11,62" Text="Height"/>
                             <Button x:Name="AddButton" Content="Add" Margin="10,111,10,12" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
+
                         </Grid>
                     </Expander>
                     <Button x:Name="ExpanderButton" Content="Add new..." HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Width="90" Height="22" Click="ExpanderButton_Click"/>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -217,6 +218,11 @@ namespace ActiveDesktop
             }
         }
 
+        public IntPtr MainWindowHandle
+        {
+            get;
+        }
+
         public static Point GetCursorPosition()
         {
             POINT lpPoint;
@@ -369,7 +375,6 @@ namespace ActiveDesktop
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            // (System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
             if (SavedListBox.SelectedIndex != -1)
             {
                 CSVAl.RemoveAt(SavedListBox.SelectedIndex);
@@ -381,6 +386,31 @@ namespace ActiveDesktop
         private void WriteButton_Click(object sender, RoutedEventArgs e)
         {
             WriteCSV();
+        }
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SavedListBox.SelectedIndex != -1)
+            {
+                int n = 0;
+                foreach (string[] i in CSVAl)
+                {
+                    if (n == SavedListBox.SelectedIndex)
+                    {
+                        Process SavedProcess = Process.Start(i[0]);
+                        SavedProcess.Refresh();
+                        System.Threading.Thread.Sleep(1000);
+
+                        try
+                        {
+                            SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                        }
+                        catch (InvalidOperationException) { }
+                    }
+                    ++n;
+                }
+            }
+
         }
     }
 }
