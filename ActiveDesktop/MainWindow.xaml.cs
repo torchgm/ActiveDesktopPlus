@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,7 @@ namespace ActiveDesktop
         IntPtr TargetHandle;
         string LocalFolder;
         string[][] CSVArray;
+        ArrayList CSVAl = new ArrayList();
         List<List<string>> WindowList;
         List<int> WindowHandles = new List<int>();
         List<uint> WindowProperties = new List<uint>();
@@ -47,11 +49,7 @@ namespace ActiveDesktop
             // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
             FileSystem();
-
-            if (File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.csv")) == string.Empty)
-            {
-                CSVArray = ReadCSV();
-            }
+            CSVAl = ReadCSV();
         }
 
         public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
@@ -146,12 +144,19 @@ namespace ActiveDesktop
 
         private void SaveList_Clicked(object sender, RoutedEventArgs e)
         {
-            // File.WriteAllText(@"testADP.csv", string.Join("§", CSVArray));
+            SavedListBox.Items.Clear();
+            foreach (string[] i in CSVAl)
+            {
+                SavedListBox.Items.Add(i[0]);
+            }
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-
+            string[] values = { CmdBox.Text, XBox.Text, YBox.Text };
+            CSVAl.Add(values);
+            SaveList_Clicked(null, null);
+            AddExpander.IsExpanded = false;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -330,10 +335,11 @@ namespace ActiveDesktop
 
 
         // Reads data from the CSV, stolen from my other project VRMID
-        public string[][] ReadCSV()
+        public ArrayList ReadCSV()
         {
             int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Length;
-            string[][] daCSVData = new string[lineCount][];
+            ArrayList al = new ArrayList();
+            //string[][] daCSVData = new string[lineCount][];
             int n = 0;
             string lineToBeProcessed;
             string[] values;
@@ -342,11 +348,12 @@ namespace ActiveDesktop
                 lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
                 lineToBeProcessed = lineToBeProcessed.Replace(" ", string.Empty);
                 values = lineToBeProcessed.Split('§');
-                daCSVData[n] = values;
+                al.Add(values);
+                //daCSVData[n] = values;
                 n++;
             }
             while (n <= lineCount - 1);
-            return daCSVData;
+            return al;
         }
 
     }
