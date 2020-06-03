@@ -59,12 +59,12 @@
                         <UniformGrid Columns="2"/>
                     </ListBox>
                     <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,129,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" />
-                    <Button x:Name="EditButton" Content="Edit" Margin="128,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
-                    <Expander x:Name="expander" Header="Add new..." Margin="10,2,10,55">
+                    <Button x:Name="TestButton" Content="Test" Margin="128,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
+                    <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55">
                         <Grid Background="#ABADB3" Height="152">
-                            <TextBox x:Name="textBox1" Margin="116,39,10,91" TextWrapping="Wrap" Text="Y"/>
-                            <TextBox x:Name="textBox2" Margin="10,39,116,91" TextWrapping="Wrap" Text="X"/>
-                            <TextBox x:Name="textBox3" Margin="10,10,10,118" TextWrapping="Wrap" Text="Command Line"/>
+                            <TextBox x:Name="YBox" Margin="116,39,10,91" TextWrapping="Wrap" Text="Y"/>
+                            <TextBox x:Name="XBox" Margin="10,39,116,91" TextWrapping="Wrap" Text="X"/>
+                            <TextBox x:Name="CmdBox" Margin="10,10,10,118" TextWrapping="Wrap" Text="Command Line"/>
                             <Button x:Name="AddButton" Content="Add" Margin="10,111,10,12" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
                         </Grid>
                     </Expander>
