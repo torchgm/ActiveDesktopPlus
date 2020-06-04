@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
-        mc:Ignorable="d" Height="299" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize">
+        mc:Ignorable="d" Height="299" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize" Title="Active Desktop Plus">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -32,7 +32,7 @@
             <TabItem Name ="AppList">
                 <TabItem.Header>
                     <Label Content="Current Apps" 
-                MouseLeftButtonDown="AppList_Clicked" 
+                MouseLeftButtonDown="AppList_Click" 
                 HorizontalAlignment="Stretch"/>
                 </TabItem.Header>
                 <Grid>
@@ -41,7 +41,7 @@
                     </ListBox>
                     <Button x:Name="RefreshButton" Content="Refresh" Margin="10,0,169,10" HorizontalContentAlignment="Center" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
                     <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
-                    <Button x:Name="SaveButton" Content="Save" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom"/>
+                    <Button x:Name="SaveButton" Content="Save" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" FontWeight="Bold" IsEnabled="False" Foreground="#7FFF0000"/>
                     <Button x:Name="UnborderlessButton" Content="Unpin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
 
                 </Grid>
@@ -61,13 +61,15 @@
                     <Button x:Name="TestButton" Content="Test" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="TestButton_Click"/>
                     <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55" IsExpanded="True">
                         <Grid Background="#ABADB3" Height="152">
-                            <TextBox x:Name="CmdBox" Margin="10,10,116,118" Text="Command Line"/>
-                            <TextBox x:Name="FlagBox" Margin="116,10,10,118" Text="Flags"/>
-                            <TextBox x:Name="XBox" Margin="10,39,116,91" Text="X"/>
-                            <TextBox x:Name="YBox" Margin="116,39,10,91" Text="Y"/>
-                            <TextBox x:Name="WidthBox" Margin="10,66,116,62" Text="Width"/>
-                            <TextBox x:Name="HeightBox" Margin="115,66,11,62" Text="Height"/>
-                            <Button x:Name="AddButton" Content="Add" Margin="10,111,10,12" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
+                            <TextBox x:Name="CmdBox" Margin="10,6,116,122" Text="Command Line"/>
+                            <TextBox x:Name="FlagBox" Margin="116,6,10,122" Text="Flags"/>
+                            <TextBox x:Name="XBox" Margin="10,35,116,95" Text="X"/>
+                            <TextBox x:Name="YBox" Margin="116,35,10,95" Text="Y"/>
+                            <TextBox x:Name="WidthBox" Margin="10,62,116,66" Text="Width"/>
+                            <TextBox x:Name="HeightBox" Margin="115,62,11,66" Text="Height"/>
+                            <Button x:Name="AddButton" Content="Add" Margin="10,117,10,11" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
+                            <TextBox x:Name="NameBox" Margin="10,91,116,37" Text="Friendly Name"/>
+                            <TextBox x:Name="TimeBox" Margin="115,91,11,37" Text="Wait Time"/>
 
                         </Grid>
                     </Expander>

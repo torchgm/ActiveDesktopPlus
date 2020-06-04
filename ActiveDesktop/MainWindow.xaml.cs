@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace ActiveDesktop
 {
@@ -24,14 +25,17 @@ namespace ActiveDesktop
     {
         // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
         // It's easier and I need them everywhere so shh it'll be fine I promise aaaa
-        IntPtr DesktopHandle;
-        IntPtr TargetHandle;
-        string LocalFolder;
-        ArrayList CSVAl = new ArrayList();
-        List<List<string>> WindowList;
-        List<int> WindowHandles = new List<int>();
-        List<uint> WindowProperties = new List<uint>();
-        List<uint> WindowPropertiesEx = new List<uint>();
+        IntPtr DesktopHandle; // The handle of the desktop
+        IntPtr TargetHandle; // The handle of the targeted app
+        string LocalFolder; // %AppData%/ActiveDesktopPlus
+        ArrayList CSVAl = new ArrayList(); // ArrayList that holds data from CSV for on-the-fly reading and writing or something
+        List<List<string>> WindowList; // Not entirely sure, probably something to do with the children of the desktop
+        List<int> WindowHandles = new List<int>(); // List of handles
+        List<uint> WindowProperties = new List<uint>(); // List of window properties
+        List<uint> WindowPropertiesEx = new List<uint>(); // List of window properties but this time its ex
+        
+
+        // On-start events
         public MainWindow()
         {
             InitializeComponent();
@@ -46,16 +50,21 @@ namespace ActiveDesktop
             }
             HwndInputTextBox.Text = DesktopHandle.ToString();
 
-            // Trigger a refresh of the pinned window list. Not strictly necessary but hey extra refreshing is always nice
+            // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             RefreshButton_Click(null, null);
             SavedList_Click(null, null);
             FileSystem();
             CSVAl = ReadCSV();
+            if (CSVAl.Count != 0)
+            {
+                StartSavedApps();
+            }
             AddExpander.IsExpanded = false;
             AddExpander.IsHitTestVisible = false;
 
         }
 
+        // Stores window properties
         public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
         {
             bool appears = false;
@@ -75,6 +84,7 @@ namespace ActiveDesktop
             }
         }
 
+        // Retrieves window properties
         public uint RetrieveWindowProperties(int Handle, int Ex)
         {
             for (int i = 0; i < WindowHandles.Count; i++)
@@ -91,6 +101,7 @@ namespace ActiveDesktop
             return 0;
         }
 
+        // Deals with listening to the B key
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
             // Deals with finding the target window the user wants to send to the desktop
@@ -102,6 +113,7 @@ namespace ActiveDesktop
             }
         }
 
+        // Sends the selected handle to the desktop
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
             // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
@@ -109,6 +121,16 @@ namespace ActiveDesktop
 
         }
 
+        // Makes the selected window borderless
+        private void BorderlessButton_Click(object sender, RoutedEventArgs e)
+        { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
+            if (HandleListBox.SelectedItem != null)
+            {
+                RemoveBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            }
+        }
+        
+        // Makes the selected window bordered
         private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
         {
             // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
@@ -119,6 +141,7 @@ namespace ActiveDesktop
             catch (Exception) { }
         }
 
+        // Refresh event for children of the desktop
         public void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // Quite frankly I've forgotten how this bit works but it needs to be a StringBuilder and I just hope window titles aren't too long
@@ -146,40 +169,147 @@ namespace ActiveDesktop
             }
         }
 
+        // Refresh event for the saved apps list
         private void SavedList_Click(object sender, RoutedEventArgs e)
         {
             SavedListBox.Items.Clear();
             foreach (string[] i in CSVAl)
             {
-                SavedListBox.Items.Add(i[0]);
+                if (i[6] == "Friendly Name")
+                {
+                    SavedListBox.Items.Add(i[0]);
+
+                }
+                else
+                {
+                    SavedListBox.Items.Add(i[6]);
+                }
             }
         }
 
+        // Handles adding a new app to the saved apps list
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string[] values = { CmdBox.Text, XBox.Text, YBox.Text };
+            string[] values = { CmdBox.Text, XBox.Text, YBox.Text, WidthBox.Text, HeightBox.Text, FlagBox.Text, NameBox.Text, TimeBox.Text };
             CSVAl.Add(values);
             SavedList_Click(null, null);
             AddExpander.IsExpanded = false;
             AddExpander.IsHitTestVisible = false;
+
+            CmdBox.Text = "Command Line";
+            XBox.Text = "X";
+            YBox.Text = "Y";
+            WidthBox.Text = "Width";
+            HeightBox.Text = "Height";
+            FlagBox.Text = "Flags";
+            NameBox.Text = "Friendly Name";
+            TimeBox.Text = "Wait Time";
         }
 
-        private void BorderlessButton_Click(object sender, RoutedEventArgs e)
-        { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
-            if (HandleListBox.SelectedItem != null)
-            {
-                RemoveBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            }
-        }
-
-        private void AppList_Clicked(object sender, MouseButtonEventArgs e)
+        // Calls a refresh of the children of the desktop
+        private void AppList_Click(object sender, MouseButtonEventArgs e)
         {
             RefreshButton_Click(null, null);
         }
 
-        // ///////////////////////////////////////////////////////////// //
-        // All the weird non-GUIey bits are here don't question it shhhh //
-        // ///////////////////////////////////////////////////////////// //
+        // Button that toggles the expander because expanders suck
+        private void ExpanderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AddExpander.IsExpanded)
+            {
+                AddExpander.IsExpanded = false;
+                AddExpander.IsHitTestVisible = false;
+            }
+            else
+            {
+                AddExpander.IsExpanded = true;
+                AddExpander.IsHitTestVisible = true;
+            }
+        }
+
+        // Button that removes entries from the saved app list
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SavedListBox.SelectedIndex != -1)
+            {
+                CSVAl.RemoveAt(SavedListBox.SelectedIndex);
+                SavedList_Click(null, null);
+            }
+
+        }
+
+        // Button that writes changes to disk
+        private void WriteButton_Click(object sender, RoutedEventArgs e)
+        {
+            WriteCSV();
+        }
+
+        // Button that tests how an application behaves
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SavedListBox.SelectedIndex != -1)
+            {
+                int n = 0;
+                foreach (string[] i in CSVAl)
+                {
+                    int t = 1000;
+                    if (i[7] != "Wait Time")
+                    {
+                        try
+                        {
+                            t = Convert.ToInt32(i[7]);
+                        }
+                        catch (Exception) { }
+                    }
+
+                    if (i[5] == "Flags")
+                    {
+                        i[5] = string.Empty;
+                    }
+
+                    if (n == SavedListBox.SelectedIndex)
+                    {
+                        Process SavedProcess = Process.Start(i[0], i[5]);
+                        SavedProcess.Refresh();
+                        System.Threading.Thread.Sleep(t);
+
+                        try
+                        {
+                            SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                            if (i[1] == "X")
+                            {
+                                i[1] = "0";
+                            }
+                            if (i[2] == "Y")
+                            {
+                                i[2] = "0";
+                            }
+                            if (i[3] == "Width")
+                            {
+                                i[3] = GetWindowSize(MainWindowHandle).Width.ToString();
+                            }
+                            if (i[4] == "Height")
+                            {
+                                i[4] = GetWindowSize(MainWindowHandle).Height.ToString();
+                            }
+
+                            // TODO: Whytf does this not work? Am I dumb? I must be dumb. Same goes for the other one.
+                            MoveWindow(MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                        }
+                        catch (Exception) { }
+                    }
+                    ++n;
+                }
+            }
+
+        }
+
+        
+
+        // /////////////////////////////////////////////////////////////////////////////////////// //
+        // //////////// All the weird non-GUIey bits are here don't question it shhhh //////////// //
+        // /////////////////////////////////////////////////////////////////////////////////////// //
+
 
 
         // Bits and bobs for finding and adjusting windows
@@ -195,15 +325,67 @@ namespace ActiveDesktop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
         [DllImport("user32.dll")]
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+        [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out POINT lpPoint);
         [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr Handle, Rect WinRect);
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowLong(int hWnd, int nIndex);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int SetWindowLong(int hWnd, int nIndex, uint dwNewLong);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+        // Starts saved apps automatically
+        private void StartSavedApps()
+        {
+            foreach (string[] i in CSVAl)
+            {
+                int t = 1000;
+                if (i[7] != "Wait Time")
+                {
+                    try
+                    {
+                        t = Convert.ToInt32(i[7]);
+                    }
+                    catch (Exception) { }
+                }
+
+                if (i[5] == "Flags")
+                {
+                    i[5] = string.Empty;
+                }
+
+                Process SavedProcess = Process.Start(i[0], i[5]);
+                SavedProcess.Refresh();
+                System.Threading.Thread.Sleep(t);
+
+                try
+                {
+                    SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                    if (i[1] == "X")
+                    {
+                        i[1] = "0";
+                    }
+                    if (i[2] == "Y")
+                    {
+                        i[2] = "0";
+                    }
+                    if (i[3] == "Width")
+                    {
+                        i[3] = GetWindowSize(MainWindowHandle).Width.ToString();
+                    }
+                    if (i[4] == "Height")
+                    {
+                        i[4] = GetWindowSize(MainWindowHandle).Height.ToString();
+                    }
+                    MoveWindow(MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                }
+                catch (Exception) { }
+            }
+
+        }
 
         // Stuff for acquiring mouse position because Cursor.Position failed me
         [StructLayout(LayoutKind.Sequential)]
@@ -218,11 +400,36 @@ namespace ActiveDesktop
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        // Deals with getting a window's size
+        public static Size GetWindowSize(IntPtr hWnd)
+        {
+            RECT pRect;
+            Size cSize = new Size();
+            // get coordinates relative to window
+            GetWindowRect(hWnd, out pRect);
+
+            cSize.Width = pRect.Right - pRect.Left;
+            cSize.Height = pRect.Bottom - pRect.Top;
+
+            return cSize;
+        }
+
+        // Everything breaks if I remove this
         public IntPtr MainWindowHandle
         {
             get;
         }
 
+        // Have a guess what this does you fkn idiot
         public static Point GetCursorPosition()
         {
             POINT lpPoint;
@@ -230,8 +437,10 @@ namespace ActiveDesktop
             return lpPoint;
         }
 
+        // idk tbh
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
+        // Get the pare- no, child windows
         public static List<IntPtr> GetChildWindows(IntPtr parent)
         {
             List<IntPtr> AllActiveHandles = new List<IntPtr>();
@@ -249,6 +458,7 @@ namespace ActiveDesktop
             return AllActiveHandles;
         }
 
+        // Something to do with enumeration, not that I actually understand it
         private static bool EnumWindow(IntPtr handle, IntPtr pointer)
         {
             GCHandle gch = GCHandle.FromIntPtr(pointer);
@@ -261,6 +471,7 @@ namespace ActiveDesktop
             return true;
         }
 
+        // Actually removes the borders
         public void RemoveBorders(int TargetHandle)
         {
             uint nStyle = (uint)GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE);
@@ -275,6 +486,7 @@ namespace ActiveDesktop
             SetWindowPos(TargetHandle, 0, 0, 0, 0, 0, uFlags);
         }
 
+        // Actually adds the borders
         public void AddBorders(int SelectedHandle, uint nStyle, uint nStyleEx)
         {
             SetWindowLong(SelectedHandle, WeirdMagicalNumbers.GWL_STYLE, nStyle);
@@ -284,10 +496,10 @@ namespace ActiveDesktop
             uint uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
             SetWindowPos(SelectedHandle, 0, 0, 0, 0, 0, uFlags);
         }
-
+        
+        // Important magical numbers that make windows borderless
         static class WeirdMagicalNumbers
         {
-            // Important magical numbers that make windows borderless
             public const int GWL_STYLE = -16;
             public const int GWL_EXSTYLE = -20;
             public const uint SWP_NOSIZE = 0x01;
@@ -310,7 +522,6 @@ namespace ActiveDesktop
 
         }
 
-
         // Checks for AppData directory/CSV and creates it if it doesn't exist
         private void FileSystem()
         {
@@ -320,95 +531,54 @@ namespace ActiveDesktop
 
             Directory.CreateDirectory(LocalFolder);
 
-            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.csv")))
+
+            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.cti")))
             {
-                _ = File.Create(System.IO.Path.Combine(LocalFolder, "saved.csv"));
+                FileStream fs = File.Create(System.IO.Path.Combine(LocalFolder, "saved.cti")); // butts - Missy Quarry, 2020
+                fs.Dispose();
             }
         }
 
         // Writes stuff in the array to the CSV
         private void WriteCSV()
         {
-            File.Create(System.IO.Path.Combine(LocalFolder, "saved.csv")).Close();
-            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(LocalFolder, "saved.csv")))
+            File.Create(System.IO.Path.Combine(LocalFolder, "saved.cti")).Close();
+            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(LocalFolder, "saved.cti")))
             {
                 foreach (string[] i in CSVAl)
                 {
-                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2]);
+                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2] + "§" + i[3] + "§" + i[4] + "§" + i[5] + "§" + i[6] + "§" + i[7]);
                 }
             }
         }
-
 
         // Reads data from the CSV, stolen from my other project VRMID
         public ArrayList ReadCSV()
         {
-            int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Length;
+            int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.cti")).Length;
             ArrayList al = new ArrayList();
+            ArrayList ex = new ArrayList();
             int n = 0;
             string lineToBeProcessed;
             string[] values;
-            do
+            try
             {
-                lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.csv")).Skip(n).Take(1).First();
-                values = lineToBeProcessed.Split('§');
-                al.Add(values);
-                n++;
-            }
-            while (n <= lineCount - 1);
-            return al;
-        }
-
-        private void ExpanderButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (AddExpander.IsExpanded)
-            {
-                AddExpander.IsExpanded = false;
-                AddExpander.IsHitTestVisible = false;
-            }
-            else
-            {
-                AddExpander.IsExpanded = true;
-                AddExpander.IsHitTestVisible = true;
-            }
-        }
-
-        private void RemoveButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SavedListBox.SelectedIndex != -1)
-            {
-                CSVAl.RemoveAt(SavedListBox.SelectedIndex);
-                SavedList_Click(null, null);
-            }
-
-        }
-
-        private void WriteButton_Click(object sender, RoutedEventArgs e)
-        {
-            WriteCSV();
-        }
-
-        private void TestButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SavedListBox.SelectedIndex != -1)
-            {
-                int n = 0;
-                foreach (string[] i in CSVAl)
+                do
                 {
-                    if (n == SavedListBox.SelectedIndex)
+                    lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.cti")).Skip(n).Take(1).First();
+                    if (lineToBeProcessed != string.Empty)
                     {
-                        Process SavedProcess = Process.Start(i[0]);
-                        SavedProcess.Refresh();
-                        System.Threading.Thread.Sleep(1000);
-
-                        try
-                        {
-                            SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
-                        }
-                        catch (InvalidOperationException) { }
+                        values = lineToBeProcessed.Split('§');
+                        al.Add(values);
                     }
-                    ++n;
+                    n++;
                 }
+                while (n <= lineCount - 1);
+                return al;
+            }
+            catch (InvalidOperationException)
+            {
+                return ex;
             }
 
         }
