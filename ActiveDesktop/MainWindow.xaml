@@ -41,8 +41,9 @@
                     </ListBox>
                     <Button x:Name="RefreshButton" Content="Refresh" Margin="10,0,169,10" HorizontalContentAlignment="Center" Click="RefreshButton_Click" Height="40" VerticalAlignment="Bottom"/>
                     <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
-                    <Button x:Name="LockButton" Content="Lock All" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="LockButton_Click"/>
+                    <Button x:Name="LockButton" Content="Add Lock" Margin="169,0,10,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="LockButton_Click"/>
                     <Button x:Name="UnborderlessButton" Content="Unpin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
+                    <Button x:Name="CloseButton" Content="Close" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="CloseButton_Click"/>
 
                 </Grid>
             </TabItem>

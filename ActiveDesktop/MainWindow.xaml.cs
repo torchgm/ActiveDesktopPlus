@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -304,7 +305,37 @@ namespace ActiveDesktop
 
         }
 
-        
+        private void LockButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (HandleListBox.SelectedItem != null)
+            {
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                LockWindow GeneratedLockWindow = new LockWindow();
+                GeneratedLockWindow.Title = "LockWindow For " + WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][1];
+                GeneratedLockWindow.Show();
+                IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
+                //FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, GeneratedLockWindow.Title);
+                RECT WindowTargetLock;
+                GetWindowRect(hwnd, out WindowTargetLock);
+                GeneratedLockWindow.Top = WindowTargetLock.Top;
+                GeneratedLockWindow.Left = WindowTargetLock.Left;
+                GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
+                GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
+                Thread.Sleep(500);
+                SetParent(hlock, DesktopHandle);
+                RefreshButton_Click(null, null);
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            uint WM_CLOSE = 0x0010;
+            SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            RefreshButton_Click(null, null);
+        }
+
+
 
         // /////////////////////////////////////////////////////////////////////////////////////// //
         // //////////// All the weird non-GUIey bits are here don't question it shhhh //////////// //
@@ -588,65 +619,6 @@ namespace ActiveDesktop
 
         }
 
-
-        private void LockButton_Click(object sender, RoutedEventArgs e)
-        {
-            int LockCount = 0;
-            List<IntPtr> LockHandles = new List<IntPtr>();
-            uint WM_CLOSE = 0x0010;
-            IntPtr windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
-            if (windowPtr == IntPtr.Zero) // If no windows are locked
-            {
-                foreach (List<string> i in WindowList)
-                {
-
-                    LockWindow L = new LockWindow();
-                    L.Title = "LockWindow" + LockCount.ToString();
-                    LockCount++;
-                    IntPtr hwnd = new IntPtr(Convert.ToInt32(i[2]));
-                    RECT WindowTargetLock;
-                    GetWindowRect(hwnd, out WindowTargetLock);
-                    L.Show();
-                    L.Top = WindowTargetLock.Top;
-                    L.Left = WindowTargetLock.Left;
-                    L.Width = GetWindowSize(hwnd).Width;
-                    L.Height = GetWindowSize(hwnd).Height;
-                    LockHandles.Add(hwnd);
-                }
-                int GWL_EX_STYLE = -20;
-                int WS_EX_APPWINDOW = 0x00040000;
-                int WS_EX_TOOLWINDOW = 0x00000080;
-                while (LockCount != -1)
-                {
-                    SetWindowLong(FindWindowByCaption(IntPtr.Zero, "LockWindow" + LockCount.ToString()), GWL_EX_STYLE, (GetWindowLong(FindWindowByCaption(IntPtr.Zero, "LockWindow" + LockCount.ToString()), GWL_EX_STYLE) | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW);
-                    --LockCount;
-                }
-                
-                windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
-                if (windowPtr != IntPtr.Zero)
-                {
-                    LockButton.Content = "Unlock All";
-                }
-            }
-            else // If windows are already locked
-            {
-                int i = 0;
-                while (FindWindowByCaption(IntPtr.Zero, "LockWindow" + i.ToString()) != IntPtr.Zero || i > 1000)
-                {
-                    SendMessage(FindWindowByCaption(IntPtr.Zero, "LockWindow" + i.ToString()), WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                    RefreshButton_Click(null, null);
-                    ++i;
-                }
-                LockHandles.Clear();
-                windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
-                if (windowPtr == IntPtr.Zero)
-                {
-                    LockButton.Content = "Lock All";
-                }
-            }
-
-
-        }
 
     }
 }
