@@ -31,8 +31,8 @@ namespace ActiveDesktop
         ArrayList CSVAl = new ArrayList(); // ArrayList that holds data from CSV for on-the-fly reading and writing or something
         List<List<string>> WindowList; // Not entirely sure, probably something to do with the children of the desktop
         List<int> WindowHandles = new List<int>(); // List of handles
-        List<uint> WindowProperties = new List<uint>(); // List of window properties
-        List<uint> WindowPropertiesEx = new List<uint>(); // List of window properties but this time its ex
+        List<int> WindowProperties = new List<int>(); // List of window properties
+        List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
         
 
         // On-start events
@@ -65,7 +65,7 @@ namespace ActiveDesktop
         }
 
         // Stores window properties
-        public void StoreWindowProperties(int Handle, uint Properties, uint PropertiesEx)
+        public void StoreWindowProperties(int Handle, int Properties, int PropertiesEx)
         {
             bool appears = false;
             for (int i = 0; i < WindowHandles.Count; i++)
@@ -85,17 +85,17 @@ namespace ActiveDesktop
         }
 
         // Retrieves window properties
-        public uint RetrieveWindowProperties(int Handle, int Ex)
+        public int RetrieveWindowProperties(int Handle, int Ex)
         {
             for (int i = 0; i < WindowHandles.Count; i++)
             {
                 if (WindowHandles[i] == Handle && Ex == 1)
                 {
-                    return WindowPropertiesEx[i];
+                    return Convert.ToInt32(WindowPropertiesEx[i]);
                 }
                 else if (WindowHandles[i] == Handle)
                 {
-                    return WindowProperties[i];
+                    return Convert.ToInt32(WindowProperties[i]);
                 }
             }
             return 0;
@@ -161,7 +161,7 @@ namespace ActiveDesktop
                     WindowList[count].Add((1000 + count).ToString()); // ID - Nobody is ever going to have more than 1000 windows open, if they do this will break but hey idc
                     WindowList[count].Add(WindowTitle.ToString()); // Window Title
                     WindowList[count].Add(ChildHandle.ToString()); // Window Handle
-                    StoreWindowProperties(ChildHandle.ToInt32(), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_STYLE), (uint)GetWindowLong(ChildHandle.ToInt32(), WeirdMagicalNumbers.GWL_EXSTYLE));
+                    StoreWindowProperties(ChildHandle.ToInt32(), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_STYLE), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_EXSTYLE));
                     HandleListBox.Items.Add(WindowList[count][1] + " " + WindowList[count][0]);
                     count++;
 
@@ -328,14 +328,18 @@ namespace ActiveDesktop
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out POINT lpPoint);
+        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
+        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern int GetWindowLong(int hWnd, int nIndex);
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern int SetWindowLong(int hWnd, int nIndex, uint dwNewLong);
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+        public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
 
         // Starts saved apps automatically
         private void StartSavedApps()
@@ -419,7 +423,6 @@ namespace ActiveDesktop
 
             cSize.Width = pRect.Right - pRect.Left;
             cSize.Height = pRect.Bottom - pRect.Top;
-
             return cSize;
         }
 
@@ -472,29 +475,31 @@ namespace ActiveDesktop
         }
 
         // Actually removes the borders
-        public void RemoveBorders(int TargetHandle)
+        public void RemoveBorders(int TargetHandlePtr)
         {
-            uint nStyle = (uint)GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE);
+            IntPtr TargetHandle = new IntPtr(TargetHandlePtr);
+            int nStyle = GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE);
             nStyle = (nStyle | (WeirdMagicalNumbers.WS_THICKFRAME + WeirdMagicalNumbers.WS_DLGFRAME + WeirdMagicalNumbers.WS_BORDER)) ^ (WeirdMagicalNumbers.WS_THICKFRAME + WeirdMagicalNumbers.WS_DLGFRAME + WeirdMagicalNumbers.WS_BORDER);
             SetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_STYLE, nStyle);
 
-            nStyle = (uint)GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_EXSTYLE);
+            nStyle = GetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_EXSTYLE);
             nStyle = (nStyle | (WeirdMagicalNumbers.WS_EX_DLGMODALFRAME + WeirdMagicalNumbers.WS_EX_WINDOWEDGE + WeirdMagicalNumbers.WS_EX_CLIENTEDGE + WeirdMagicalNumbers.WS_EX_STATICEDGE)) ^ (WeirdMagicalNumbers.WS_EX_DLGMODALFRAME + WeirdMagicalNumbers.WS_EX_WINDOWEDGE + WeirdMagicalNumbers.WS_EX_CLIENTEDGE + WeirdMagicalNumbers.WS_EX_STATICEDGE);
             SetWindowLong(TargetHandle, WeirdMagicalNumbers.GWL_EXSTYLE, nStyle);
 
-            uint uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
-            SetWindowPos(TargetHandle, 0, 0, 0, 0, 0, uFlags);
+            int uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
+            SetWindowPos(TargetHandlePtr, 0, 0, 0, 0, 0, uFlags);
         }
 
         // Actually adds the borders
-        public void AddBorders(int SelectedHandle, uint nStyle, uint nStyleEx)
+        public void AddBorders(int SelectedHandlePtr, int nStyle, int nStyleEx)
         {
+            IntPtr SelectedHandle = new IntPtr(SelectedHandlePtr);
             SetWindowLong(SelectedHandle, WeirdMagicalNumbers.GWL_STYLE, nStyle);
 
             SetWindowLong(SelectedHandle, WeirdMagicalNumbers.GWL_EXSTYLE, nStyleEx);
 
-            uint uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
-            SetWindowPos(SelectedHandle, 0, 0, 0, 0, 0, uFlags);
+            int uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
+            SetWindowPos(SelectedHandlePtr, 0, 0, 0, 0, 0, uFlags);
         }
         
         // Important magical numbers that make windows borderless
@@ -502,20 +507,20 @@ namespace ActiveDesktop
         {
             public const int GWL_STYLE = -16;
             public const int GWL_EXSTYLE = -20;
-            public const uint SWP_NOSIZE = 0x01;
-            public const uint SWP_NOMOVE = 0x02;
-            public const uint SWP_NOZORDER = 0x04;
-            public const uint SWP_NOACTIVATE = 0x10;
-            public const uint SWP_NOOWNERZORDER = 0x200;
-            public const uint SWP_NOSENDCHANGING = 0x400;
-            public const uint SWP_FRAMECHANGED = 0x20;
-            public const uint WS_THICKFRAME = 0x40000;
-            public const uint WS_DLGFRAME = 0x400000;
-            public const uint WS_BORDER = 0x800000;
-            public const uint WS_EX_DLGMODALFRAME = 1;
-            public const uint WS_EX_WINDOWEDGE = 0x100;
-            public const uint WS_EX_CLIENTEDGE = 0200;
-            public const uint WS_EX_STATICEDGE = 0x20000;
+            public const int SWP_NOSIZE = 0x01;
+            public const int SWP_NOMOVE = 0x02;
+            public const int SWP_NOZORDER = 0x04;
+            public const int SWP_NOACTIVATE = 0x10;
+            public const int SWP_NOOWNERZORDER = 0x200;
+            public const int SWP_NOSENDCHANGING = 0x400;
+            public const int SWP_FRAMECHANGED = 0x20;
+            public const int WS_THICKFRAME = 0x40000;
+            public const int WS_DLGFRAME = 0x400000;
+            public const int WS_BORDER = 0x800000;
+            public const int WS_EX_DLGMODALFRAME = 1;
+            public const int WS_EX_WINDOWEDGE = 0x100;
+            public const int WS_EX_CLIENTEDGE = 0200;
+            public const int WS_EX_STATICEDGE = 0x20000;
             public const int SW_SHOWNOACTIVATE = 4;
             public const int SW_RESTORE = 9;
             public const int WM_EXITSIZEMOVE = 0x0232;
@@ -582,5 +587,66 @@ namespace ActiveDesktop
             }
 
         }
+
+
+        private void LockButton_Click(object sender, RoutedEventArgs e)
+        {
+            int LockCount = 0;
+            List<IntPtr> LockHandles = new List<IntPtr>();
+            uint WM_CLOSE = 0x0010;
+            IntPtr windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
+            if (windowPtr == IntPtr.Zero) // If no windows are locked
+            {
+                foreach (List<string> i in WindowList)
+                {
+
+                    LockWindow L = new LockWindow();
+                    L.Title = "LockWindow" + LockCount.ToString();
+                    LockCount++;
+                    IntPtr hwnd = new IntPtr(Convert.ToInt32(i[2]));
+                    RECT WindowTargetLock;
+                    GetWindowRect(hwnd, out WindowTargetLock);
+                    L.Show();
+                    L.Top = WindowTargetLock.Top;
+                    L.Left = WindowTargetLock.Left;
+                    L.Width = GetWindowSize(hwnd).Width;
+                    L.Height = GetWindowSize(hwnd).Height;
+                    LockHandles.Add(hwnd);
+                }
+                int GWL_EX_STYLE = -20;
+                int WS_EX_APPWINDOW = 0x00040000;
+                int WS_EX_TOOLWINDOW = 0x00000080;
+                while (LockCount != -1)
+                {
+                    SetWindowLong(FindWindowByCaption(IntPtr.Zero, "LockWindow" + LockCount.ToString()), GWL_EX_STYLE, (GetWindowLong(FindWindowByCaption(IntPtr.Zero, "LockWindow" + LockCount.ToString()), GWL_EX_STYLE) | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW);
+                    --LockCount;
+                }
+                
+                windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
+                if (windowPtr != IntPtr.Zero)
+                {
+                    LockButton.Content = "Unlock All";
+                }
+            }
+            else // If windows are already locked
+            {
+                int i = 0;
+                while (FindWindowByCaption(IntPtr.Zero, "LockWindow" + i.ToString()) != IntPtr.Zero || i > 1000)
+                {
+                    SendMessage(FindWindowByCaption(IntPtr.Zero, "LockWindow" + i.ToString()), WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                    RefreshButton_Click(null, null);
+                    ++i;
+                }
+                LockHandles.Clear();
+                windowPtr = FindWindowByCaption(IntPtr.Zero, "LockWindow0");
+                if (windowPtr == IntPtr.Zero)
+                {
+                    LockButton.Content = "Lock All";
+                }
+            }
+
+
+        }
+
     }
 }
