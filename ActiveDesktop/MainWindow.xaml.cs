@@ -305,6 +305,7 @@ namespace ActiveDesktop
 
         }
 
+        // Draws a locking window over any given app
         private void LockButton_Click(object sender, RoutedEventArgs e)
         {
             if (HandleListBox.SelectedItem != null)
@@ -323,15 +324,18 @@ namespace ActiveDesktop
                 GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
                 Thread.Sleep(500);
                 SetParent(hlock, DesktopHandle);
+                Thread.Sleep(250);
                 RefreshButton_Click(null, null);
             }
         }
 
+        // Attempts to close the selected app
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             uint WM_CLOSE = 0x0010;
             SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            Thread.Sleep(250);
             RefreshButton_Click(null, null);
         }
 
