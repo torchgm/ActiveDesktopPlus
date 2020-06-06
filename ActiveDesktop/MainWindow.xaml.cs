@@ -56,7 +56,7 @@ namespace ActiveDesktop
             SavedList_Click(null, null);
             FileSystem();
             CSVAl = ReadCSV();
-            if (CSVAl.Count != 0)
+            if (CSVAl.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
@@ -277,25 +277,26 @@ namespace ActiveDesktop
                         try
                         {
                             SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                            RECT PosTarget;
+                            GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
                             if (i[1] == "X")
                             {
-                                i[1] = "0";
+                                i[1] = PosTarget.Top.ToString();
                             }
                             if (i[2] == "Y")
                             {
-                                i[2] = "0";
+                                i[2] = PosTarget.Left.ToString();
                             }
                             if (i[3] == "Width")
                             {
-                                i[3] = GetWindowSize(MainWindowHandle).Width.ToString();
+                                i[3] = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
                             }
                             if (i[4] == "Height")
                             {
-                                i[4] = GetWindowSize(MainWindowHandle).Height.ToString();
+                                i[4] = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
                             }
 
-                            // TODO: Whytf does this not work? Am I dumb? I must be dumb. Same goes for the other one.
-                            MoveWindow(MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                            MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
                         }
                         catch (Exception) { }
                     }
@@ -315,7 +316,6 @@ namespace ActiveDesktop
                 GeneratedLockWindow.Title = "LockWindow For " + WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][1];
                 GeneratedLockWindow.Show();
                 IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
-                //FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, GeneratedLockWindow.Title);
                 RECT WindowTargetLock;
                 GetWindowRect(hwnd, out WindowTargetLock);
                 GeneratedLockWindow.Top = WindowTargetLock.Top;
@@ -375,6 +375,12 @@ namespace ActiveDesktop
         static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
+        [DllImport("kernel32.dll")]
+        public static extern uint QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, StringBuilder lpExeName, uint nSize);
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheretHandle, uint dwProcessId);
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
         // Starts saved apps automatically
         private void StartSavedApps()
@@ -398,28 +404,30 @@ namespace ActiveDesktop
 
                 Process SavedProcess = Process.Start(i[0], i[5]);
                 SavedProcess.Refresh();
-                System.Threading.Thread.Sleep(t);
+                Thread.Sleep(t);
 
                 try
                 {
                     SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                    RECT PosTarget;
+                    GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
                     if (i[1] == "X")
                     {
-                        i[1] = "0";
+                        i[1] = PosTarget.Top.ToString();
                     }
                     if (i[2] == "Y")
                     {
-                        i[2] = "0";
+                        i[2] = PosTarget.Left.ToString();
                     }
                     if (i[3] == "Width")
                     {
-                        i[3] = GetWindowSize(MainWindowHandle).Width.ToString();
+                        i[3] = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
                     }
                     if (i[4] == "Height")
                     {
-                        i[4] = GetWindowSize(MainWindowHandle).Height.ToString();
+                        i[4] = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
                     }
-                    MoveWindow(MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                    MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
                 }
                 catch (Exception) { }
             }
@@ -623,6 +631,26 @@ namespace ActiveDesktop
 
         }
 
-
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            RECT PosTarget;
+            uint PID;
+            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            StringBuilder WindowTitle = new StringBuilder(1000);
+            StringBuilder FileName = new StringBuilder(1000);
+            GetWindowThreadProcessId(hwnd, out PID);
+            IntPtr handle = OpenProcess(0x1000, false, PID);
+            QueryFullProcessImageNameW(handle, 0, FileName, 1000);
+            
+            
+            GetWindowRect(hwnd, out PosTarget);
+            GetWindowText(hwnd, WindowTitle, 1000);
+            CmdBox.Text = FileName.ToString(0, 1000);
+            XBox.Text = PosTarget.Top.ToString();
+            YBox.Text = PosTarget.Left.ToString();
+            WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
+            HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
+            NameBox.Text = WindowTitle.ToString();
+        }
     }
 }
