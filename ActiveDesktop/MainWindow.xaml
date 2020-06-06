@@ -69,10 +69,9 @@
                             <TextBox x:Name="YBox" Margin="116,35,10,95" Text="Y"/>
                             <TextBox x:Name="WidthBox" Margin="10,62,116,66" Text="Width"/>
                             <TextBox x:Name="HeightBox" Margin="115,62,11,66" Text="Height"/>
-                            <Button x:Name="AddButton" Content="Add" Margin="10,117,10,11" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
                             <TextBox x:Name="NameBox" Margin="10,91,116,37" Text="Friendly Name"/>
                             <TextBox x:Name="TimeBox" Margin="115,91,11,37" Text="Wait Time"/>
-
+                            <Button x:Name="AddButton" Content="Add" Margin="10,117,10,11" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
                         </Grid>
                     </Expander>
                     <Button x:Name="ExpanderButton" Content="Add new..." HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Width="90" Height="22" Click="ExpanderButton_Click"/>

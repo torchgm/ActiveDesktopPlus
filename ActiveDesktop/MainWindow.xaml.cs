@@ -640,17 +640,19 @@ namespace ActiveDesktop
             StringBuilder FileName = new StringBuilder(1000);
             GetWindowThreadProcessId(hwnd, out PID);
             IntPtr handle = OpenProcess(0x1000, false, PID);
-            QueryFullProcessImageNameW(handle, 0, FileName, 1000);
+            // QueryFullProcessImageNameW(handle, 0, FileName, 1000);
             
             
             GetWindowRect(hwnd, out PosTarget);
             GetWindowText(hwnd, WindowTitle, 1000);
-            CmdBox.Text = FileName.ToString(0, 1000);
+            // CmdBox.Text = FileName.ToString(0, 1000);
             XBox.Text = PosTarget.Top.ToString();
             YBox.Text = PosTarget.Left.ToString();
             WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
             HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
             NameBox.Text = WindowTitle.ToString();
+            tabControl.SelectedIndex = 2;
+            AddExpander.IsExpanded = true;
         }
     }
 }
