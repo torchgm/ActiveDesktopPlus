@@ -338,7 +338,40 @@ namespace ActiveDesktop
             }
         }
 
+        // Allows the user to easily save the selected window
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            RECT PosTarget;
+            uint PID;
+            string SyllyIsAwesome;
+            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            StringBuilder WindowTitle = new StringBuilder(1000);
+            StringBuilder FileName = new StringBuilder(1000);
+            uint size = (uint)FileName.Capacity;
+            GetWindowThreadProcessId(hwnd, out PID);
+            IntPtr handle = OpenProcess(0x1000, false, PID);
+            if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
+            {
+                SyllyIsAwesome = FileName.ToString(0, (int)size);
+            }
+            else
+            {
+                SyllyIsAwesome = string.Empty;
+            }
+            CloseHandle(handle);
 
+            GetWindowRect(hwnd, out PosTarget);
+            GetWindowText(hwnd, WindowTitle, 1000);
+            CmdBox.Text = SyllyIsAwesome;
+            XBox.Text = PosTarget.Top.ToString();
+            YBox.Text = PosTarget.Left.ToString();
+            WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
+            HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
+            NameBox.Text = WindowTitle.ToString();
+            tabControl.SelectedIndex = 2;
+            AddExpander.IsExpanded = true;
+            AddExpander.IsHitTestVisible = true;
+        }
 
         // Attempts to close the selected app
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -669,39 +702,6 @@ namespace ActiveDesktop
             RefreshButton_Click(null, null);
         }
 
-        // Allows the user to easily save the selected window
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            RECT PosTarget;
-            uint PID;
-            string SyllyIsAwesome;
-            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            StringBuilder WindowTitle = new StringBuilder(1000);
-            StringBuilder FileName = new StringBuilder(1000);
-            uint size = (uint)FileName.Capacity;
-            GetWindowThreadProcessId(hwnd, out PID);
-            IntPtr handle = OpenProcess(0x1000, false, PID);
-            if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
-            {
-                SyllyIsAwesome = FileName.ToString(0, (int)size);
-            }
-            else
-            {
-                SyllyIsAwesome = string.Empty;
-            }
-            CloseHandle(handle);
 
-            GetWindowRect(hwnd, out PosTarget);
-            GetWindowText(hwnd, WindowTitle, 1000);
-            CmdBox.Text = SyllyIsAwesome;
-            XBox.Text = PosTarget.Top.ToString();
-            YBox.Text = PosTarget.Left.ToString();
-            WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
-            HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
-            NameBox.Text = WindowTitle.ToString();
-            tabControl.SelectedIndex = 2;
-            AddExpander.IsExpanded = true;
-            AddExpander.IsHitTestVisible = true;
-        }
     }
 }
