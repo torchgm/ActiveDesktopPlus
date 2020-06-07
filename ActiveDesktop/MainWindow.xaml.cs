@@ -191,7 +191,7 @@ namespace ActiveDesktop
         // Handles adding a new app to the saved apps list
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string[] values = { CmdBox.Text, XBox.Text, YBox.Text, WidthBox.Text, HeightBox.Text, FlagBox.Text, NameBox.Text, TimeBox.Text };
+            string[] values = { CmdBox.Text, XBox.Text, YBox.Text, WidthBox.Text, HeightBox.Text, FlagBox.Text, NameBox.Text, TimeBox.Text, "lock:false"};
             CSVAl.Add(values);
             SavedList_Click(null, null);
             AddExpander.IsExpanded = false;
@@ -272,7 +272,7 @@ namespace ActiveDesktop
                     {
                         Process SavedProcess = Process.Start(i[0], i[5]);
                         SavedProcess.Refresh();
-                        System.Threading.Thread.Sleep(t);
+                        Thread.Sleep(t);
 
                         try
                         {
@@ -297,9 +297,15 @@ namespace ActiveDesktop
                             }
 
                             MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                            if (i[8] == "lock:true")
+                            {
+                                LockApp(SavedProcess.MainWindowHandle);
+                            }
                         }
                         catch (Exception) { }
                     }
+
+
                     ++n;
                 }
             }
@@ -311,23 +317,28 @@ namespace ActiveDesktop
         {
             if (HandleListBox.SelectedItem != null)
             {
+                // TODO: Make this use LockApp();
+                
                 IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-                LockWindow GeneratedLockWindow = new LockWindow();
-                GeneratedLockWindow.Title = "LockWindow For " + WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][1];
-                GeneratedLockWindow.Show();
-                IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
-                RECT WindowTargetLock;
-                GetWindowRect(hwnd, out WindowTargetLock);
-                GeneratedLockWindow.Top = WindowTargetLock.Top;
-                GeneratedLockWindow.Left = WindowTargetLock.Left;
-                GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
-                GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
-                Thread.Sleep(500);
-                SetParent(hlock, DesktopHandle);
-                Thread.Sleep(250);
-                RefreshButton_Click(null, null);
+                //LockWindow GeneratedLockWindow = new LockWindow();
+                //GeneratedLockWindow.Title = "LockWindow For " + WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][1];
+                //GeneratedLockWindow.Show();
+                //IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
+                //RECT WindowTargetLock;
+                //GetWindowRect(hwnd, out WindowTargetLock);
+                //GeneratedLockWindow.Top = WindowTargetLock.Top;
+                //GeneratedLockWindow.Left = WindowTargetLock.Left;
+                //GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
+                //GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
+                //Thread.Sleep(500);
+                //SetParent(hlock, DesktopHandle);
+                //Thread.Sleep(250);
+                //RefreshButton_Click(null, null);
+                LockApp(hwnd);
             }
         }
+
+
 
         // Attempts to close the selected app
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -375,12 +386,14 @@ namespace ActiveDesktop
         static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
-        [DllImport("kernel32.dll")]
-        public static extern uint QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, StringBuilder lpExeName, uint nSize);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern uint QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, StringBuilder lpExeName, ref uint nSize);
         [DllImport("kernel32.dll")]
         public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheretHandle, uint dwProcessId);
         [DllImport("user32.dll")]
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [DllImport("kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr hObject);
 
         // Starts saved apps automatically
         private void StartSavedApps()
@@ -428,6 +441,10 @@ namespace ActiveDesktop
                         i[4] = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
                     }
                     MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
+                    if (i[8] == "lock:true")
+                    {
+                        LockApp(SavedProcess.MainWindowHandle);
+                    }
                 }
                 catch (Exception) { }
             }
@@ -595,7 +612,7 @@ namespace ActiveDesktop
             {
                 foreach (string[] i in CSVAl)
                 {
-                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2] + "§" + i[3] + "§" + i[4] + "§" + i[5] + "§" + i[6] + "§" + i[7]);
+                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2] + "§" + i[3] + "§" + i[4] + "§" + i[5] + "§" + i[6] + "§" + i[7] + "§" + i[8]);
                 }
             }
         }
@@ -631,21 +648,52 @@ namespace ActiveDesktop
 
         }
 
+        // Locks an app for real this time
+        private void LockApp(IntPtr hwnd)
+        {
+            StringBuilder WindowTitle = new StringBuilder(1000);
+            LockWindow GeneratedLockWindow = new LockWindow();
+            GetWindowText(hwnd, WindowTitle, 1000);
+            GeneratedLockWindow.Title = "LockWindow For " + WindowTitle;
+            GeneratedLockWindow.Show();
+            IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
+            RECT WindowTargetLock;
+            GetWindowRect(hwnd, out WindowTargetLock);
+            GeneratedLockWindow.Top = WindowTargetLock.Top;
+            GeneratedLockWindow.Left = WindowTargetLock.Left;
+            GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
+            GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
+            Thread.Sleep(500);
+            SetParent(hlock, DesktopHandle);
+            Thread.Sleep(250);
+            RefreshButton_Click(null, null);
+        }
+
+        // Allows the user to easily save the selected window
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             RECT PosTarget;
             uint PID;
+            string SyllyIsAwesome;
             IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             StringBuilder WindowTitle = new StringBuilder(1000);
             StringBuilder FileName = new StringBuilder(1000);
+            uint size = (uint)FileName.Capacity;
             GetWindowThreadProcessId(hwnd, out PID);
             IntPtr handle = OpenProcess(0x1000, false, PID);
-            // QueryFullProcessImageNameW(handle, 0, FileName, 1000);
-            
-            
+            if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
+            {
+                SyllyIsAwesome = FileName.ToString(0, (int)size);
+            }
+            else
+            {
+                SyllyIsAwesome = string.Empty;
+            }
+            CloseHandle(handle);
+
             GetWindowRect(hwnd, out PosTarget);
             GetWindowText(hwnd, WindowTitle, 1000);
-            // CmdBox.Text = FileName.ToString(0, 1000);
+            CmdBox.Text = SyllyIsAwesome;
             XBox.Text = PosTarget.Top.ToString();
             YBox.Text = PosTarget.Left.ToString();
             WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
@@ -653,6 +701,7 @@ namespace ActiveDesktop
             NameBox.Text = WindowTitle.ToString();
             tabControl.SelectedIndex = 2;
             AddExpander.IsExpanded = true;
+            AddExpander.IsHitTestVisible = true;
         }
     }
 }
