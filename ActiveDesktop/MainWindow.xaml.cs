@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace ActiveDesktop
 {
@@ -29,7 +30,7 @@ namespace ActiveDesktop
         IntPtr DesktopHandle; // The handle of the desktop
         IntPtr TargetHandle; // The handle of the targeted app
         string LocalFolder; // %AppData%/ActiveDesktopPlus
-        ArrayList CSVAl = new ArrayList(); // ArrayList that holds data from CSV for on-the-fly reading and writing or something
+        List<App> JSONArrayList = new List<App>(); // ArrayList that holds data from JSON for on-the-fly reading and writing or something
         List<List<string>> WindowList; // Not entirely sure, probably something to do with the children of the desktop
         List<int> WindowHandles = new List<int>(); // List of handles
         List<int> WindowProperties = new List<int>(); // List of window properties
@@ -55,8 +56,8 @@ namespace ActiveDesktop
             RefreshButton_Click(null, null);
             SavedList_Click(null, null);
             FileSystem();
-            CSVAl = ReadCSV();
-            if (CSVAl.Count != 0 && WindowHandles.Count() == 0)
+            JSONArrayList = ReadJSON();
+            if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
@@ -174,16 +175,16 @@ namespace ActiveDesktop
         private void SavedList_Click(object sender, RoutedEventArgs e)
         {
             SavedListBox.Items.Clear();
-            foreach (string[] i in CSVAl)
+            foreach (App i in JSONArrayList)
             {
-                if (i[6] == "Friendly Name")
+                if (i.Name == "Friendly Name")
                 {
-                    SavedListBox.Items.Add(i[0]);
+                    SavedListBox.Items.Add(i.Cmd);
 
                 }
                 else
                 {
-                    SavedListBox.Items.Add(i[6]);
+                    SavedListBox.Items.Add(i.Name);
                 }
             }
         }
@@ -191,8 +192,20 @@ namespace ActiveDesktop
         // Handles adding a new app to the saved apps list
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string[] values = { CmdBox.Text, XBox.Text, YBox.Text, WidthBox.Text, HeightBox.Text, FlagBox.Text, NameBox.Text, TimeBox.Text, "lock:false"};
-            CSVAl.Add(values);
+            App AppToAdd = new App();
+            AppToAdd.Cmd = CmdBox.Text;
+            AppToAdd.Xpos = XBox.Text;
+            AppToAdd.Ypos = YBox.Text;
+            AppToAdd.Width = WidthBox.Text;
+            AppToAdd.Height = HeightBox.Text;
+            AppToAdd.Flags = FlagBox.Text;
+            AppToAdd.Name = NameBox.Text;
+            AppToAdd.Time = TimeBox.Text;
+            AppToAdd.Lock = false;
+            AppToAdd.Startup = false;
+            JSONArrayList.Add(AppToAdd);
+
+
             SavedList_Click(null, null);
             AddExpander.IsExpanded = false;
             AddExpander.IsHitTestVisible = false;
@@ -233,7 +246,7 @@ namespace ActiveDesktop
         {
             if (SavedListBox.SelectedIndex != -1)
             {
-                CSVAl.RemoveAt(SavedListBox.SelectedIndex);
+                JSONArrayList.RemoveAt(SavedListBox.SelectedIndex);
                 SavedList_Click(null, null);
             }
 
@@ -242,35 +255,35 @@ namespace ActiveDesktop
         // Button that writes changes to disk
         private void WriteButton_Click(object sender, RoutedEventArgs e)
         {
-            WriteCSV();
+            WriteJSON();
         }
 
-        // Button that tests how an application behaves
+        // Button that tests how an application behaves on startup
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
             if (SavedListBox.SelectedIndex != -1)
             {
                 int n = 0;
-                foreach (string[] i in CSVAl)
+                foreach (App i in JSONArrayList)
                 {
                     int t = 1000;
-                    if (i[7] != "Wait Time")
+                    if (i.Time != "Wait Time")
                     {
                         try
                         {
-                            t = Convert.ToInt32(i[7]);
+                            t = Convert.ToInt32(i.Time);
                         }
                         catch (Exception) { }
                     }
 
-                    if (i[5] == "Flags")
+                    if (i.Flags == "Flags")
                     {
-                        i[5] = string.Empty;
+                        i.Flags = string.Empty;
                     }
 
                     if (n == SavedListBox.SelectedIndex)
                     {
-                        Process SavedProcess = Process.Start(i[0], i[5]);
+                        Process SavedProcess = Process.Start(i.Cmd, i.Flags);
                         SavedProcess.Refresh();
                         Thread.Sleep(t);
 
@@ -279,25 +292,25 @@ namespace ActiveDesktop
                             SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
                             RECT PosTarget;
                             GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
-                            if (i[1] == "X")
+                            if (i.Xpos == "X")
                             {
-                                i[1] = PosTarget.Top.ToString();
+                                i.Xpos = PosTarget.Top.ToString();
                             }
-                            if (i[2] == "Y")
+                            if (i.Ypos == "Y")
                             {
-                                i[2] = PosTarget.Left.ToString();
+                                i.Ypos = PosTarget.Left.ToString();
                             }
-                            if (i[3] == "Width")
+                            if (i.Width == "Width")
                             {
-                                i[3] = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
+                                i.Width = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
                             }
-                            if (i[4] == "Height")
+                            if (i.Height == "Height")
                             {
-                                i[4] = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
+                                i.Height = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
                             }
 
-                            MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
-                            if (i[8] == "lock:true")
+                            MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                            if (i.Lock)
                             {
                                 LockApp(SavedProcess.MainWindowHandle);
                             }
@@ -417,55 +430,59 @@ namespace ActiveDesktop
         // Starts saved apps automatically
         private void StartSavedApps()
         {
-            foreach (string[] i in CSVAl)
+            foreach (App i in JSONArrayList)
             {
-                int t = 1000;
-                if (i[7] != "Wait Time")
+                if (i.Startup)
                 {
+                    int t = 1000;
+                    if (i.Time != "Wait Time")
+                    {
+                        try
+                        {
+                            t = Convert.ToInt32(i.Time);
+                        }
+                        catch (Exception) { }
+                    }
+
+                    if (i.Flags == "Flags")
+                    {
+                        i.Flags = string.Empty;
+                    }
+
+                    Process SavedProcess = Process.Start(i.Cmd, i.Flags);
+                    SavedProcess.Refresh();
+                    Thread.Sleep(t);
+
                     try
                     {
-                        t = Convert.ToInt32(i[7]);
+                        SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
+                        RECT PosTarget;
+                        GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
+                        if (i.Xpos == "X")
+                        {
+                            i.Xpos = PosTarget.Top.ToString();
+                        }
+                        if (i.Ypos == "Y")
+                        {
+                            i.Ypos = PosTarget.Left.ToString();
+                        }
+                        if (i.Width == "Width")
+                        {
+                            i.Width = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
+                        }
+                        if (i.Height == "Height")
+                        {
+                            i.Height = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
+                        }
+                        MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                        if (i.Lock)
+                        {
+                            LockApp(SavedProcess.MainWindowHandle);
+                        }
                     }
                     catch (Exception) { }
                 }
-
-                if (i[5] == "Flags")
-                {
-                    i[5] = string.Empty;
-                }
-
-                Process SavedProcess = Process.Start(i[0], i[5]);
-                SavedProcess.Refresh();
-                Thread.Sleep(t);
-
-                try
-                {
-                    SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
-                    RECT PosTarget;
-                    GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
-                    if (i[1] == "X")
-                    {
-                        i[1] = PosTarget.Top.ToString();
-                    }
-                    if (i[2] == "Y")
-                    {
-                        i[2] = PosTarget.Left.ToString();
-                    }
-                    if (i[3] == "Width")
-                    {
-                        i[3] = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
-                    }
-                    if (i[4] == "Height")
-                    {
-                        i[4] = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
-                    }
-                    MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i[1]), Convert.ToInt32(i[2]), Convert.ToInt32(i[3]), Convert.ToInt32(i[4]), true);
-                    if (i[8] == "lock:true")
-                    {
-                        LockApp(SavedProcess.MainWindowHandle);
-                    }
-                }
-                catch (Exception) { }
+                
             }
 
         }
@@ -481,6 +498,20 @@ namespace ActiveDesktop
             {
                 return new Point(point.X, point.Y);
             }
+        }
+
+        public class App
+        {
+            public string Cmd { get; set; }
+            public string Xpos { get; set; }
+            public string Ypos { get; set; }
+            public string Width { get; set; }
+            public string Height { get; set; }
+            public string Flags { get; set; }
+            public string Name { get; set; }
+            public string Time { get; set; }
+            public bool Lock { get; set; }
+            public bool Startup { get; set; }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -616,55 +647,25 @@ namespace ActiveDesktop
             Directory.CreateDirectory(LocalFolder);
 
 
-            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.cti")))
+            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.json")))
             {
-                FileStream fs = File.Create(System.IO.Path.Combine(LocalFolder, "saved.cti")); // butts - Missy Quarry, 2020
+                FileStream fs = File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")); // butts - Missy Quarry, 2020
                 fs.Dispose();
             }
         }
 
         // Writes stuff in the array to the CSV
-        private void WriteCSV()
+        private void WriteJSON()
         {
-            File.Create(System.IO.Path.Combine(LocalFolder, "saved.cti")).Close();
-            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(LocalFolder, "saved.cti")))
-            {
-                foreach (string[] i in CSVAl)
-                {
-                    outputFile.WriteLine(i[0] + "§" + i[1] + "§" + i[2] + "§" + i[3] + "§" + i[4] + "§" + i[5] + "§" + i[6] + "§" + i[7] + "§" + i[8]);
-                }
-            }
+            File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")).Close();
+            File.WriteAllText(System.IO.Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
         }
 
-        // Reads data from the CSV, stolen from my other project VRMID
-        public ArrayList ReadCSV()
+        public List<App> ReadJSON()
         {
-            int lineCount = File.ReadAllLines(System.IO.Path.Combine(LocalFolder, "saved.cti")).Length;
-            ArrayList al = new ArrayList();
-            ArrayList ex = new ArrayList();
-            int n = 0;
-            string lineToBeProcessed;
-            string[] values;
-            try
-            {
-                do
-                {
-                    lineToBeProcessed = File.ReadLines(System.IO.Path.Combine(LocalFolder, "saved.cti")).Skip(n).Take(1).First();
-                    if (lineToBeProcessed != string.Empty)
-                    {
-                        values = lineToBeProcessed.Split('§');
-                        al.Add(values);
-                    }
-                    n++;
-                }
-                while (n <= lineCount - 1);
-                return al;
-            }
-            catch (InvalidOperationException)
-            {
-                return ex;
-            }
-
+            string JsonAppList = File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.json"));
+            List<App> al = JsonConvert.DeserializeObject<List<App>>(JsonAppList);
+            return al;
         }
 
         // Locks an app for real this time
@@ -687,7 +688,5 @@ namespace ActiveDesktop
             Thread.Sleep(250);
             RefreshButton_Click(null, null);
         }
-
-
     }
 }
