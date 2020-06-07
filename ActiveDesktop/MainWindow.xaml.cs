@@ -320,20 +320,6 @@ namespace ActiveDesktop
                 // TODO: Make this use LockApp();
                 
                 IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-                //LockWindow GeneratedLockWindow = new LockWindow();
-                //GeneratedLockWindow.Title = "LockWindow For " + WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][1];
-                //GeneratedLockWindow.Show();
-                //IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
-                //RECT WindowTargetLock;
-                //GetWindowRect(hwnd, out WindowTargetLock);
-                //GeneratedLockWindow.Top = WindowTargetLock.Top;
-                //GeneratedLockWindow.Left = WindowTargetLock.Left;
-                //GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
-                //GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
-                //Thread.Sleep(500);
-                //SetParent(hlock, DesktopHandle);
-                //Thread.Sleep(250);
-                //RefreshButton_Click(null, null);
                 LockApp(hwnd);
             }
         }
