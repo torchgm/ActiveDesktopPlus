@@ -1,26 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Diagnostics;
-using System.Collections;
+﻿using IWshRuntimeLibrary;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
-using System.Drawing;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using IWshRuntimeLibrary;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Newtonsoft.Json;
 
 namespace ActiveDesktop
 {
