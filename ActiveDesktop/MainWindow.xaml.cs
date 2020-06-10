@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using IWshRuntimeLibrary;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Newtonsoft.Json;
@@ -35,7 +36,7 @@ namespace ActiveDesktop
         List<int> WindowHandles = new List<int>(); // List of handles
         List<int> WindowProperties = new List<int>(); // List of window properties
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
-        
+
 
         // On-start events
         public MainWindow()
@@ -53,17 +54,18 @@ namespace ActiveDesktop
             HwndInputTextBox.Text = DesktopHandle.ToString();
 
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
-            RefreshButton_Click(null, null);
-            SavedList_Click(null, null);
             FileSystem();
             JSONArrayList = ReadJSON();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
-            AddExpander.IsExpanded = false;
-            AddExpander.IsHitTestVisible = false;
+            RefreshLists();
 
+            if (!System.IO.File.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
+            {
+                StartupCheckBox.IsChecked = false;
+            }
         }
 
         // Stores window properties
@@ -112,6 +114,9 @@ namespace ActiveDesktop
             {
                 TargetHandle = WindowFromPoint(Convert.ToInt32(GetCursorPosition().X), Convert.ToInt32(GetCursorPosition().Y));
                 HwndInputTextBox.Text = TargetHandle.ToString();
+                StringBuilder WindowTitle = new StringBuilder(1000);
+                int result = GetWindowText(TargetHandle, WindowTitle, 1000);
+                TitleTextBox.Text = WindowTitle.ToString();
             }
         }
 
@@ -120,7 +125,7 @@ namespace ActiveDesktop
         {
             // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
             SetParent(TargetHandle, DesktopHandle);
-
+            RefreshLists();
         }
 
         // Makes the selected window borderless
@@ -130,21 +135,26 @@ namespace ActiveDesktop
             {
                 RemoveBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             }
+            RefreshLists();
         }
-        
+
         // Makes the selected window bordered
         private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
         {
             // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
-            try
+            if (HandleListBox.SelectedItem != null)
             {
-                AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+                try
+                {
+                    AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+                }
+                catch (Exception) { }
             }
-            catch (Exception) { }
+            RefreshLists();
         }
 
         // Refresh event for children of the desktop
-        public void RefreshButton_Click(object sender, RoutedEventArgs e)
+        public void RefreshLists()
         {
             // Quite frankly I've forgotten how this bit works but it needs to be a StringBuilder and I just hope window titles aren't too long
             StringBuilder WindowTitle = new StringBuilder(1000);
@@ -169,10 +179,11 @@ namespace ActiveDesktop
 
                 }
             }
+            SavedListRefreshEvent();
         }
 
         // Refresh event for the saved apps list
-        private void SavedList_Click(object sender, RoutedEventArgs e)
+        private void SavedListRefreshEvent()
         {
             SavedListBox.Items.Clear();
             foreach (App i in JSONArrayList)
@@ -192,53 +203,40 @@ namespace ActiveDesktop
         // Handles adding a new app to the saved apps list
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            App AppToAdd = new App();
-            AppToAdd.Cmd = CmdBox.Text;
-            AppToAdd.Xpos = XBox.Text;
-            AppToAdd.Ypos = YBox.Text;
-            AppToAdd.Width = WidthBox.Text;
-            AppToAdd.Height = HeightBox.Text;
-            AppToAdd.Flags = FlagBox.Text;
-            AppToAdd.Name = NameBox.Text;
-            AppToAdd.Time = TimeBox.Text;
-            AppToAdd.Lock = false;
-            AppToAdd.Startup = false;
-            JSONArrayList.Add(AppToAdd);
+            if (CmdBox.Text != "Command Line")
+            {
+                App AppToAdd = new App();
+                AppToAdd.Cmd = CmdBox.Text;
+                AppToAdd.Xpos = XBox.Text;
+                AppToAdd.Ypos = YBox.Text;
+                AppToAdd.Width = WidthBox.Text;
+                AppToAdd.Height = HeightBox.Text;
+                AppToAdd.Flags = FlagBox.Text;
+                AppToAdd.Name = NameBox.Text;
+                AppToAdd.Time = TimeBox.Text;
+                AppToAdd.Lock = LockedCheckBox.IsChecked ?? false;
+                AppToAdd.Startup = AutostartCheckBox.IsChecked ?? false;
+                JSONArrayList.Add(AppToAdd);
 
 
-            SavedList_Click(null, null);
-            AddExpander.IsExpanded = false;
-            AddExpander.IsHitTestVisible = false;
 
-            CmdBox.Text = "Command Line";
-            XBox.Text = "X";
-            YBox.Text = "Y";
-            WidthBox.Text = "Width";
-            HeightBox.Text = "Height";
-            FlagBox.Text = "Flags";
-            NameBox.Text = "Friendly Name";
-            TimeBox.Text = "Wait Time";
+                CmdBox.Text = "Command Line";
+                XBox.Text = "X";
+                YBox.Text = "Y";
+                WidthBox.Text = "Width";
+                HeightBox.Text = "Height";
+                FlagBox.Text = "Flags";
+                NameBox.Text = "Friendly Name";
+                TimeBox.Text = "Wait Time";
+                WriteButton.IsEnabled = true;
+            }
+            SavedListRefreshEvent();
         }
 
         // Calls a refresh of the children of the desktop
         private void AppList_Click(object sender, MouseButtonEventArgs e)
         {
-            RefreshButton_Click(null, null);
-        }
-
-        // Button that toggles the expander because expanders suck
-        private void ExpanderButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (AddExpander.IsExpanded)
-            {
-                AddExpander.IsExpanded = false;
-                AddExpander.IsHitTestVisible = false;
-            }
-            else
-            {
-                AddExpander.IsExpanded = true;
-                AddExpander.IsHitTestVisible = true;
-            }
+            RefreshLists();
         }
 
         // Button that removes entries from the saved app list
@@ -247,7 +245,8 @@ namespace ActiveDesktop
             if (SavedListBox.SelectedIndex != -1)
             {
                 JSONArrayList.RemoveAt(SavedListBox.SelectedIndex);
-                SavedList_Click(null, null);
+                SavedListRefreshEvent();
+                WriteButton.IsEnabled = true;
             }
 
         }
@@ -256,6 +255,7 @@ namespace ActiveDesktop
         private void WriteButton_Click(object sender, RoutedEventArgs e)
         {
             WriteJSON();
+            WriteButton.IsEnabled = false;
         }
 
         // Button that tests how an application behaves on startup
@@ -283,46 +283,14 @@ namespace ActiveDesktop
 
                     if (n == SavedListBox.SelectedIndex)
                     {
-                        Process SavedProcess = Process.Start(i.Cmd, i.Flags);
-                        SavedProcess.Refresh();
-                        Thread.Sleep(t);
-
-                        try
-                        {
-                            SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
-                            RECT PosTarget;
-                            GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
-                            if (i.Xpos == "X")
-                            {
-                                i.Xpos = PosTarget.Top.ToString();
-                            }
-                            if (i.Ypos == "Y")
-                            {
-                                i.Ypos = PosTarget.Left.ToString();
-                            }
-                            if (i.Width == "Width")
-                            {
-                                i.Width = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
-                            }
-                            if (i.Height == "Height")
-                            {
-                                i.Height = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
-                            }
-
-                            MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                            if (i.Lock)
-                            {
-                                LockApp(SavedProcess.MainWindowHandle);
-                            }
-                        }
-                        catch (Exception) { }
+                        WindowFromListToDesktop(i, t);
                     }
 
 
                     ++n;
                 }
             }
-
+            RefreshLists();
         }
 
         // Draws a locking window over any given app
@@ -330,8 +298,7 @@ namespace ActiveDesktop
         {
             if (HandleListBox.SelectedItem != null)
             {
-                // TODO: Make this use LockApp();
-                
+
                 IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 LockApp(hwnd);
             }
@@ -367,19 +334,62 @@ namespace ActiveDesktop
             WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
             HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
             NameBox.Text = WindowTitle.ToString();
-            tabControl.SelectedIndex = 2;
-            AddExpander.IsExpanded = true;
-            AddExpander.IsHitTestVisible = true;
         }
 
         // Attempts to close the selected app
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            uint WM_CLOSE = 0x0010;
-            SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            if (HandleListBox.SelectedItem != null)
+            {
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                uint WM_CLOSE = 0x0010;
+                SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            }
             Thread.Sleep(250);
-            RefreshButton_Click(null, null);
+            RefreshLists();
+        }
+
+        // Adds startup shortcut
+        private void StartupCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                if (!Directory.Exists(shortcutFolder))
+                {
+                    Directory.CreateDirectory(shortcutFolder);
+                }
+                WshShellClass shellClass = new WshShellClass();
+                //Create First Shortcut for Application Settings
+                string ADPStartupLink = System.IO.Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
+                IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(ADPStartupLink);
+                shortcut.TargetPath = System.Environment.GetCommandLineArgs()[0];
+                shortcut.IconLocation = System.Environment.GetCommandLineArgs()[0];
+                shortcut.Arguments = "";
+                shortcut.Description = "Start Active Desktop Plus";
+                shortcut.Save();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        // Removes startup shortcut
+        private void StartupCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                string ADPStartupLink = System.IO.Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
+                System.IO.File.Delete(ADPStartupLink);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
 
@@ -390,42 +400,6 @@ namespace ActiveDesktop
 
 
 
-        // Bits and bobs for finding and adjusting windows
-        [DllImport("user32.dll")]
-        public static extern IntPtr FindWindowExA(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
-        [DllImport("user32.dll")]
-        public static extern IntPtr WindowFromPoint(int xPoint, int yPoint);
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndParent);
-        [DllImport("user32.dll")]
-        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
-        [DllImport("user32.dll")]
-        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-        [DllImport("user32.dll")]
-        public static extern bool GetCursorPos(out POINT lpPoint);
-        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
-        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-        [DllImport("user32.dll")]
-        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern uint QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, StringBuilder lpExeName, ref uint nSize);
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheretHandle, uint dwProcessId);
-        [DllImport("user32.dll")]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-        [DllImport("kernel32.dll")]
-        public static extern bool CloseHandle(IntPtr hObject);
 
         // Starts saved apps automatically
         private void StartSavedApps()
@@ -448,41 +422,9 @@ namespace ActiveDesktop
                     {
                         i.Flags = string.Empty;
                     }
-
-                    Process SavedProcess = Process.Start(i.Cmd, i.Flags);
-                    SavedProcess.Refresh();
-                    Thread.Sleep(t);
-
-                    try
-                    {
-                        SetParent(SavedProcess.MainWindowHandle, DesktopHandle);
-                        RECT PosTarget;
-                        GetWindowRect(SavedProcess.MainWindowHandle, out PosTarget);
-                        if (i.Xpos == "X")
-                        {
-                            i.Xpos = PosTarget.Top.ToString();
-                        }
-                        if (i.Ypos == "Y")
-                        {
-                            i.Ypos = PosTarget.Left.ToString();
-                        }
-                        if (i.Width == "Width")
-                        {
-                            i.Width = GetWindowSize(SavedProcess.MainWindowHandle).Width.ToString();
-                        }
-                        if (i.Height == "Height")
-                        {
-                            i.Height = GetWindowSize(SavedProcess.MainWindowHandle).Height.ToString();
-                        }
-                        MoveWindow(SavedProcess.MainWindowHandle, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                        if (i.Lock)
-                        {
-                            LockApp(SavedProcess.MainWindowHandle);
-                        }
-                    }
-                    catch (Exception) { }
+                    WindowFromListToDesktop(i, t);
                 }
-                
+
             }
 
         }
@@ -498,6 +440,37 @@ namespace ActiveDesktop
             {
                 return new Point(point.X, point.Y);
             }
+        }
+
+        // Everything breaks if I remove this
+        public IntPtr MainWindowHandle
+        {
+            get;
+        }
+
+        // Important magical numbers that make windows borderless
+        static class WeirdMagicalNumbers
+        {
+            public const int GWL_STYLE = -16;
+            public const int GWL_EXSTYLE = -20;
+            public const int SWP_NOSIZE = 0x01;
+            public const int SWP_NOMOVE = 0x02;
+            public const int SWP_NOZORDER = 0x04;
+            public const int SWP_NOACTIVATE = 0x10;
+            public const int SWP_NOOWNERZORDER = 0x200;
+            public const int SWP_NOSENDCHANGING = 0x400;
+            public const int SWP_FRAMECHANGED = 0x20;
+            public const int WS_THICKFRAME = 0x40000;
+            public const int WS_DLGFRAME = 0x400000;
+            public const int WS_BORDER = 0x800000;
+            public const int WS_EX_DLGMODALFRAME = 1;
+            public const int WS_EX_WINDOWEDGE = 0x100;
+            public const int WS_EX_CLIENTEDGE = 0200;
+            public const int WS_EX_STATICEDGE = 0x20000;
+            public const int SW_SHOWNOACTIVATE = 4;
+            public const int SW_RESTORE = 9;
+            public const int WM_EXITSIZEMOVE = 0x0232;
+
         }
 
         public class App
@@ -534,12 +507,6 @@ namespace ActiveDesktop
             cSize.Width = pRect.Right - pRect.Left;
             cSize.Height = pRect.Bottom - pRect.Top;
             return cSize;
-        }
-
-        // Everything breaks if I remove this
-        public IntPtr MainWindowHandle
-        {
-            get;
         }
 
         // Have a guess what this does you fkn idiot
@@ -611,31 +578,6 @@ namespace ActiveDesktop
             int uFlags = WeirdMagicalNumbers.SWP_NOSIZE | WeirdMagicalNumbers.SWP_NOMOVE | WeirdMagicalNumbers.SWP_NOZORDER | WeirdMagicalNumbers.SWP_NOACTIVATE | WeirdMagicalNumbers.SWP_NOOWNERZORDER | WeirdMagicalNumbers.SWP_NOSENDCHANGING | WeirdMagicalNumbers.SWP_FRAMECHANGED;
             SetWindowPos(SelectedHandlePtr, 0, 0, 0, 0, 0, uFlags);
         }
-        
-        // Important magical numbers that make windows borderless
-        static class WeirdMagicalNumbers
-        {
-            public const int GWL_STYLE = -16;
-            public const int GWL_EXSTYLE = -20;
-            public const int SWP_NOSIZE = 0x01;
-            public const int SWP_NOMOVE = 0x02;
-            public const int SWP_NOZORDER = 0x04;
-            public const int SWP_NOACTIVATE = 0x10;
-            public const int SWP_NOOWNERZORDER = 0x200;
-            public const int SWP_NOSENDCHANGING = 0x400;
-            public const int SWP_FRAMECHANGED = 0x20;
-            public const int WS_THICKFRAME = 0x40000;
-            public const int WS_DLGFRAME = 0x400000;
-            public const int WS_BORDER = 0x800000;
-            public const int WS_EX_DLGMODALFRAME = 1;
-            public const int WS_EX_WINDOWEDGE = 0x100;
-            public const int WS_EX_CLIENTEDGE = 0200;
-            public const int WS_EX_STATICEDGE = 0x20000;
-            public const int SW_SHOWNOACTIVATE = 4;
-            public const int SW_RESTORE = 9;
-            public const int WM_EXITSIZEMOVE = 0x0232;
-
-        }
 
         // Checks for AppData directory/CSV and creates it if it doesn't exist
         private void FileSystem()
@@ -647,23 +589,24 @@ namespace ActiveDesktop
             Directory.CreateDirectory(LocalFolder);
 
 
-            if (!File.Exists(System.IO.Path.Combine(LocalFolder, "saved.json")))
+            if (!System.IO.File.Exists(System.IO.Path.Combine(LocalFolder, "saved.json")))
             {
-                FileStream fs = File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")); // butts - Missy Quarry, 2020
+                FileStream fs = System.IO.File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")); // butts - Missy Quarry, 2020
                 fs.Dispose();
             }
         }
 
-        // Writes stuff in the array to the CSV
+        // Writes stuff in the array to the JSON file
         private void WriteJSON()
         {
-            File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")).Close();
-            File.WriteAllText(System.IO.Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
+            System.IO.File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")).Close();
+            System.IO.File.WriteAllText(System.IO.Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
         }
 
+        // Reads stuff from the JSON file into the array
         public List<App> ReadJSON()
         {
-            string JsonAppList = File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.json"));
+            string JsonAppList = System.IO.File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.json"));
             List<App> al = JsonConvert.DeserializeObject<List<App>>(JsonAppList);
             return al;
         }
@@ -686,7 +629,114 @@ namespace ActiveDesktop
             Thread.Sleep(500);
             SetParent(hlock, DesktopHandle);
             Thread.Sleep(250);
-            RefreshButton_Click(null, null);
+            RefreshLists();
         }
+
+
+
+
+
+
+
+
+
+
+
+
+        private void WindowFromListToDesktop(App i, int t)
+        {
+            if (i.Cmd != "MEDIA")
+            {
+                Process SavedProcess = Process.Start(i.Cmd, i.Flags);
+                SavedProcess.Refresh();
+                Thread.Sleep(t);
+                SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
+            }
+            else
+            {
+                ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
+                GeneratedVideoWallpaper.Show();
+                IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
+                Thread.Sleep(Convert.ToInt32(t));
+                SetParent(hvid, DesktopHandle);
+                GeneratedVideoWallpaper.WindowState = WindowState.Maximized;
+                SetWindowSizeAndLock(i, hvid);
+            }
+        }
+
+        public void SetWindowSizeAndLock(App i, IntPtr hwnd)
+        {
+            try
+            {
+                SetParent(hwnd, DesktopHandle);
+                RECT PosTarget;
+                GetWindowRect(hwnd, out PosTarget);
+                if (i.Xpos == "X")
+                {
+                    i.Xpos = PosTarget.Top.ToString();
+                }
+                if (i.Ypos == "Y")
+                {
+                    i.Ypos = PosTarget.Left.ToString();
+                }
+                if (i.Width == "Width")
+                {
+                    i.Width = GetWindowSize(hwnd).Width.ToString();
+                }
+                if (i.Height == "Height")
+                {
+                    i.Height = GetWindowSize(hwnd).Height.ToString();
+                }
+
+                MoveWindow(hwnd, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                if (i.Lock)
+                {
+                    LockApp(hwnd);
+                }
+            }
+            catch (Exception) { }
+        }
+
+
+
+
+
+
+        // Weird cursed external stuff that terrifies me
+        [DllImport("user32.dll")]
+        public static extern IntPtr FindWindowExA(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
+        [DllImport("user32.dll")]
+        public static extern IntPtr WindowFromPoint(int xPoint, int yPoint);
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndParent);
+        [DllImport("user32.dll")]
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumChildWindows(IntPtr window, EnumWindowsProc callback, IntPtr i);
+        [DllImport("user32.dll")]
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
+        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern uint QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, StringBuilder lpExeName, ref uint nSize);
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheretHandle, uint dwProcessId);
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [DllImport("kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr hObject);
     }
 }

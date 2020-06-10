@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
-        mc:Ignorable="d" Height="299" KeyDown="OnKeyDownHandler" Width="260" ResizeMode="NoResize" Title="Active Desktop Plus">
+        mc:Ignorable="d" Height="411.176" KeyDown="OnKeyDownHandler" Width="673.834" ResizeMode="NoResize" Title="Active Desktop Plus">
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -14,75 +14,45 @@
     </Window.TaskbarItemInfo>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="8*"/>
-            <RowDefinition Height="7*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TabControl x:Name="tabControl" Grid.RowSpan="2">
-            <TabItem Header="Add App">
-                <Grid>
-                    <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="45,170,45,20" Click="ApplyHwndButton_Click"/>
-                    <TextBox x:Name="HwndInputTextBox" Height="23" Margin="120,14,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False"/>
-                    <TextBox x:Name="textBox" Height="99" Margin="20,54,20,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" Text="To add an app, hold B then hover your mouse over the target app's titlebar. Then, release B and click &quot;Send to Desktop&quot;"/>
-                    <Label x:Name="label" Content="Selected handle: " HorizontalAlignment="Left" Margin="15,12,0,0" VerticalAlignment="Top"/>
-                </Grid>
-            </TabItem>
-            <TabItem Name ="AppList">
-                <TabItem.Header>
-                    <Label Content="Current Apps" 
-                MouseLeftButtonDown="AppList_Click" 
-                HorizontalAlignment="Stretch"/>
-                </TabItem.Header>
-                <Grid>
-                    <ListBox x:Name="HandleListBox" Margin="10,12,10,55">
-                        <UniformGrid Columns="2"/>
-                    </ListBox>
-                    <Button x:Name="RefreshButton" Content="Refresh" Margin="10,0,169,31" HorizontalContentAlignment="Center" Click="RefreshButton_Click" Height="19" VerticalAlignment="Bottom"/>
-                    <Button x:Name="BorderlessButton" Content="Pin" Margin="90,0,90,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="BorderlessButton_Click"/>
-                    <Button x:Name="LockButton" Content="Add Lock" Margin="169,0,10,31" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="LockButton_Click"/>
-                    <Button x:Name="UnborderlessButton" Content="Unpin" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="UnborderlessButton_Click"/>
-                    <Button x:Name="CloseButton" Content="Close" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="CloseButton_Click"/>
-                    <Button x:Name="SaveButton" Content="Save" Margin="10,0,169,10" HorizontalContentAlignment="Center" Height="19" VerticalAlignment="Bottom" Click="SaveButton_Click"/>
-
-                </Grid>
-            </TabItem>
-            <TabItem Name ="SavedList">
-                <TabItem.Header>
-                    <Label Content="Saved Apps" 
-                MouseLeftButtonDown="SavedList_Click"
-                HorizontalAlignment="Stretch"/>
-
-                </TabItem.Header>
-                <Grid>
-                    <ListBox x:Name="SavedListBox" Margin="10,24,10,55">
-                        <UniformGrid Columns="2"/>
-                    </ListBox>
-                    <Button x:Name="RemoveButton" Content="Remove" Margin="10,0,169,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="RemoveButton_Click" />
-                    <Button x:Name="TestButton" Content="Test" Margin="169,0,10,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="TestButton_Click"/>
-                    <Expander x:Name="AddExpander" Header="Add new..." Margin="10,2,10,55" IsExpanded="True">
-                        <Grid Background="#ABADB3" Height="152">
-                            <TextBox x:Name="CmdBox" Margin="10,6,116,122" Text="Command Line"/>
-                            <TextBox x:Name="FlagBox" Margin="116,6,10,122" Text="Flags"/>
-                            <TextBox x:Name="XBox" Margin="10,35,116,95" Text="X"/>
-                            <TextBox x:Name="YBox" Margin="116,35,10,95" Text="Y"/>
-                            <TextBox x:Name="WidthBox" Margin="10,62,116,66" Text="Width"/>
-                            <TextBox x:Name="HeightBox" Margin="115,62,11,66" Text="Height"/>
-                            <TextBox x:Name="NameBox" Margin="10,91,116,37" Text="Friendly Name"/>
-                            <TextBox x:Name="TimeBox" Margin="115,91,11,37" Text="Wait Time"/>
-                            <Button x:Name="AddButton" Content="Add" Margin="10,117,10,11" HorizontalContentAlignment="Center" Click="AddButton_Click"/>
-                        </Grid>
-                    </Expander>
-                    <Button x:Name="ExpanderButton" Content="Add new..." HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Width="90" Height="22" Click="ExpanderButton_Click"/>
-                    <Button x:Name="WriteButton" Content="Write" Margin="90,0,90,10" HorizontalContentAlignment="Center" Height="40" VerticalAlignment="Bottom" Click="WriteButton_Click"/>
-                </Grid>
-            </TabItem>
-        </TabControl>
-
-
-
-
-
+        <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" Margin="11,50,0,0" VerticalAlignment="Top" Width="104"/>
+        <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205"/>
+        <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="10,81,0,0" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
+        <ListBox x:Name="HandleListBox" Margin="333,19,0,0" Height="130" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315">
+            <UniformGrid Columns="2"/>
+        </ListBox>
+        <Button x:Name="BorderlessButton" Content="Pin" Margin="120,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="BorderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
+        <Button x:Name="LockButton" Content="Add Lock" Margin="227,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="LockButton_Click" HorizontalAlignment="Left" Width="98"/>
+        <Button x:Name="UnborderlessButton" Content="Unpin" Margin="120,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="UnborderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
+        <Button x:Name="CloseButton" Content="Close" Margin="227,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="98"/>
+        <Button x:Name="SaveButton" Content="Save" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315"/>
+        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="315" Height="21" VerticalAlignment="Top"/>
+        <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315"/>
+        <TextBox x:Name="XBox" Margin="10,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
+        <TextBox x:Name="YBox" Margin="171,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
+        <TextBox x:Name="WidthBox" Margin="10,289,0,0" Text="Width" HorizontalAlignment="Left" Width="154" Height="20" VerticalAlignment="Top"/>
+        <TextBox x:Name="HeightBox" Margin="171,289,0,0" Text="Height" HorizontalAlignment="Left" Width="154" Height="20" VerticalAlignment="Top"/>
+        <TextBox x:Name="NameBox" Margin="10,317,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
+        <TextBox x:Name="TimeBox" Margin="171,317,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
+        <Button x:Name="AddButton" Content="Add" Margin="333,342,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
+        <ListBox x:Name="SavedListBox" Margin="333,211,0,0" HorizontalAlignment="Left" Width="315" Height="126" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679">
+            <UniformGrid Columns="2"/>
+        </ListBox>
+        <Button x:Name="RemoveButton" Content="Remove" Margin="413,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="75" />
+        <Button x:Name="TestButton" Content="Launch" Margin="573,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" Width="75"/>
+        <Button x:Name="WriteButton" Content="Save to disk" Margin="493,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="75" IsEnabled="False"/>
+        <Separator Height="11" Margin="10,188,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
+        <CheckBox x:Name="LockedCheckBox" Content="Start Locked" HorizontalAlignment="Left" Margin="10,345,0,0" VerticalAlignment="Top" Width="88"/>
+        <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="171,345,0,0" VerticalAlignment="Top" Width="100"/>
+        <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" Margin="11,19,0,0" VerticalAlignment="Top" Width="109"/>
+        <TextBox x:Name="TitleTextBox" Height="26" Margin="120,19,0,0" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205" MaxLines="1"/>
+        <Separator Height="13" Margin="10,108,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" Background="Black"/>
+        <Label x:Name="SavedAppsLabel" Content="Saved Apps" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top"/>
+        <Separator Height="11" Margin="10,-4,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
+        <Label x:Name="CurrentAppsLabel" Content="Current Apps" HorizontalAlignment="Left" Margin="10,-4,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="StartupCheckBox" Content="Run on Startup" HorizontalAlignment="Left" Margin="10,128,0,0" VerticalAlignment="Top" Checked="StartupCheckBox_Checked" Unchecked="StartupCheckBox_Unchecked"/>
+        <CheckBox x:Name="DarkThemeCheckBox" Content="Dark Theme" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" IsEnabled="False"/>
     </Grid>
 </Window>
