@@ -49,8 +49,12 @@ namespace ActiveDesktop
         // Background Worker that handles checking for fullscreen and stuff
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
+            List<IntPtr> ObscuringList = new List<IntPtr>();
+            List<IntPtr> RemoveList = new List<IntPtr>();
+            Thread.Sleep(2000);
             while (true)
             {
+                Thread.Sleep(1000);
                 for (IntPtr wnd = MainWindow.FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, null); wnd != IntPtr.Zero; wnd = MainWindow.FindWindowExA(IntPtr.Zero, wnd, null, null))
                 {
                     int cloaked = -1;
@@ -62,8 +66,8 @@ namespace ActiveDesktop
                         MainWindow.GetWindowRect(wnd, out WindowRect);
                         MainWindow.GetWindowRect(VideoPlayerHandle, out VideoPlayerRect);
                         MainWindow.POINT Corner = new MainWindow.POINT();
-                        Corner.X = VideoPlayerRect.Left + 100;
-                        Corner.Y = VideoPlayerRect.Top + 100;
+                        Corner.X = VideoPlayerRect.Left + 10;
+                        Corner.Y = VideoPlayerRect.Top + 10;
                         if (MainWindow.PtInRect(in WindowRect, Corner))
                         {
                             Dispatcher.Invoke(() =>
@@ -71,15 +75,29 @@ namespace ActiveDesktop
                                 VideoPlayer.Pause();
                                 IsPlaying = false;
                             });
+                            ObscuringList.Add(wnd);
                         }
-                        else if (!IsPlaying)
+                    }
+                    else if (!IsPlaying)
+                    {
+                        foreach (IntPtr ownd in ObscuringList)
                         {
-                            Dispatcher.Invoke(() =>
+                            if (wnd == ownd)
                             {
-                                VideoPlayer.Play();
-                                IsPlaying = true;
-                            });
+                                Dispatcher.Invoke(() =>
+                                {
+                                    VideoPlayer.Play();
+                                    IsPlaying = true;
+                                });
+                                RemoveList.Add(wnd);
+
+                            }
                         }
+                        foreach (IntPtr rwnd in RemoveList)
+                        {
+                            ObscuringList.Remove(rwnd);
+                        }
+                        RemoveList.Clear();
                     }
                 }
             }

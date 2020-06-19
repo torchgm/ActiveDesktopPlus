@@ -64,16 +64,7 @@ namespace ActiveDesktop
             {
                 StartupCheckBox.IsChecked = false;
             }
-            string aaaaa = "";
             Displays = GetDisplays();
-            foreach (DisplayInfo di in Displays)
-            {
-                aaaaa = aaaaa + " " + di.Handle.ToString();
-            }
-            TitleTextBox.Text = aaaaa;
-            
-            //worker.RunWorkerAsync();
-            //worker.DoWork += worker_DoWork;
         }
 
         // Stores window properties
@@ -565,86 +556,9 @@ namespace ActiveDesktop
             }
         }
 
-        // Creation of the mighty Background Worker
-        private readonly BackgroundWorker worker = new BackgroundWorker();
-
-        // Background Worker that handles checking for fullscreen and stuff
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                TitleTextBox.Text = "WorkerStarted";
-            });
-
-            while (true)
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    // TitleTextBox.Text = "WhileLoopStarted";
-                });
-                for (IntPtr wnd = FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, null); wnd != IntPtr.Zero; wnd = FindWindowExA(IntPtr.Zero, wnd, null, null))
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        // TitleTextBox.Text = "ForEachWindowLoopStarted";
-                    });
-                    int cloaked = -1;
-                    DwmGetWindowAttribute(wnd, Convert.ToInt32(DwmApi.DWMWINDOWATTRIBUTE.DWMWA_CLOAKED), out cloaked, Marshal.SizeOf(typeof(bool)));
-                    if (IsZoomed(wnd) && IsWindowVisible(wnd) && cloaked <= 0)
-                    {
-                        StringBuilder WindowTitle = new StringBuilder(1000);
-                        GetWindowText(wnd, WindowTitle, 1000);
-                        RECT WindowRect;
-                        GetWindowRect(wnd, out WindowRect);
-                        IntPtr MonitorHandle = MonitorFromRect(in WindowRect, 0x2);
-                        Dispatcher.Invoke(() =>
-                        {
-                            TitleTextBox.Text = "FoundZoomedWindow: " + MonitorHandle.ToString() + " " + WindowTitle.ToString();
-                        });
-                        foreach (List<string> plist in DesktopWindowPropertyList)
-                        {
-                            if (plist[1] == "ADPVideoPlayer")
-                            {
-                                RECT DesktopWindowRect;
-                                IntPtr TempHandle = new IntPtr(Convert.ToInt32(plist[2]));
-                                GetWindowRect(TempHandle, out DesktopWindowRect);
-                                foreach (DisplayInfo di in Displays)
-                                {
-                                    if (MonitorHandle == di.Handle)
-                                    {
-                                        if (DesktopWindowRect.Top >= di.Top && DesktopWindowRect.Top <= Convert.ToInt32(di.ScreenHeight) && DesktopWindowRect.Left >= di.Left && DesktopWindowRect.Left <= Convert.ToInt32(di.ScreenWidth))
-                                        {
-                                            Dispatcher.Invoke(() =>
-                                            {
-                                                WindowsToPause.Add(TempHandle);
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            TitleTextBox.Text = "NoZoomedWindow";
-                            WindowsToPause.Clear();
-                        });
-                    }
-                }
-            }
-        }
-
         // It's like a normal bool but delegate, perhaps its also delicate? I don't know. That's up to you, I suppose!
         public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
         
-        // Another thingy not actually sure why but hey!
-
-
-        public delegate bool EnumedWindow(IntPtr handleWindow, List<IntPtr> handles);
-
-
         // Gets a list of display info
         public DisplayInfoCollection GetDisplays()
         {
