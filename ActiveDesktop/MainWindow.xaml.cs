@@ -11,6 +11,11 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.ComponentModel;
+using PInvoke;
+using Hardcodet.Wpf.TaskbarNotification;
+using System.Net.Http.Headers;
+using System.Windows.Controls;
 
 namespace ActiveDesktop
 {
@@ -22,10 +27,13 @@ namespace ActiveDesktop
         IntPtr TargetHandle; // The handle of the targeted app
         string LocalFolder; // %AppData%/ActiveDesktopPlus
         List<App> JSONArrayList = new List<App>(); // ArrayList that holds data from JSON for on-the-fly reading and writing or something
-        List<List<string>> WindowList; // Not entirely sure, probably something to do with the children of the desktop
+        List<List<string>> DesktopWindowPropertyList; // Not entirely sure, probably something to do with the children of the desktop
         List<int> WindowHandles = new List<int>(); // List of handles
         List<int> WindowProperties = new List<int>(); // List of window properties
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
+        public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
+        int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
+        public List<IntPtr> WindowsToPause = new List<IntPtr>();
 
 
         // On-start events
@@ -52,10 +60,20 @@ namespace ActiveDesktop
             }
             RefreshLists();
 
-            if (!System.IO.File.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
+            if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
             {
                 StartupCheckBox.IsChecked = false;
             }
+            string aaaaa = "";
+            Displays = GetDisplays();
+            foreach (DisplayInfo di in Displays)
+            {
+                aaaaa = aaaaa + " " + di.Handle.ToString();
+            }
+            TitleTextBox.Text = aaaaa;
+            
+            //worker.RunWorkerAsync();
+            //worker.DoWork += worker_DoWork;
         }
 
         // Stores window properties
@@ -123,7 +141,7 @@ namespace ActiveDesktop
         { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
             if (HandleListBox.SelectedItem != null)
             {
-                RemoveBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                RemoveBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             }
             RefreshLists();
         }
@@ -136,7 +154,7 @@ namespace ActiveDesktop
             {
                 try
                 {
-                    AddBorders(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+                    AddBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
                 }
                 catch (Exception) { }
             }
@@ -149,7 +167,7 @@ namespace ActiveDesktop
             // Quite frankly I've forgotten how this bit works but it needs to be a StringBuilder and I just hope window titles aren't too long
             StringBuilder WindowTitle = new StringBuilder(1000);
             int count = 0;
-            WindowList = new List<List<string>>();
+            DesktopWindowPropertyList = new List<List<string>>();
 
             // Checks every child of the desktop to see if they're a direct root window, then if they are, assigns them a numerical ID and adds their title and handle to a list.
             HandleListBox.Items.Clear();
@@ -159,12 +177,12 @@ namespace ActiveDesktop
                 if (result != 1001 && WindowTitle.ToString() != "FolderView")
                 {
                     // This bit is the clever bit that creates an entry for every window on the desktop
-                    WindowList.Add(new List<string>());
-                    WindowList[count].Add((1000 + count).ToString()); // ID - Nobody is ever going to have more than 1000 windows open, if they do this will break but hey idc
-                    WindowList[count].Add(WindowTitle.ToString()); // Window Title
-                    WindowList[count].Add(ChildHandle.ToString()); // Window Handle
+                    DesktopWindowPropertyList.Add(new List<string>());
+                    DesktopWindowPropertyList[count].Add((1000 + count).ToString()); // ID - Nobody is ever going to have more than 1000 windows open, if they do this will break but hey idc
+                    DesktopWindowPropertyList[count].Add(WindowTitle.ToString()); // Window Title
+                    DesktopWindowPropertyList[count].Add(ChildHandle.ToString()); // Window Handle
                     StoreWindowProperties(ChildHandle.ToInt32(), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_STYLE), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_EXSTYLE));
-                    HandleListBox.Items.Add(WindowList[count][1] + " " + WindowList[count][0]);
+                    HandleListBox.Items.Add(DesktopWindowPropertyList[count][1] + " " + DesktopWindowPropertyList[count][0]);
                     count++;
 
                 }
@@ -289,7 +307,7 @@ namespace ActiveDesktop
             if (HandleListBox.SelectedItem != null)
             {
 
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 LockApp(hwnd);
             }
         }
@@ -300,7 +318,7 @@ namespace ActiveDesktop
             RECT PosTarget;
             uint PID;
             string SyllyIsAwesome;
-            IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             StringBuilder WindowTitle = new StringBuilder(1000);
             StringBuilder FileName = new StringBuilder(1000);
             uint size = (uint)FileName.Capacity;
@@ -331,7 +349,7 @@ namespace ActiveDesktop
         {
             if (HandleListBox.SelectedItem != null)
             {
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(WindowList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 uint WM_CLOSE = 0x0010;
                 SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
             }
@@ -351,10 +369,10 @@ namespace ActiveDesktop
                 }
                 WshShellClass shellClass = new WshShellClass();
                 //Create First Shortcut for Application Settings
-                string ADPStartupLink = System.IO.Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
+                string ADPStartupLink = Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
                 IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(ADPStartupLink);
-                shortcut.TargetPath = System.Environment.GetCommandLineArgs()[0];
-                shortcut.IconLocation = System.Environment.GetCommandLineArgs()[0];
+                shortcut.TargetPath = Environment.GetCommandLineArgs()[0];
+                shortcut.IconLocation = Environment.GetCommandLineArgs()[0];
                 shortcut.Arguments = "";
                 shortcut.Description = "Start Active Desktop Plus";
                 shortcut.Save();
@@ -372,7 +390,7 @@ namespace ActiveDesktop
             try
             {
                 string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-                string ADPStartupLink = System.IO.Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
+                string ADPStartupLink = Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
                 System.IO.File.Delete(ADPStartupLink);
             }
             catch (Exception)
@@ -380,6 +398,39 @@ namespace ActiveDesktop
 
                 throw;
             }
+        }
+
+        // Button for selecting a monitor quickly
+        private void MonitorSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedDisplay++;
+            if (SelectedDisplay > Displays.Count)
+            {
+                SelectedDisplay = 0;
+            }
+            MonitorSelectButton.Content = "Monitor: " + (SelectedDisplay + 1).ToString();
+            try
+            {
+                XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
+                YBox.Text = Displays[SelectedDisplay].MonitorArea.Top.ToString();
+                WidthBox.Text = Displays[SelectedDisplay].ScreenWidth;
+                HeightBox.Text = Displays[SelectedDisplay].ScreenHeight;
+            }
+            catch (Exception)
+            {
+                XBox.Text = "[Disconnected]";
+                YBox.Text = "[Disconnected]";
+                WidthBox.Text = "[Disconnected]";
+                HeightBox.Text = "[Disconnected]";
+
+            }
+
+        }
+
+        // Clears monitor select button
+        private void ResetMonitorSelectButton(object sender, RoutedEventArgs e)
+        {
+            MonitorSelectButton.Content = " Select\nMonitor";
         }
 
 
@@ -419,23 +470,28 @@ namespace ActiveDesktop
 
         }
 
-        // Stuff for acquiring mouse position because Cursor.Position failed me
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT
-        {
-            public int X;
-            public int Y;
-
-            public static implicit operator Point(POINT point)
-            {
-                return new Point(point.X, point.Y);
-            }
-        }
-
         // Everything breaks if I remove this
         public IntPtr MainWindowHandle
         {
             get;
+        }
+        
+        // Just tidying or something
+        public class DisplayInfoCollection : List<DisplayInfo>
+        {
+        }
+
+        // What the above is made of
+        public class DisplayInfo
+        {
+            public string Availability { get; set; }
+            public string ScreenHeight { get; set; }
+            public string ScreenWidth { get; set; }
+            public RECT MonitorArea { get; set; }
+            public RECT WorkArea { get; set; }
+            public IntPtr Handle { get; set; }
+            public int Top { get; set; }
+            public int Left { get; set; }
         }
 
         // Important magical numbers that make windows borderless
@@ -463,6 +519,7 @@ namespace ActiveDesktop
 
         }
 
+        // The thing that defines an app uwu
         public class App
         {
             public string Cmd { get; set; }
@@ -484,6 +541,137 @@ namespace ActiveDesktop
             public int Top;
             public int Right;
             public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MONITORINFO
+        {
+            public uint cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        // Stuff for acquiring mouse position because Cursor.Position failed me
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public static implicit operator Point(POINT point)
+            {
+                return new Point(point.X, point.Y);
+            }
+        }
+
+        // Creation of the mighty Background Worker
+        private readonly BackgroundWorker worker = new BackgroundWorker();
+
+        // Background Worker that handles checking for fullscreen and stuff
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TitleTextBox.Text = "WorkerStarted";
+            });
+
+            while (true)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    // TitleTextBox.Text = "WhileLoopStarted";
+                });
+                for (IntPtr wnd = FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, null); wnd != IntPtr.Zero; wnd = FindWindowExA(IntPtr.Zero, wnd, null, null))
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        // TitleTextBox.Text = "ForEachWindowLoopStarted";
+                    });
+                    int cloaked = -1;
+                    DwmGetWindowAttribute(wnd, Convert.ToInt32(DwmApi.DWMWINDOWATTRIBUTE.DWMWA_CLOAKED), out cloaked, Marshal.SizeOf(typeof(bool)));
+                    if (IsZoomed(wnd) && IsWindowVisible(wnd) && cloaked <= 0)
+                    {
+                        StringBuilder WindowTitle = new StringBuilder(1000);
+                        GetWindowText(wnd, WindowTitle, 1000);
+                        RECT WindowRect;
+                        GetWindowRect(wnd, out WindowRect);
+                        IntPtr MonitorHandle = MonitorFromRect(in WindowRect, 0x2);
+                        Dispatcher.Invoke(() =>
+                        {
+                            TitleTextBox.Text = "FoundZoomedWindow: " + MonitorHandle.ToString() + " " + WindowTitle.ToString();
+                        });
+                        foreach (List<string> plist in DesktopWindowPropertyList)
+                        {
+                            if (plist[1] == "ADPVideoPlayer")
+                            {
+                                RECT DesktopWindowRect;
+                                IntPtr TempHandle = new IntPtr(Convert.ToInt32(plist[2]));
+                                GetWindowRect(TempHandle, out DesktopWindowRect);
+                                foreach (DisplayInfo di in Displays)
+                                {
+                                    if (MonitorHandle == di.Handle)
+                                    {
+                                        if (DesktopWindowRect.Top >= di.Top && DesktopWindowRect.Top <= Convert.ToInt32(di.ScreenHeight) && DesktopWindowRect.Left >= di.Left && DesktopWindowRect.Left <= Convert.ToInt32(di.ScreenWidth))
+                                        {
+                                            Dispatcher.Invoke(() =>
+                                            {
+                                                WindowsToPause.Add(TempHandle);
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            TitleTextBox.Text = "NoZoomedWindow";
+                            WindowsToPause.Clear();
+                        });
+                    }
+                }
+            }
+        }
+
+        // It's like a normal bool but delegate, perhaps its also delicate? I don't know. That's up to you, I suppose!
+        public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
+        
+        // Another thingy not actually sure why but hey!
+
+
+        public delegate bool EnumedWindow(IntPtr handleWindow, List<IntPtr> handles);
+
+
+        // Gets a list of display info
+        public DisplayInfoCollection GetDisplays()
+        {
+            DisplayInfoCollection col = new DisplayInfoCollection();
+
+            EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
+                delegate (IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData)
+                {
+                    MONITORINFO mi = new MONITORINFO();
+                    mi.cbSize = (uint)Marshal.SizeOf(mi);
+                    bool success = GetMonitorInfo(hMonitor, ref mi);
+                    if (success)
+                    {
+                        DisplayInfo di = new DisplayInfo();
+                        di.ScreenWidth = (mi.rcMonitor.Right - mi.rcMonitor.Left).ToString();
+                        di.ScreenHeight = (mi.rcMonitor.Bottom - mi.rcMonitor.Top).ToString();
+                        di.MonitorArea = mi.rcMonitor;
+                        di.WorkArea = mi.rcWork;
+                        di.Availability = mi.dwFlags.ToString();
+                        di.Handle = hMonitor;
+                        di.Top = mi.rcMonitor.Top;
+                        di.Left = mi.rcMonitor.Left;
+                        col.Add(di);
+                    }
+                    return true;
+                }, IntPtr.Zero);
+            return col;
         }
 
         // Deals with getting a window's size
@@ -574,29 +762,28 @@ namespace ActiveDesktop
         {
             string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            LocalFolder = System.IO.Path.Combine(AppData, "ActiveDesktopPlus");
+            LocalFolder = Path.Combine(AppData, "ActiveDesktopPlus");
 
             Directory.CreateDirectory(LocalFolder);
 
 
-            if (!System.IO.File.Exists(System.IO.Path.Combine(LocalFolder, "saved.json")))
+            if (!System.IO.File.Exists(Path.Combine(LocalFolder, "saved.json")))
             {
-                FileStream fs = System.IO.File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")); // butts - Missy Quarry, 2020
-                fs.Dispose();
+                WriteJSON(); // butts - Missy Quarry, 2020
             }
         }
 
         // Writes stuff in the array to the JSON file
         private void WriteJSON()
         {
-            System.IO.File.Create(System.IO.Path.Combine(LocalFolder, "saved.json")).Close();
-            System.IO.File.WriteAllText(System.IO.Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
+            System.IO.File.Create(Path.Combine(LocalFolder, "saved.json")).Close();
+            System.IO.File.WriteAllText(Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
         }
 
         // Reads stuff from the JSON file into the array
         public List<App> ReadJSON()
         {
-            string JsonAppList = System.IO.File.ReadAllText(System.IO.Path.Combine(LocalFolder, "saved.json"));
+            string JsonAppList = System.IO.File.ReadAllText(Path.Combine(LocalFolder, "saved.json"));
             List<App> al = JsonConvert.DeserializeObject<List<App>>(JsonAppList);
             return al;
         }
@@ -622,17 +809,7 @@ namespace ActiveDesktop
             RefreshLists();
         }
 
-
-
-
-
-
-
-
-
-
-
-
+        // Actually deals with window properties or smth idk
         private void WindowFromListToDesktop(App i, int t)
         {
             if (i.Cmd != "MEDIA")
@@ -645,7 +822,6 @@ namespace ActiveDesktop
             else
             {
                 ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
-                GeneratedVideoWallpaper.Show();
                 IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
                 Thread.Sleep(Convert.ToInt32(t));
                 SetParent(hvid, DesktopHandle);
@@ -654,6 +830,7 @@ namespace ActiveDesktop
             }
         }
 
+        // WindowFromListToDesktop 2 Electric Boogaloo
         public void SetWindowSizeAndLock(App i, IntPtr hwnd)
         {
             try
@@ -687,10 +864,11 @@ namespace ActiveDesktop
             catch (Exception) { }
         }
 
-
-
-
-
+        public bool MonitorEnumProc(IntPtr MonitorHandle, IntPtr hdc, out RECT UnusedButNecessaryRECT, IntPtr UnusedButNecessaryIntPtr)
+        {
+            UnusedButNecessaryRECT = new RECT();
+            return true;
+        }
 
         // Weird cursed external stuff that terrifies me
         [DllImport("user32.dll")]
@@ -709,15 +887,15 @@ namespace ActiveDesktop
         [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out POINT lpPoint);
         [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
-        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
+        public static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
-        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool SetWindowPos(int hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -728,5 +906,19 @@ namespace ActiveDesktop
         public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
         [DllImport("kernel32.dll")]
         public static extern bool CloseHandle(IntPtr hObject);
+        [DllImport("user32.dll")]
+        public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
+        [DllImport("user32.dll")]
+        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lplmi);
+        [DllImport("user32.dll")]
+        public static extern bool IsZoomed(IntPtr hwnd);
+        [DllImport("user32.dll")]
+        public static extern bool IsWindowVisible(IntPtr hwnd);
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromRect(in RECT lprc, uint dwFlags);
+        [DllImport("user32.dll")]
+        public static extern bool PtInRect(in RECT lprc, POINT pt);
     }
 }

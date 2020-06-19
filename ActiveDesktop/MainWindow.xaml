@@ -30,10 +30,10 @@
         <Button x:Name="SaveButton" Content="Save" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315"/>
         <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="315" Height="21" VerticalAlignment="Top"/>
         <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315"/>
-        <TextBox x:Name="XBox" Margin="10,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
-        <TextBox x:Name="YBox" Margin="171,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
-        <TextBox x:Name="WidthBox" Margin="10,289,0,0" Text="Width" HorizontalAlignment="Left" Width="154" Height="20" VerticalAlignment="Top"/>
-        <TextBox x:Name="HeightBox" Margin="171,289,0,0" Text="Height" HorizontalAlignment="Left" Width="154" Height="20" VerticalAlignment="Top"/>
+        <TextBox x:Name="XBox" Margin="10,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
+        <TextBox x:Name="YBox" Margin="130,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
+        <TextBox x:Name="WidthBox" Margin="10,289,0,0" Text="Width" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton"/>
+        <TextBox x:Name="HeightBox" Margin="130,289,0,0" Text="Height" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton"/>
         <TextBox x:Name="NameBox" Margin="10,317,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
         <TextBox x:Name="TimeBox" Margin="171,317,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
         <Button x:Name="AddButton" Content="Add" Margin="333,342,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
@@ -54,5 +54,6 @@
         <Label x:Name="CurrentAppsLabel" Content="Current Apps" HorizontalAlignment="Left" Margin="10,-4,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="StartupCheckBox" Content="Run on Startup" HorizontalAlignment="Left" Margin="10,128,0,0" VerticalAlignment="Top" Checked="StartupCheckBox_Checked" Unchecked="StartupCheckBox_Unchecked"/>
         <CheckBox x:Name="DarkThemeCheckBox" Content="Dark Theme" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" IsEnabled="False"/>
+        <Button x:Name="MonitorSelectButton" Content="Select &#xD;&#xA;Monitor" HorizontalAlignment="Left" Margin="250,264,0,0" VerticalAlignment="Top" Width="75" Height="45" Click="MonitorSelectButton_Click"/>
     </Grid>
 </Window>
