@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ActiveDesktop"
+        xmlns:tb="http://www.hardcodet.net/taskbar" 
         mc:Ignorable="d" Height="411.176" KeyDown="OnKeyDownHandler" Width="673.834" ResizeMode="NoResize" Title="Active Desktop Plus">
+
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo>
             <TaskbarItemInfo.ThumbButtonInfos>
@@ -17,6 +18,15 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
         </Grid.ColumnDefinitions>
+        <tb:TaskbarIcon IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show" Click="ShowMenuItem_Click"/>
+                    <MenuItem Header="Close" Click="CloseMenuItem_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+
         <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" Margin="11,50,0,0" VerticalAlignment="Top" Width="104"/>
         <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205"/>
         <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="10,81,0,0" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
@@ -28,7 +38,7 @@
         <Button x:Name="UnborderlessButton" Content="Unpin" Margin="120,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="UnborderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="CloseButton" Content="Close" Margin="227,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="SaveButton" Content="Save" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315"/>
-        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="315" Height="21" VerticalAlignment="Top"/>
+        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="315" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus"/>
         <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315"/>
         <TextBox x:Name="XBox" Margin="10,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
         <TextBox x:Name="YBox" Margin="130,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
@@ -55,5 +65,6 @@
         <CheckBox x:Name="StartupCheckBox" Content="Run on Startup" HorizontalAlignment="Left" Margin="10,128,0,0" VerticalAlignment="Top" Checked="StartupCheckBox_Checked" Unchecked="StartupCheckBox_Unchecked"/>
         <CheckBox x:Name="DarkThemeCheckBox" Content="Dark Theme" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" IsEnabled="False"/>
         <Button x:Name="MonitorSelectButton" Content="Select &#xD;&#xA;Monitor" HorizontalAlignment="Left" Margin="250,264,0,0" VerticalAlignment="Top" Width="75" Height="45" Click="MonitorSelectButton_Click"/>
+        
     </Grid>
 </Window>

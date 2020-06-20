@@ -16,6 +16,7 @@ using PInvoke;
 using Hardcodet.Wpf.TaskbarNotification;
 using System.Net.Http.Headers;
 using System.Windows.Controls;
+using System.Windows.Media.Media3D;
 
 namespace ActiveDesktop
 {
@@ -33,7 +34,6 @@ namespace ActiveDesktop
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
-        public List<IntPtr> WindowsToPause = new List<IntPtr>();
 
 
         // On-start events
@@ -66,6 +66,25 @@ namespace ActiveDesktop
             }
             Displays = GetDisplays();
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Stores window properties
         public void StoreWindowProperties(int Handle, int Properties, int PropertiesEx)
@@ -123,7 +142,12 @@ namespace ActiveDesktop
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
             // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
+            RECT TempRect = new RECT();
             SetParent(TargetHandle, DesktopHandle);
+            GetWindowRect(TargetHandle, out TempRect);
+            int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(TempRect.Left));
+            int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(TempRect.Top));
+            MoveWindow(TargetHandle, CorrectedXpos, CorrectedYpos, Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
             RefreshLists();
         }
 
@@ -424,8 +448,35 @@ namespace ActiveDesktop
             MonitorSelectButton.Content = " Select\nMonitor";
         }
 
+        private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (CmdBox.Text == "MEDIA")
+            {
+                XBox.IsEnabled = false;
+                YBox.IsEnabled = false;
+                WidthBox.IsEnabled = false;
+                HeightBox.IsEnabled = false;
+            }
+            else
+            {
+                XBox.IsEnabled = true;
+                YBox.IsEnabled = true;
+                WidthBox.IsEnabled = true;
+                HeightBox.IsEnabled = true;
+            }
 
 
+        }
+
+        private void ShowMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
         // /////////////////////////////////////////////////////////////////////////////////////// //
         // //////////// All the weird non-GUIey bits are here don't question it shhhh //////////// //
         // /////////////////////////////////////////////////////////////////////////////////////// //
@@ -726,6 +777,13 @@ namespace ActiveDesktop
         // Actually deals with window properties or smth idk
         private void WindowFromListToDesktop(App i, int t)
         {
+            if (XBox.Text == "[Disconnected]")
+            {
+                XBox.Text = Displays[0].MonitorArea.Left.ToString();
+                YBox.Text = Displays[0].MonitorArea.Top.ToString();
+                WidthBox.Text = Displays[0].ScreenWidth;
+                HeightBox.Text = Displays[0].ScreenHeight;
+            }
             if (i.Cmd != "MEDIA")
             {
                 Process SavedProcess = Process.Start(i.Cmd, i.Flags);
@@ -769,13 +827,42 @@ namespace ActiveDesktop
                     i.Height = GetWindowSize(hwnd).Height.ToString();
                 }
 
-                MoveWindow(hwnd, Convert.ToInt32(i.Xpos), Convert.ToInt32(i.Ypos), Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
+                int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
+
+                MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                 if (i.Lock)
                 {
                     LockApp(hwnd);
                 }
             }
             catch (Exception) { }
+        }
+
+        public int TranslateCanvasX(int x)
+        {
+            int LargestNegative = 0;
+            foreach (DisplayInfo Display in Displays)
+            {
+                if (Display.Left < LargestNegative)
+                {
+                    LargestNegative = Display.Left;
+                }
+            }
+            return x - LargestNegative;
+        }
+
+        public int TranslateCanvasY(int y)
+        {
+            int LargestNegative = 0;
+            foreach (DisplayInfo Display in Displays)
+            {
+                if (Display.Top < LargestNegative)
+                {
+                    LargestNegative = Display.Top;
+                }
+            }
+            return y - LargestNegative;
         }
 
         public bool MonitorEnumProc(IntPtr MonitorHandle, IntPtr hdc, out RECT UnusedButNecessaryRECT, IntPtr UnusedButNecessaryIntPtr)
@@ -834,5 +921,7 @@ namespace ActiveDesktop
         public static extern IntPtr MonitorFromRect(in RECT lprc, uint dwFlags);
         [DllImport("user32.dll")]
         public static extern bool PtInRect(in RECT lprc, POINT pt);
+
+
     }
 }
