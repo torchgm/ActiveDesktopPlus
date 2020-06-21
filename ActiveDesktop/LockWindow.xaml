@@ -5,5 +5,5 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
         mc:Ignorable="d"
-        Title="LockWindow" Height="50" Width="50" Focusable="False" AllowsTransparency="True" WindowStyle="None" Opacity="0.01" SnapsToDevicePixels="True" Background="Black" ResizeMode="NoResize" HorizontalAlignment="Left" VerticalAlignment="Top" Left="0" Top="0" Margin="0" ShowInTaskbar="False">
+        Title="LockWindow" Height="1" Width="1" Focusable="False" AllowsTransparency="True" WindowStyle="None" Opacity="0.05" SnapsToDevicePixels="True" Background="Black" ResizeMode="NoResize" HorizontalAlignment="Left" VerticalAlignment="Top" Left="0" Top="0" Margin="0" ShowInTaskbar="False">
 </Window>

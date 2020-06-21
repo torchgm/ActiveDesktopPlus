@@ -7,7 +7,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen" 
         WindowState="Maximized" WindowStyle="None"
-        Title="ADPVideoPlayer" Height="450" Width="800" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent">
+        Title="ADPVideoPlayer" Height="1" Width="1" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent">
     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
             <MediaElement x:Name="VideoPlayer" MediaEnded="VideoPlayer_MediaEnded" LoadedBehavior="Manual" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" IsMuted="True" Stretch="UniformToFill"/>
     </Grid>

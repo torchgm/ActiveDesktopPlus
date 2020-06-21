@@ -18,11 +18,10 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
         </Grid.ColumnDefinitions>
-        <tb:TaskbarIcon IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
+        <tb:TaskbarIcon x:Name="tbi" IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Show" Click="ShowMenuItem_Click"/>
-                    <MenuItem Header="Close" Click="CloseMenuItem_Click"/>
+                    <MenuItem Header="Show/Hide" Click="ShowMenuItem_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>

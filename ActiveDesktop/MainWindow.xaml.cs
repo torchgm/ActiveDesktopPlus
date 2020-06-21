@@ -11,17 +11,12 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.ComponentModel;
-using PInvoke;
-using Hardcodet.Wpf.TaskbarNotification;
-using System.Net.Http.Headers;
-using System.Windows.Controls;
-using System.Windows.Media.Media3D;
 
 namespace ActiveDesktop
 {
     public partial class MainWindow : Window
     {
+
         // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
         // It's easier and I need them everywhere so shh it'll be fine I promise aaaa
         IntPtr DesktopHandle; // The handle of the desktop
@@ -34,9 +29,10 @@ namespace ActiveDesktop
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
+        public bool? IsHidden; // Keeps track of whether or not the window is hidden
 
 
-        // On-start events
+        // On-start tasks
         public MainWindow()
         {
             InitializeComponent();
@@ -65,25 +61,33 @@ namespace ActiveDesktop
                 StartupCheckBox.IsChecked = false;
             }
             Displays = GetDisplays();
+            // Disables Lock button on multi-monitor setups (as it doesn't work reliably)
+            if (Displays.Count > 1)
+            {
+                LockButton.IsEnabled = false;
+            }
+            Show();
+            FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise();
+
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // This exists because for some insanely stupid reason, scaling simply doesn't work unless a video is played across all desktops first
+        public void FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise()
+        {
+            ADPVideoWallpaper TempVideoWallpaper = new ADPVideoWallpaper(@"C:\.mp4");
+            IntPtr hvid = new WindowInteropHelper(TempVideoWallpaper).Handle;
+            Thread.Sleep(20);
+            SetParent(hvid, DesktopHandle);
+            foreach (DisplayInfo di in Displays)
+            {
+                MoveWindow(hvid, TranslateCanvasX(di.Top), TranslateCanvasY(di.Top), Convert.ToInt32(di.ScreenWidth), Convert.ToInt32(di.ScreenHeight), true);
+                Thread.Sleep(20);
+            }
+            Thread.Sleep(20);
+            DestroyWindow(hvid);
+            RefreshLists();
+        }
 
 
         // Stores window properties
@@ -143,12 +147,18 @@ namespace ActiveDesktop
         {
             // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
             RECT TempRect = new RECT();
-            SetParent(TargetHandle, DesktopHandle);
             GetWindowRect(TargetHandle, out TempRect);
-            int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(TempRect.Left));
-            int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(TempRect.Top));
-            MoveWindow(TargetHandle, CorrectedXpos, CorrectedYpos, Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
+            SetParent(TargetHandle, DesktopHandle);
+            int x = TranslateCanvasX(0);
+            int y = TranslateCanvasY(0);
+            MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
             RefreshLists();
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            RefreshLists();
+            base.OnActivated(e);
         }
 
         // Makes the selected window borderless
@@ -333,7 +343,8 @@ namespace ActiveDesktop
             RECT PosTarget;
             uint PID;
             string SyllyIsAwesome;
-            IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            IntPtr hwnd = IntPtr.Zero;
+            hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
             StringBuilder WindowTitle = new StringBuilder(1000);
             StringBuilder FileName = new StringBuilder(1000);
             uint size = (uint)FileName.Capacity;
@@ -383,7 +394,6 @@ namespace ActiveDesktop
                     Directory.CreateDirectory(shortcutFolder);
                 }
                 WshShellClass shellClass = new WshShellClass();
-                //Create First Shortcut for Application Settings
                 string ADPStartupLink = Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
                 IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(ADPStartupLink);
                 shortcut.TargetPath = Environment.GetCommandLineArgs()[0];
@@ -447,7 +457,8 @@ namespace ActiveDesktop
         {
             MonitorSelectButton.Content = " Select\nMonitor";
         }
-
+        
+        // Limits media entry
         private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (CmdBox.Text == "MEDIA")
@@ -463,30 +474,43 @@ namespace ActiveDesktop
                 YBox.IsEnabled = true;
                 WidthBox.IsEnabled = true;
                 HeightBox.IsEnabled = true;
+                MonitorSelectButton_Click(null, null);
             }
 
 
         }
 
-        private void ShowMenuItem_Click(object sender, RoutedEventArgs e)
+        // Tray icon handler thingy
+        private void ShowMenuItem_Click(object sender, EventArgs e)
         {
-
+            IntPtr MainHandle = IntPtr.Zero;
+            if (IsHidden == null)
+            {
+                MainHandle = new WindowInteropHelper(this).Handle;
+            }
+            else if (IsHidden == true)
+            {
+                ShowWindow(MainHandle, 0);
+                IsHidden = false;
+            }
+            else
+            {
+                ShowWindow(MainHandle, 5);
+                IsHidden = true;
+            }
         }
 
-        private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
-        {
 
-        }
         // /////////////////////////////////////////////////////////////////////////////////////// //
         // //////////// All the weird non-GUIey bits are here don't question it shhhh //////////// //
         // /////////////////////////////////////////////////////////////////////////////////////// //
 
 
-
-
         // Starts saved apps automatically
         private void StartSavedApps()
         {
+            
+
             foreach (App i in JSONArrayList)
             {
                 if (i.Startup)
@@ -518,7 +542,7 @@ namespace ActiveDesktop
             get;
         }
         
-        // Just tidying or something
+        // Super-handy to do things or something
         public class DisplayInfoCollection : List<DisplayInfo>
         {
         }
@@ -757,20 +781,28 @@ namespace ActiveDesktop
         private void LockApp(IntPtr hwnd)
         {
             StringBuilder WindowTitle = new StringBuilder(1000);
-            LockWindow GeneratedLockWindow = new LockWindow();
             GetWindowText(hwnd, WindowTitle, 1000);
+
+            LockWindow GeneratedLockWindow = new LockWindow();
             GeneratedLockWindow.Title = "LockWindow For " + WindowTitle;
             GeneratedLockWindow.Show();
+
             IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
+            
             RECT WindowTargetLock;
             GetWindowRect(hwnd, out WindowTargetLock);
-            GeneratedLockWindow.Top = WindowTargetLock.Top;
-            GeneratedLockWindow.Left = WindowTargetLock.Left;
+
             GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
             GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
-            Thread.Sleep(500);
+            GeneratedLockWindow.Left = TranslateCanvasX(WindowTargetLock.Left);
+            GeneratedLockWindow.Top = TranslateCanvasY(WindowTargetLock.Top);
+
+            // Technically just the same as above, keeping so i don't forget
+            //int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(WindowTargetLock.Left));
+            //int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(WindowTargetLock.Top));
+            //MoveWindow(hwnd, CorrectedXpos - 1, CorrectedYpos, Convert.ToInt32(GetWindowSize(hwnd).Width), Convert.ToInt32(GetWindowSize(hwnd).Height), true);
             SetParent(hlock, DesktopHandle);
-            Thread.Sleep(250);
+
             RefreshLists();
         }
 
@@ -797,7 +829,7 @@ namespace ActiveDesktop
                 IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
                 Thread.Sleep(Convert.ToInt32(t));
                 SetParent(hvid, DesktopHandle);
-                GeneratedVideoWallpaper.WindowState = WindowState.Maximized;
+                //GeneratedVideoWallpaper.WindowState = WindowState.Maximized;
                 SetWindowSizeAndLock(i, hvid);
             }
         }
@@ -839,6 +871,7 @@ namespace ActiveDesktop
             catch (Exception) { }
         }
 
+        // Deals with misaligned desktop/monitor origins for the X axis.
         public int TranslateCanvasX(int x)
         {
             int LargestNegative = 0;
@@ -852,6 +885,7 @@ namespace ActiveDesktop
             return x - LargestNegative;
         }
 
+        // Deals with misaligned desktop/monitor origins for the Y axis.
         public int TranslateCanvasY(int y)
         {
             int LargestNegative = 0;
@@ -865,11 +899,14 @@ namespace ActiveDesktop
             return y - LargestNegative;
         }
 
+        // Something to do with getting monitors (hahalol like I understand it)
         public bool MonitorEnumProc(IntPtr MonitorHandle, IntPtr hdc, out RECT UnusedButNecessaryRECT, IntPtr UnusedButNecessaryIntPtr)
         {
             UnusedButNecessaryRECT = new RECT();
             return true;
         }
+
+
 
         // Weird cursed external stuff that terrifies me
         [DllImport("user32.dll")]
@@ -921,7 +958,9 @@ namespace ActiveDesktop
         public static extern IntPtr MonitorFromRect(in RECT lprc, uint dwFlags);
         [DllImport("user32.dll")]
         public static extern bool PtInRect(in RECT lprc, POINT pt);
-
-
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")]
+        public static extern bool DestroyWindow(IntPtr hWnd);
     }
 }
