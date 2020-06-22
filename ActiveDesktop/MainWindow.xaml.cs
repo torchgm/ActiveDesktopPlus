@@ -11,12 +11,14 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Controls;
+using System.Windows.Media;
+using PInvoke;
 
 namespace ActiveDesktop
 {
     public partial class MainWindow : Window
     {
-
         // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
         // It's easier and I need them everywhere so shh it'll be fine I promise aaaa
         IntPtr DesktopHandle; // The handle of the desktop
@@ -29,14 +31,14 @@ namespace ActiveDesktop
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
-        public bool? IsHidden; // Keeps track of whether or not the window is hidden
+        public bool IsHidden = false; // Keeps track of whether or not the window is hidden
 
 
         // On-start tasks
         public MainWindow()
         {
             InitializeComponent();
-
+            
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
@@ -65,6 +67,7 @@ namespace ActiveDesktop
             if (Displays.Count > 1)
             {
                 LockButton.IsEnabled = false;
+                LockedCheckBox.IsEnabled = false;
             }
             Show();
             FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise();
@@ -483,21 +486,25 @@ namespace ActiveDesktop
         // Tray icon handler thingy
         private void ShowMenuItem_Click(object sender, EventArgs e)
         {
-            IntPtr MainHandle = IntPtr.Zero;
-            if (IsHidden == null)
+            IntPtr MainHandle = new WindowInteropHelper(this).Handle;
+            if (IsHidden == true)
             {
-                MainHandle = new WindowInteropHelper(this).Handle;
-            }
-            else if (IsHidden == true)
-            {
-                ShowWindow(MainHandle, 0);
+                ShowWindow(MainHandle, 5); 
                 IsHidden = false;
+                ShowMenuItem.Header = "Hide ADP";
             }
             else
             {
-                ShowWindow(MainHandle, 5);
+                ShowWindow(MainHandle, 0);
                 IsHidden = true;
+                ShowMenuItem.Header = "Show ADP";
             }
+        }
+
+        // Proper close button thingy
+        private void CloseMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
 
@@ -760,6 +767,10 @@ namespace ActiveDesktop
             {
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
+            if (System.IO.File.ReadAllText(Path.Combine(LocalFolder, "saved.json")) == "" || System.IO.File.ReadAllText(Path.Combine(LocalFolder, "saved.json")) == null)
+            {
+                WriteJSON(); // initialises empty files
+            }
         }
 
         // Writes stuff in the array to the JSON file
@@ -899,6 +910,20 @@ namespace ActiveDesktop
             return y - LargestNegative;
         }
 
+        // Handles 
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            e.Cancel = true;
+            IntPtr MainHandle = new WindowInteropHelper(this).Handle;
+            ShowWindow(MainHandle, 0);
+            ShowWindow(MainHandle, 0);
+            IsHidden = true;
+            ShowMenuItem.Header = "Show ADP";
+        }
+
+        
+
         // Something to do with getting monitors (hahalol like I understand it)
         public bool MonitorEnumProc(IntPtr MonitorHandle, IntPtr hdc, out RECT UnusedButNecessaryRECT, IntPtr UnusedButNecessaryIntPtr)
         {
@@ -963,4 +988,5 @@ namespace ActiveDesktop
         [DllImport("user32.dll")]
         public static extern bool DestroyWindow(IntPtr hWnd);
     }
+
 }
