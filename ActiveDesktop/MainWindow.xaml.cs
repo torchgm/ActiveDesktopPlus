@@ -317,6 +317,11 @@ namespace ActiveDesktop
                         i.Flags = string.Empty;
                     }
 
+                    if (i.Flags == "Path to Video")
+                    {
+                        i.Flags = @"C:\.mp4";
+                    }
+
                     if (n == SavedListBox.SelectedIndex)
                     {
                         WindowFromListToDesktop(i, t);
