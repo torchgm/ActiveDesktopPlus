@@ -4,13 +4,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        mc:Ignorable="d" Height="411" KeyDown="OnKeyDownHandler" Width="674" ResizeMode="NoResize" Title="Active Desktop Plus">
+        mc:Ignorable="d" Height="408.917" KeyDown="OnKeyDownHandler" Width="674" ResizeMode="NoResize" Title="Active Desktop Plus">
 
     <!-- I don't actually understand XAML at all give my my WinForms back. 
     Seriously, the tab UI thing I had before actually worked why did I switch to this mess?
     Also if you're reading this yes I am going to redo the UI but if I can't get a pile of buttons working what even is the point in going on -->
-    
-    <Grid Height="382" VerticalAlignment="Top" HorizontalAlignment="Left" Width="668">
+
+    <Grid Height="376" VerticalAlignment="Top">
         <tb:TaskbarIcon x:Name="tbi" IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
@@ -19,7 +19,7 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <Rectangle Fill="#FFEEEEEE" Stroke="Transparent" Margin="0,0,0,189"/>
+        <Rectangle Fill="#FFEEEEEE" Stroke="Transparent" Height="194" VerticalAlignment="Top"/>
         <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" Margin="11,50,0,0" VerticalAlignment="Top" Width="104" Height="26"/>
         <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205"/>
         <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="10,81,0,0" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top" IsDefault="True"/>
@@ -31,14 +31,14 @@
         <Button x:Name="UnborderlessButton" Content="Unpin" Margin="120,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="UnborderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="CloseButton" Content="Close" Margin="227,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="SaveButton" Content="Save" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315"/>
-        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="315" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus"/>
-        <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315"/>
-        <TextBox x:Name="XBox" Margin="11,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
-        <TextBox x:Name="YBox" Margin="131,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton"/>
-        <TextBox x:Name="WidthBox" Margin="11,289,0,0" Text="Width" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton"/>
-        <TextBox x:Name="HeightBox" Margin="131,289,0,0" Text="Height" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton"/>
-        <TextBox x:Name="NameBox" Margin="10,317,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
-        <TextBox x:Name="TimeBox" Margin="171,317,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="154"/>
+        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="236" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus" GotFocus="CmdBox_GotFocus"/>
+        <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="236" LostFocus="FlagBox_LostFocus" GotFocus="FlagBox_GotFocus"/>
+        <TextBox x:Name="XBox" Margin="11,264,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="XBox_GotFocus" LostFocus="XBox_LostFocus"/>
+        <TextBox x:Name="YBox" Margin="131,264,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="YBox_GotFocus" LostFocus="YBox_LostFocus"/>
+        <TextBox x:Name="WidthBox" Margin="11,289,0,0" Text="Width" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="WidthBox_GotFocus" LostFocus="WidthBox_LostFocus"/>
+        <TextBox x:Name="HeightBox" Margin="131,289,0,0" Text="Height" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="HeightBox_GotFocus" LostFocus="HeightBox_LostFocus"/>
+        <TextBox x:Name="NameBox" Margin="10,317,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="116" GotFocus="NameBox_GotFocus" LostFocus="NameBox_LostFocus"/>
+        <TextBox x:Name="TimeBox" Margin="131,317,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" GotFocus="TimeBox_GotFocus" LostFocus="TimeBox_LostFocus"/>
         <Button x:Name="AddButton" Content="Add" Margin="333,342,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75"/>
         <ListBox x:Name="SavedListBox" Margin="333,211,0,0" HorizontalAlignment="Left" Width="315" Height="126" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679"/>
         <Button x:Name="RemoveButton" Content="Remove" Margin="413,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="75" />
@@ -46,7 +46,7 @@
         <Button x:Name="WriteButton" Content="Save to disk" Margin="493,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="75" IsEnabled="False"/>
         <Separator Height="11" Margin="10,188,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
         <CheckBox x:Name="LockedCheckBox" Content="Start Locked" HorizontalAlignment="Left" Margin="10,345,0,0" VerticalAlignment="Top" Width="88" Height="15"/>
-        <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="171,345,0,0" VerticalAlignment="Top" Width="99" Height="15"/>
+        <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="131,345,0,0" VerticalAlignment="Top" Width="99" Height="15"/>
         <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" Margin="11,19,0,0" VerticalAlignment="Top" Width="109" Height="26"/>
         <TextBox x:Name="TitleTextBox" Height="26" Margin="120,19,0,0" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205" MaxLines="1"/>
         <Separator Height="13" Margin="10,108,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" Background="Black"/>
@@ -55,7 +55,8 @@
         <Label x:Name="CurrentAppsLabel" Content="Current Apps" HorizontalAlignment="Left" Margin="10,-4,0,0" VerticalAlignment="Top" Height="26" Width="80"/>
         <CheckBox x:Name="StartupCheckBox" Content="Run at startup" HorizontalAlignment="Left" Margin="10,128,0,0" VerticalAlignment="Top" Checked="StartupCheckBox_Checked" Unchecked="StartupCheckBox_Unchecked" Height="15" Width="95"/>
         <CheckBox x:Name="DarkThemeCheckBox" Content="Dark Theme" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" IsEnabled="False" Height="15" Width="84"/>
-        <Button x:Name="MonitorSelectButton" Content="Select &#xD;&#xA;Monitor" HorizontalAlignment="Left" Margin="250,264,0,0" VerticalAlignment="Top" Width="75" Height="45" Click="MonitorSelectButton_Click"/>
+        <Button x:Name="MonitorSelectButton" Content="  Select &#xD;&#xA;Monitor" HorizontalAlignment="Left" Margin="250,264,0,0" VerticalAlignment="Top" Width="75" Height="45" Click="MonitorSelectButton_Click"/>
+        <Button x:Name="MediaButton" Content="Use Video" HorizontalAlignment="Left" Margin="251,211,0,0" VerticalAlignment="Top" Width="74" Height="47" Click="MediaButton_Click"/>
 
     </Grid>
 </Window>

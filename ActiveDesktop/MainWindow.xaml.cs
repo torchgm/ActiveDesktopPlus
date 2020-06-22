@@ -69,7 +69,7 @@ namespace ActiveDesktop
                 LockButton.IsEnabled = false;
                 LockedCheckBox.IsEnabled = false;
             }
-            Show();
+            //Show();
             FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise();
 
         }
@@ -470,6 +470,7 @@ namespace ActiveDesktop
                 YBox.IsEnabled = false;
                 WidthBox.IsEnabled = false;
                 HeightBox.IsEnabled = false;
+                MonitorSelectButton_Click(null, null);
             }
             else
             {
@@ -477,9 +478,11 @@ namespace ActiveDesktop
                 YBox.IsEnabled = true;
                 WidthBox.IsEnabled = true;
                 HeightBox.IsEnabled = true;
-                MonitorSelectButton_Click(null, null);
             }
-
+            if (CmdBox.Text == "")
+            {
+                CmdBox.Text = "Command Line";
+            }
 
         }
 
@@ -987,6 +990,142 @@ namespace ActiveDesktop
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         [DllImport("user32.dll")]
         public static extern bool DestroyWindow(IntPtr hWnd);
+
+        private void MediaButton_Click(object sender, RoutedEventArgs e)
+        {
+            CmdBox.Text = "MEDIA";
+            FlagBox.Text = "Path to Video";
+        }
+
+        private void CmdBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (CmdBox.Text == "MEDIA" || CmdBox.Text == "Command Line")
+            {
+                CmdBox.Text = "";
+                FlagBox.Text = "Flags";
+            }
+        }
+
+        private void FlagBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (FlagBox.Text == "")
+            {
+                if (CmdBox.Text == "MEDIA")
+                {
+                    FlagBox.Text = "Path to Video";
+                }
+                else
+                {
+                    FlagBox.Text = "Flags";
+                }
+            }
+        }
+
+        private void FlagBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags")
+            {
+                FlagBox.Text = "";
+            }
+        }
+
+        private void XBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (XBox.Text == "")
+            {
+                XBox.Text = "X";
+            }
+        }
+
+        private void XBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (XBox.Text == "X")
+            {
+                XBox.Text = "";
+            }
+        }
+
+        private void YBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (YBox.Text == "")
+            {
+                YBox.Text = "Y";
+            }
+        }
+
+        private void YBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (YBox.Text == "Y")
+            {
+                YBox.Text = "";
+            }
+        }
+
+        private void WidthBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (WidthBox.Text == "")
+            {
+                WidthBox.Text = "Width";
+            }
+        }
+
+        private void WidthBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (WidthBox.Text == "Width")
+            {
+                WidthBox.Text = "";
+            }
+        }
+
+        private void HeightBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (HeightBox.Text == "")
+            {
+                HeightBox.Text = "Height";
+            }
+        }
+
+        private void HeightBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (HeightBox.Text == "Height")
+            {
+                HeightBox.Text = "";
+            }
+        }
+
+        private void NameBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (NameBox.Text == "")
+            {
+                NameBox.Text = "Friendly Name";
+            }
+        }
+
+        private void NameBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (NameBox.Text == "Friendly Name")
+            {
+                NameBox.Text = "";
+            }
+        }
+
+        private void TimeBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (TimeBox.Text == "")
+            {
+                TimeBox.Text = "Wait Time";
+            }
+        }
+
+        private void TimeBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (TimeBox.Text == "Wait Time")
+            {
+                TimeBox.Text = "";
+            }
+        }
+
+        
     }
 
 }
