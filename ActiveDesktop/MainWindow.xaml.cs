@@ -33,7 +33,6 @@ namespace ActiveDesktop
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
 
-
         // On-start tasks
         public MainWindow()
         {
@@ -47,7 +46,7 @@ namespace ActiveDesktop
                 RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
                 DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             }
-            HwndInputTextBox.Text = DesktopHandle.ToString();
+            
 
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             FileSystem();
@@ -72,8 +71,9 @@ namespace ActiveDesktop
             //Show();
             FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise();
 
+            TitleTextBox.Text = "[Hold Ctrl to select an app]";
+            HwndInputTextBox.Text = "";
         }
-
 
         // This exists because for some insanely stupid reason, scaling simply doesn't work unless a video is played across all desktops first
         public void FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise()
@@ -91,7 +91,6 @@ namespace ActiveDesktop
             DestroyWindow(hvid);
             RefreshLists();
         }
-
 
         // Stores window properties
         public void StoreWindowProperties(int Handle, int Properties, int PropertiesEx)
@@ -130,19 +129,35 @@ namespace ActiveDesktop
             return 0;
         }
 
-        // Deals with listening to the B key
+        // Deals with listening to the Ctrl key
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
             // Deals with finding the target window the user wants to send to the desktop
-            // I'll probably work out how to do it with the mouse at some point but 🅱
-            if (e.Key == Key.B)
+            // I'll probably work out how to do it with the mouse at some point but 🅱 was easier at the time
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
                 TargetHandle = WindowFromPoint(Convert.ToInt32(GetCursorPosition().X), Convert.ToInt32(GetCursorPosition().Y));
                 HwndInputTextBox.Text = TargetHandle.ToString();
                 StringBuilder WindowTitle = new StringBuilder(1000);
                 int result = GetWindowText(TargetHandle, WindowTitle, 1000);
                 TitleTextBox.Text = WindowTitle.ToString();
+                if (HwndInputTextBox.Text == DesktopHandle.ToString())
+                {
+                    TitleTextBox.Text = "[Desktop]";
+                }
+                else if (TitleTextBox.Text == "")
+                {
+                    TitleTextBox.Text = "[Window has no title]";
+                }
+                ApplyHwndButton.Content = "Hover over an app's title bar to select it, then release Ctrl";
+                ApplyHwndButton.IsEnabled = false;
             }
+        }
+
+        private void OnKeyUpHandler(object sender, KeyEventArgs e)
+        {
+            ApplyHwndButton.Content = "Send to Desktop";
+            ApplyHwndButton.IsEnabled = true;
         }
 
         // Sends the selected handle to the desktop
@@ -155,6 +170,9 @@ namespace ActiveDesktop
             int x = TranslateCanvasX(0);
             int y = TranslateCanvasY(0);
             MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
+            TitleTextBox.Text = "[Hold Ctrl to select an app]";
+            HwndInputTextBox.Text = "";
+            
             RefreshLists();
         }
 
@@ -348,34 +366,37 @@ namespace ActiveDesktop
         // Allows the user to easily save the selected window
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            RECT PosTarget;
-            uint PID;
-            string SyllyIsAwesome;
-            IntPtr hwnd = IntPtr.Zero;
-            hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            StringBuilder WindowTitle = new StringBuilder(1000);
-            StringBuilder FileName = new StringBuilder(1000);
-            uint size = (uint)FileName.Capacity;
-            GetWindowThreadProcessId(hwnd, out PID);
-            IntPtr handle = OpenProcess(0x1000, false, PID);
-            if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
+            if (HandleListBox.SelectedIndex != -1)
             {
-                SyllyIsAwesome = FileName.ToString(0, (int)size);
-            }
-            else
-            {
-                SyllyIsAwesome = string.Empty;
-            }
-            CloseHandle(handle);
+                RECT PosTarget;
+                uint PID;
+                string SyllyIsAwesome;
+                IntPtr hwnd = IntPtr.Zero;
+                hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                StringBuilder WindowTitle = new StringBuilder(1000);
+                StringBuilder FileName = new StringBuilder(1000);
+                uint size = (uint)FileName.Capacity;
+                GetWindowThreadProcessId(hwnd, out PID);
+                IntPtr handle = OpenProcess(0x1000, false, PID);
+                if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
+                {
+                    SyllyIsAwesome = FileName.ToString(0, (int)size);
+                }
+                else
+                {
+                    SyllyIsAwesome = string.Empty;
+                }
+                CloseHandle(handle);
 
-            GetWindowRect(hwnd, out PosTarget);
-            GetWindowText(hwnd, WindowTitle, 1000);
-            CmdBox.Text = SyllyIsAwesome;
-            XBox.Text = PosTarget.Top.ToString();
-            YBox.Text = PosTarget.Left.ToString();
-            WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
-            HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
-            NameBox.Text = WindowTitle.ToString();
+                GetWindowRect(hwnd, out PosTarget);
+                GetWindowText(hwnd, WindowTitle, 1000);
+                CmdBox.Text = SyllyIsAwesome;
+                XBox.Text = PosTarget.Top.ToString();
+                YBox.Text = PosTarget.Left.ToString();
+                WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
+                HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
+                NameBox.Text = WindowTitle.ToString();
+            }
         }
 
         // Attempts to close the selected app
@@ -918,7 +939,7 @@ namespace ActiveDesktop
             return y - LargestNegative;
         }
 
-        // Handles 
+        // Manages minimising to the tray.
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             base.OnClosing(e);
@@ -930,16 +951,12 @@ namespace ActiveDesktop
             ShowMenuItem.Header = "Show ADP";
         }
 
-        
-
         // Something to do with getting monitors (hahalol like I understand it)
         public bool MonitorEnumProc(IntPtr MonitorHandle, IntPtr hdc, out RECT UnusedButNecessaryRECT, IntPtr UnusedButNecessaryIntPtr)
         {
             UnusedButNecessaryRECT = new RECT();
             return true;
         }
-
-
 
         // Weird cursed external stuff that terrifies me
         [DllImport("user32.dll")]
@@ -1026,6 +1043,8 @@ namespace ActiveDesktop
             }
         }
 
+
+        // Literally all these do is emulate the behaviour of a watermark in the TextBoxes because WPF really sucks so that's why they're all down here alone.
         private void FlagBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags")
@@ -1129,8 +1148,6 @@ namespace ActiveDesktop
                 TimeBox.Text = "";
             }
         }
-
-        
     }
 
 }
