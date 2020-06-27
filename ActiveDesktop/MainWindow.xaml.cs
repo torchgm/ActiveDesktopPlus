@@ -32,6 +32,8 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
+        int DesktopXMisalignment = 0;
+        int DesktopYMisalignment = 0;
 
         // On-start tasks
         public MainWindow()
@@ -51,6 +53,7 @@ namespace ActiveDesktop
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             FileSystem();
             JSONArrayList = ReadJSON();
+            Displays = GetDisplays();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
@@ -61,16 +64,7 @@ namespace ActiveDesktop
             {
                 StartupCheckBox.IsChecked = false;
             }
-            Displays = GetDisplays();
-            // Disables Lock button on multi-monitor setups (as it doesn't work reliably)
-            if (Displays.Count > 1)
-            {
-                LockButton.IsEnabled = false;
-                LockedCheckBox.IsEnabled = false;
-            }
-            //Show();
-            FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise();
-
+            
             TitleTextBox.Text = "[Hold Ctrl to select an app]";
             HwndInputTextBox.Text = "";
         }
@@ -352,14 +346,15 @@ namespace ActiveDesktop
             RefreshLists();
         }
 
-        // Draws a locking window over any given app
+        // Draws a locking window over any given app [Temporarily replaced with Fix Button]
         private void LockButton_Click(object sender, RoutedEventArgs e)
         {
             if (HandleListBox.SelectedItem != null)
             {
-
                 IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-                LockApp(hwnd);
+                //FixAppButton(hwnd);
+
+
             }
         }
 
@@ -828,20 +823,14 @@ namespace ActiveDesktop
             GeneratedLockWindow.Show();
 
             IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
-            
+
             RECT WindowTargetLock;
             GetWindowRect(hwnd, out WindowTargetLock);
-
+            // SetParent(hlock, DesktopHandle);
             GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
             GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
-            GeneratedLockWindow.Left = TranslateCanvasX(WindowTargetLock.Left);
-            GeneratedLockWindow.Top = TranslateCanvasY(WindowTargetLock.Top);
-
-            // Technically just the same as above, keeping so i don't forget
-            //int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(WindowTargetLock.Left));
-            //int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(WindowTargetLock.Top));
-            //MoveWindow(hwnd, CorrectedXpos - 1, CorrectedYpos, Convert.ToInt32(GetWindowSize(hwnd).Width), Convert.ToInt32(GetWindowSize(hwnd).Height), true);
-            SetParent(hlock, DesktopHandle);
+            GeneratedLockWindow.Left = WindowTargetLock.Left;
+            GeneratedLockWindow.Top = WindowTargetLock.Top;
 
             RefreshLists();
         }
@@ -868,8 +857,6 @@ namespace ActiveDesktop
                 ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
                 IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
                 Thread.Sleep(Convert.ToInt32(t));
-                SetParent(hvid, DesktopHandle);
-                //GeneratedVideoWallpaper.WindowState = WindowState.Maximized;
                 SetWindowSizeAndLock(i, hvid);
             }
         }
@@ -1012,6 +999,8 @@ namespace ActiveDesktop
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         [DllImport("user32.dll")]
         public static extern bool DestroyWindow(IntPtr hWnd);
+        [DllImport("user32.dll")]
+        public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
 
         private void MediaButton_Click(object sender, RoutedEventArgs e)
         {

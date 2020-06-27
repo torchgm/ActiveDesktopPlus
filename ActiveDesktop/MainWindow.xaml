@@ -26,13 +26,13 @@
         <Rectangle Fill="#06000000" Stroke="#22000000" Height="164" VerticalAlignment="Top" Margin="9,18,0,0" HorizontalAlignment="Left" Width="317"/>
 
         <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" Margin="11,50,0,0" VerticalAlignment="Top" Width="104" Height="26"/>
-        <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205"/>
+        <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Left" Width="205"/>
         <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="10,81,0,0" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top" IsDefault="True"/>
         <ListBox x:Name="HandleListBox" Margin="333,19,0,0" Height="130" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315">
             <UniformGrid Columns="2"/>
         </ListBox>
         <Button x:Name="BorderlessButton" Content="Pin" Margin="120,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="BorderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
-        <Button x:Name="LockButton" Content="[Exp.] Add Lock" Margin="227,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="LockButton_Click" HorizontalAlignment="Left" Width="98" Foreground="#FFE09900" FontWeight="Bold"/>
+        <Button x:Name="LockButton" Content="Toggle Lock" Margin="227,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="LockButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="UnborderlessButton" Content="Unpin" Margin="120,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="UnborderlessButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="CloseButton" Content="Close" Margin="227,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="98"/>
         <Button x:Name="SaveButton" Content="Save" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315"/>
@@ -50,7 +50,7 @@
         <Button x:Name="TestButton" Content="Launch" Margin="547,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" Width="101"/>
         <Button x:Name="WriteButton" Content="Save changes" Margin="333,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="101" IsEnabled="False"/>
         <Separator Height="11" Margin="10,188,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
-        <CheckBox x:Name="LockedCheckBox" Content="Start Locked" HorizontalAlignment="Left" Margin="10,345,0,0" VerticalAlignment="Top" Width="88" Height="15"/>
+        <CheckBox x:Name="LockedCheckBox" Content="Start locked" HorizontalAlignment="Left" Margin="10,345,0,0" VerticalAlignment="Top" Width="110" Height="15" Checked="LockedCheckBox_Checked"/>
         <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="131,345,0,0" VerticalAlignment="Top" Width="99" Height="15"/>
         <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" Margin="11,19,0,0" VerticalAlignment="Top" Width="109" Height="26"/>
         <TextBox x:Name="TitleTextBox" Height="26" Margin="120,19,0,0" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205" MaxLines="1"/>
