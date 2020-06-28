@@ -1,0 +1,33 @@
+﻿<Page x:Class="ActiveDesktop.Views.SavedApps"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:ActiveDesktop.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="462" d:DesignWidth="325"
+      Title="SavedApps">
+
+    <Grid>
+        <TextBox x:Name="CmdBox" Margin="8,7,0,0" Text="Command Line" HorizontalAlignment="Left" Width="236" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus" GotFocus="CmdBox_GotFocus" ToolTip="Path to the executable you wish to start. &quot;MEDIA&quot; will set a video as your wallpaper"/>
+        <TextBox x:Name="FlagBox" Margin="8,43,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="236" LostFocus="FlagBox_LostFocus" GotFocus="FlagBox_GotFocus" ToolTip="Any paths, flags or switches you want your application to start with. If the command-line is &quot;MEDIA&quot;, then this box acts as a path to the video you wish to play."/>
+        <TextBox x:Name="XBox" Margin="8,80,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="XBox_GotFocus" LostFocus="XBox_LostFocus" ToolTip="The X coordinate of the top-left of your window"/>
+        <TextBox x:Name="YBox" Margin="129,80,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="YBox_GotFocus" LostFocus="YBox_LostFocus" ToolTip="The Y coordinate of the top-left of your window"/>
+        <TextBox x:Name="WidthBox" Margin="8,117,0,0" Text="Width" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="WidthBox_GotFocus" LostFocus="WidthBox_LostFocus" ToolTip="The width of the window"/>
+        <TextBox x:Name="HeightBox" Margin="129,117,0,0" Text="Height" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="HeightBox_GotFocus" LostFocus="HeightBox_LostFocus" ToolTip="The height of the window"/>
+        <TextBox x:Name="NameBox" Margin="8,154,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="157" GotFocus="NameBox_GotFocus" LostFocus="NameBox_LostFocus" ToolTip="The name you want this app to appear as in the list of saved apps"/>
+        <TextBox x:Name="TimeBox" Margin="173,154,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" GotFocus="TimeBox_GotFocus" LostFocus="TimeBox_LostFocus" ToolTip="How long ADP should wait before attempting to send the app to the desktop"/>
+        <Button x:Name="AddButton" Content="Add to saved apps" Margin="8,243,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="Adds the configured app to the list of saved apps"/>
+        <ListBox x:Name="SavedListBox" Margin="8,278,0,0" HorizontalAlignment="Left" Width="315" Height="142" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679" ToolTip="List of apps saved in the config"/>
+        <Button x:Name="RemoveButton" Content="Remove" Margin="115,425,0,0" HorizontalContentAlignment="Center" Height="32" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="101" ToolTip="Removes an entry on the saved apps list" />
+        <Button x:Name="TestButton" Content="Launch" Margin="222,425,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" ToolTip="Launches the selected app from the list" Height="32" Width="101"/>
+        <Button x:Name="WriteButton" Content="Save changes" Margin="8,425,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="101" IsEnabled="False" Foreground="Red" ToolTip="Saves changes to the config file" Height="32"/>
+        <CheckBox x:Name="LockedCheckBox" Content="Start Locked" HorizontalAlignment="Left" Margin="8,186,0,0" VerticalAlignment="Top" Width="110" Height="15" ToolTip="Start the app with interaction disabled"/>
+        <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="8,212,0,0" VerticalAlignment="Top" Width="100" Height="15" ToolTip="Starts the app as soon as ADP opens"/>
+        <Button x:Name="MonitorSelectButton" Content="  Select &#xA;Monitor" HorizontalAlignment="Left" Margin="249,80,0,0" VerticalAlignment="Top" Width="74" Height="69" Click="MonitorSelectButton_Click" ToolTip="Cycles through all monitors and automatically fills out their X, Y, Width and Height"/>
+        <Button x:Name="MediaButton" Content="  Use &#xA;Video" HorizontalAlignment="Left" Margin="249,7,0,0" VerticalAlignment="Top" Width="74" Height="68" Click="MediaButton_Click" ToolTip="Click this to add a video as opposed to an app"/>
+        <CheckBox x:Name="PinnedCheckBox" Content="Start pinned" HorizontalAlignment="Left" Margin="173,186,0,0" VerticalAlignment="Top" ToolTip="Removes the borders from the app after its started"/>
+        <CheckBox x:Name="FixCheckBox" Content="Fix alignment" HorizontalAlignment="Left" Margin="173,212,0,0" VerticalAlignment="Top" ToolTip="Attempts to fix the alignment of an app once it's opened"/>
+
+    </Grid>
+</Page>

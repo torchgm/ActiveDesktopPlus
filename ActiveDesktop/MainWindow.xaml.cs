@@ -1,4 +1,6 @@
-﻿using IWshRuntimeLibrary;
+﻿using ActiveDesktop.Views;
+using IWshRuntimeLibrary;
+using ModernWpf.Controls;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,9 +11,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.ComponentModel;
 
 namespace ActiveDesktop
 {
@@ -30,12 +32,16 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
+        
+        // Generates pages first
+        Settings SettingsPage = new Settings();
+        CurrentApps CurrentAppsPage = new CurrentApps();
+        SavedApps SavedAppsPage = new SavedApps();
 
         // On-start tasks
         public MainWindow()
         {
             InitializeComponent();
-
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
@@ -48,20 +54,24 @@ namespace ActiveDesktop
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             FileSystem();
             JSONArrayList = ReadJSON();
+            
             Displays = GetDisplays();
             RefreshLists();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
-
             if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
             {
-                StartupCheckBox.IsChecked = false;
+                SettingsPage.StartupToggle.IsOn = false;
+            }
+            else
+            {
+                SettingsPage.StartupToggle.IsOn = true;
             }
 
-            TitleTextBox.Text = "[Hold Ctrl to select an app]";
-            HwndInputTextBox.Text = "";
+            CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
+            CurrentAppsPage.HwndInputTextBox.Text = "";
         }
 
         // Stores window properties
@@ -102,39 +112,39 @@ namespace ActiveDesktop
         }
 
         // Deals with listening to the Ctrl key
-        private void OnKeyDownHandler(object sender, KeyEventArgs e)
+        public void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
             // Deals with finding the target window the user wants to send to the desktop
             // I'll probably work out how to do it with the mouse at some point but 🅱 was easier at the time
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
                 TargetHandle = WindowFromPoint(Convert.ToInt32(GetCursorPosition().X), Convert.ToInt32(GetCursorPosition().Y));
-                HwndInputTextBox.Text = TargetHandle.ToString();
+                CurrentAppsPage.HwndInputTextBox.Text = TargetHandle.ToString();
                 StringBuilder WindowTitle = new StringBuilder(1000);
                 int result = GetWindowText(TargetHandle, WindowTitle, 1000);
-                TitleTextBox.Text = WindowTitle.ToString();
-                if (HwndInputTextBox.Text == DesktopHandle.ToString())
+                CurrentAppsPage.TitleTextBox.Text = WindowTitle.ToString();
+                if (CurrentAppsPage.HwndInputTextBox.Text == DesktopHandle.ToString())
                 {
-                    TitleTextBox.Text = "[Desktop]";
+                    CurrentAppsPage.TitleTextBox.Text = "[Desktop]";
                 }
-                else if (TitleTextBox.Text == "")
+                else if (CurrentAppsPage.TitleTextBox.Text == "")
                 {
-                    TitleTextBox.Text = "[Window has no title]";
+                    CurrentAppsPage.TitleTextBox.Text = "[Window has no title]";
                 }
-                ApplyHwndButton.Content = "Hover over an app's title bar to select it, then release Ctrl";
-                ApplyHwndButton.IsEnabled = false;
+                CurrentAppsPage.ApplyHwndButton.Content = "Hover over an app's title bar\nto select it, then release Ctrl";
+                CurrentAppsPage.ApplyHwndButton.IsEnabled = false;
             }
         }
 
         // See above
-        private void OnKeyUpHandler(object sender, KeyEventArgs e)
+        public void OnKeyUpHandler(object sender, KeyEventArgs e)
         {
-            ApplyHwndButton.Content = "Send to Desktop";
-            ApplyHwndButton.IsEnabled = true;
+            CurrentAppsPage.ApplyHwndButton.Content = "Send to Desktop";
+            CurrentAppsPage.ApplyHwndButton.IsEnabled = true;
         }
 
         // Sends the selected handle to the desktop
-        private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
+        public void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
             // This bit just makes the window a child of the desktop. Honestly a lot easier than I first thought.
             RECT TempRect = new RECT();
@@ -143,12 +153,13 @@ namespace ActiveDesktop
             int x = TranslateCanvasX(0);
             int y = TranslateCanvasY(0);
             MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
-            TitleTextBox.Text = "[Hold Ctrl to select an app]";
-            HwndInputTextBox.Text = "";
+            CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
+            CurrentAppsPage.HwndInputTextBox.Text = "";
 
             RefreshLists();
         }
 
+        // Magic
         protected override void OnActivated(EventArgs e)
         {
             RefreshLists();
@@ -156,11 +167,11 @@ namespace ActiveDesktop
         }
 
         // Makes the selected window borderless
-        private void BorderlessButton_Click(object sender, RoutedEventArgs e)
+        public void BorderlessButton_Click(object sender, RoutedEventArgs e)
         {
-            if (HandleListBox.SelectedItem != null)
+            if (CurrentAppsPage.HandleListBox.SelectedItem != null)
             {
-                PinApp(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]);
+                PinApp(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]);
             }
         }
 
@@ -175,7 +186,7 @@ namespace ActiveDesktop
             DesktopWindowPropertyList = new List<List<string>>();
 
             // Checks every child of the desktop to see if they're a direct root window, then if they are, assigns them a numerical ID and adds their title and handle to a list.
-            HandleListBox.Items.Clear();
+            CurrentAppsPage.HandleListBox.Items.Clear();
             for (IntPtr ChildHandle = FindWindowExA(DesktopHandle, IntPtr.Zero, null, null); ChildHandle != IntPtr.Zero; ChildHandle = FindWindowExA(DesktopHandle, ChildHandle, null, null))
             {
                 int result = GetWindowText(ChildHandle, WindowTitle, 1000);
@@ -199,7 +210,7 @@ namespace ActiveDesktop
                         }
                     }
 
-                    HandleListBox.Items.Add(DesktopWindowPropertyList[count][1] + " " + DesktopWindowPropertyList[count][0]);
+                    CurrentAppsPage.HandleListBox.Items.Add(DesktopWindowPropertyList[count][1] + " " + DesktopWindowPropertyList[count][0]);
                     count++;
                 }
             }
@@ -207,87 +218,87 @@ namespace ActiveDesktop
         }
 
         // Refresh event for the saved apps list
-        private void SavedListRefreshEvent()
+        public void SavedListRefreshEvent()
         {
-            SavedListBox.Items.Clear();
+            SavedAppsPage.SavedListBox.Items.Clear();
             foreach (App i in JSONArrayList)
             {
                 if (i.Name == "Friendly Name")
                 {
-                    SavedListBox.Items.Add(i.Cmd);
+                    SavedAppsPage.SavedListBox.Items.Add(i.Cmd);
 
                 }
                 else
                 {
-                    SavedListBox.Items.Add(i.Name);
+                    SavedAppsPage.SavedListBox.Items.Add(i.Name);
                 }
             }
         }
 
         // Handles adding a new app to the saved apps list
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        public void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CmdBox.Text != "Command Line")
+            if (SavedAppsPage.CmdBox.Text != "Command Line")
             {
                 App AppToAdd = new App();
-                AppToAdd.Cmd = CmdBox.Text;
-                AppToAdd.Xpos = XBox.Text;
-                AppToAdd.Ypos = YBox.Text;
-                AppToAdd.Width = WidthBox.Text;
-                AppToAdd.Height = HeightBox.Text;
-                AppToAdd.Flags = FlagBox.Text;
-                AppToAdd.Name = NameBox.Text;
-                AppToAdd.Time = TimeBox.Text;
-                AppToAdd.Lock = LockedCheckBox.IsChecked ?? false;
-                AppToAdd.Startup = AutostartCheckBox.IsChecked ?? false;
-                AppToAdd.Fix = FixCheckBox.IsChecked ?? false;
-                AppToAdd.Pin = PinnedCheckBox.IsChecked ?? false;
+                AppToAdd.Cmd = SavedAppsPage.CmdBox.Text;
+                AppToAdd.Xpos = SavedAppsPage.XBox.Text;
+                AppToAdd.Ypos = SavedAppsPage.YBox.Text;
+                AppToAdd.Width = SavedAppsPage.WidthBox.Text;
+                AppToAdd.Height = SavedAppsPage.HeightBox.Text;
+                AppToAdd.Flags = SavedAppsPage.FlagBox.Text;
+                AppToAdd.Name = SavedAppsPage.NameBox.Text;
+                AppToAdd.Time = SavedAppsPage.TimeBox.Text;
+                AppToAdd.Lock = SavedAppsPage.LockedCheckBox.IsChecked ?? false;
+                AppToAdd.Startup = SavedAppsPage.AutostartCheckBox.IsChecked ?? false;
+                AppToAdd.Fix = SavedAppsPage.FixCheckBox.IsChecked ?? false;
+                AppToAdd.Pin = SavedAppsPage.PinnedCheckBox.IsChecked ?? false;
                 JSONArrayList.Add(AppToAdd);
 
 
 
-                CmdBox.Text = "Command Line";
-                XBox.Text = "X";
-                YBox.Text = "Y";
-                WidthBox.Text = "Width";
-                HeightBox.Text = "Height";
-                FlagBox.Text = "Flags";
-                NameBox.Text = "Friendly Name";
-                TimeBox.Text = "Wait Time";
-                WriteButton.IsEnabled = true;
+                SavedAppsPage.CmdBox.Text = "Command Line";
+                SavedAppsPage.XBox.Text = "X";
+                SavedAppsPage.YBox.Text = "Y";
+                SavedAppsPage.WidthBox.Text = "Width";
+                SavedAppsPage.HeightBox.Text = "Height";
+                SavedAppsPage.FlagBox.Text = "Flags";
+                SavedAppsPage.NameBox.Text = "Friendly Name";
+                SavedAppsPage.TimeBox.Text = "Wait Time";
+                SavedAppsPage.WriteButton.IsEnabled = true;
             }
             SavedListRefreshEvent();
         }
 
         // Calls a refresh of the children of the desktop
-        private void AppList_Click(object sender, MouseButtonEventArgs e)
+        public void AppList_Click(object sender, MouseButtonEventArgs e)
         {
             RefreshLists();
         }
 
         // Button that removes entries from the saved app list
-        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        public void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SavedListBox.SelectedIndex != -1)
+            if (SavedAppsPage.SavedListBox.SelectedIndex != -1)
             {
-                JSONArrayList.RemoveAt(SavedListBox.SelectedIndex);
+                JSONArrayList.RemoveAt(SavedAppsPage.SavedListBox.SelectedIndex);
                 SavedListRefreshEvent();
-                WriteButton.IsEnabled = true;
+                SavedAppsPage.WriteButton.IsEnabled = true;
             }
 
         }
 
         // Button that writes changes to disk
-        private void WriteButton_Click(object sender, RoutedEventArgs e)
+        public void WriteButton_Click(object sender, RoutedEventArgs e)
         {
             WriteJSON();
-            WriteButton.IsEnabled = false;
+            SavedAppsPage.WriteButton.IsEnabled = false;
         }
 
         // Button that tests how an application behaves on startup
-        private void TestButton_Click(object sender, RoutedEventArgs e)
+        public void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SavedListBox.SelectedIndex != -1)
+            if (SavedAppsPage.SavedListBox.SelectedIndex != -1)
             {
                 int n = 0;
                 foreach (App i in JSONArrayList)
@@ -312,7 +323,7 @@ namespace ActiveDesktop
                         i.Flags = @"C:\.mp4";
                     }
 
-                    if (n == SavedListBox.SelectedIndex)
+                    if (n == SavedAppsPage.SavedListBox.SelectedIndex)
                     {
                         WindowFromListToDesktop(i, t);
                     }
@@ -325,25 +336,25 @@ namespace ActiveDesktop
         }
 
         // Draws a locking window over any given app
-        private void LockButton_Click(object sender, RoutedEventArgs e)
+        public void LockButton_Click(object sender, RoutedEventArgs e)
         {
-            if (HandleListBox.SelectedItem != null)
+            if (CurrentAppsPage.HandleListBox.SelectedItem != null)
             {
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 LockApp(hwnd);
             }
         }
 
         // Allows the user to easily save the selected window
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        public void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (HandleListBox.SelectedIndex != -1)
+            if (CurrentAppsPage.HandleListBox.SelectedIndex != -1)
             {
                 RECT PosTarget;
                 uint PID;
                 string SyllyIsAwesome;
                 IntPtr hwnd = IntPtr.Zero;
-                hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 StringBuilder WindowTitle = new StringBuilder(1000);
                 StringBuilder FileName = new StringBuilder(1000);
                 uint size = (uint)FileName.Capacity;
@@ -361,21 +372,23 @@ namespace ActiveDesktop
 
                 GetWindowRect(hwnd, out PosTarget);
                 GetWindowText(hwnd, WindowTitle, 1000);
-                CmdBox.Text = SyllyIsAwesome;
-                XBox.Text = PosTarget.Top.ToString();
-                YBox.Text = PosTarget.Left.ToString();
-                WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
-                HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
-                NameBox.Text = WindowTitle.ToString();
+                SavedAppsPage.CmdBox.Text = SyllyIsAwesome;
+                SavedAppsPage.XBox.Text = PosTarget.Top.ToString();
+                SavedAppsPage.YBox.Text = PosTarget.Left.ToString();
+                SavedAppsPage.WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
+                SavedAppsPage.HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
+                SavedAppsPage.NameBox.Text = WindowTitle.ToString();
+                ContentFrame.Navigate(SavedAppsPage);
+                NavView.SelectedItem = NavView.MenuItems[1];
             }
         }
 
         // Attempts to close the selected app
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        public void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (HandleListBox.SelectedItem != null)
+            if (CurrentAppsPage.HandleListBox.SelectedItem != null)
             {
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 uint WM_CLOSE = 0x0010;
                 SendMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
             }
@@ -384,7 +397,7 @@ namespace ActiveDesktop
         }
 
         // Adds startup shortcut
-        private void StartupCheckBox_Checked(object sender, RoutedEventArgs e)
+        public void EnableStartup(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -410,7 +423,7 @@ namespace ActiveDesktop
         }
 
         // Removes startup shortcut
-        private void StartupCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        public void DisableStartup(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -426,65 +439,65 @@ namespace ActiveDesktop
         }
 
         // Button for selecting a monitor quickly
-        private void MonitorSelectButton_Click(object sender, RoutedEventArgs e)
+        public void MonitorSelectButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedDisplay++;
             if (SelectedDisplay > Displays.Count)
             {
                 SelectedDisplay = 0;
             }
-            MonitorSelectButton.Content = "Monitor: " + (SelectedDisplay + 1).ToString();
+            SavedAppsPage.MonitorSelectButton.Content = "Monitor: " + (SelectedDisplay + 1).ToString();
             try
             {
-                XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
-                YBox.Text = Displays[SelectedDisplay].MonitorArea.Top.ToString();
-                WidthBox.Text = Displays[SelectedDisplay].ScreenWidth;
-                HeightBox.Text = Displays[SelectedDisplay].ScreenHeight;
+                SavedAppsPage.XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
+                SavedAppsPage.YBox.Text = Displays[SelectedDisplay].MonitorArea.Top.ToString();
+                SavedAppsPage.WidthBox.Text = Displays[SelectedDisplay].ScreenWidth;
+                SavedAppsPage.HeightBox.Text = Displays[SelectedDisplay].ScreenHeight;
             }
             catch (Exception)
             {
-                XBox.Text = "[Disconnected]";
-                YBox.Text = "[Disconnected]";
-                WidthBox.Text = "[Disconnected]";
-                HeightBox.Text = "[Disconnected]";
+                SavedAppsPage.XBox.Text = "[Disconnected]";
+                SavedAppsPage.YBox.Text = "[Disconnected]";
+                SavedAppsPage.WidthBox.Text = "[Disconnected]";
+                SavedAppsPage.HeightBox.Text = "[Disconnected]";
 
             }
 
         }
 
         // Clears monitor select button
-        private void ResetMonitorSelectButton(object sender, RoutedEventArgs e)
+        public void ResetMonitorSelectButton(object sender, RoutedEventArgs e)
         {
-            MonitorSelectButton.Content = " Select\nMonitor";
+            SavedAppsPage.MonitorSelectButton.Content = " Select\nMonitor";
         }
 
         // Limits media entry
-        private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
+        public void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (CmdBox.Text == "MEDIA")
+            if (SavedAppsPage.CmdBox.Text == "MEDIA")
             {
-                XBox.IsEnabled = false;
-                YBox.IsEnabled = false;
-                WidthBox.IsEnabled = false;
-                HeightBox.IsEnabled = false;
+                SavedAppsPage.XBox.IsEnabled = false;
+                SavedAppsPage.YBox.IsEnabled = false;
+                SavedAppsPage.WidthBox.IsEnabled = false;
+                SavedAppsPage.HeightBox.IsEnabled = false;
                 MonitorSelectButton_Click(null, null);
             }
             else
             {
-                XBox.IsEnabled = true;
-                YBox.IsEnabled = true;
-                WidthBox.IsEnabled = true;
-                HeightBox.IsEnabled = true;
+                SavedAppsPage.XBox.IsEnabled = true;
+                SavedAppsPage.YBox.IsEnabled = true;
+                SavedAppsPage.WidthBox.IsEnabled = true;
+                SavedAppsPage.HeightBox.IsEnabled = true;
             }
-            if (CmdBox.Text == "")
+            if (SavedAppsPage.CmdBox.Text == "")
             {
-                CmdBox.Text = "Command Line";
+                SavedAppsPage.CmdBox.Text = "Command Line";
             }
 
         }
 
         // Tray icon handler thingy
-        private void ShowMenuItem_Click(object sender, EventArgs e)
+        public void ShowMenuItem_Click(object sender, EventArgs e)
         {
             IntPtr MainHandle = new WindowInteropHelper(this).Handle;
             if (IsHidden == true)
@@ -502,18 +515,65 @@ namespace ActiveDesktop
         }
 
         // Proper close button thingy
-        private void CloseMenuItem_Click(object sender, EventArgs e)
+        public void CloseMenuItem_Click(object sender, EventArgs e)
         {
             Application.Current.Shutdown();
         }
 
         // Handles the fix button
-        private void FixButton_Click(object sender, RoutedEventArgs e)
+        public void FixButton_Click(object sender, RoutedEventArgs e)
         {
-            if (HandleListBox.SelectedItem != null)
+            if (CurrentAppsPage.HandleListBox.SelectedItem != null)
             {
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 FixApp(hwnd);
+            }
+        }
+
+        private void NavView_Loaded(object sender, RoutedEventArgs e)
+        {
+            NavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+            // Set the initial SelectedItem
+            foreach (NavigationViewItemBase item in NavView.MenuItems)
+            {
+                if (item is NavigationViewItem && item.Tag.ToString() == "Page_Settings")
+                {
+                    NavView.SelectedItem = item;
+                    break;
+                }
+            }
+            ContentFrame.Navigate(CurrentAppsPage);
+            NavView.SelectedItem = NavView.MenuItems[0];
+        }
+
+        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+        }
+
+        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            {
+                if (args.IsSettingsInvoked)
+                {
+                    ContentFrame.Navigate(SettingsPage);
+                }
+                else
+                {
+                    TextBlock ItemContent = args.InvokedItem as TextBlock;
+                    if (ItemContent != null)
+                    {
+                        switch (ItemContent.Tag)
+                        {
+                            case "Nav_Current":
+                                ContentFrame.Navigate(CurrentAppsPage);
+                                break;
+
+                            case "Nav_Saved":
+                                ContentFrame.Navigate(SavedAppsPage);
+                                break;
+                        }
+                    }
+                }
             }
         }
 
@@ -618,6 +678,8 @@ namespace ActiveDesktop
             public bool Fix { get; set; }
             public bool Pin { get; set; }
         }
+
+
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -765,7 +827,7 @@ namespace ActiveDesktop
             SetWindowPos(SelectedHandlePtr, 0, 0, 0, 0, 0, uFlags);
         }
 
-        // Checks for AppData directory/CSV and creates it if it doesn't exist
+        // Checks for AppData directory/configs and creates them if they doesn't exist
         private void FileSystem()
         {
             string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -781,8 +843,9 @@ namespace ActiveDesktop
             }
             if (System.IO.File.ReadAllText(Path.Combine(LocalFolder, "saved.json")) == "" || System.IO.File.ReadAllText(Path.Combine(LocalFolder, "saved.json")) == null)
             {
-                WriteJSON(); // initialises empty files
+                WriteJSON(); // Initialises empty file
             }
+            
         }
 
         // Writes stuff in the array to the JSON file
@@ -844,12 +907,12 @@ namespace ActiveDesktop
         // Actually deals with window properties or smth idk
         private void WindowFromListToDesktop(App i, int t)
         {
-            if (XBox.Text == "[Disconnected]")
+            if (SavedAppsPage.XBox.Text == "[Disconnected]")
             {
-                XBox.Text = Displays[0].MonitorArea.Left.ToString();
-                YBox.Text = Displays[0].MonitorArea.Top.ToString();
-                WidthBox.Text = Displays[0].ScreenWidth;
-                HeightBox.Text = Displays[0].ScreenHeight;
+                SavedAppsPage.XBox.Text = Displays[0].MonitorArea.Left.ToString();
+                SavedAppsPage.YBox.Text = Displays[0].MonitorArea.Top.ToString();
+                SavedAppsPage.WidthBox.Text = Displays[0].ScreenWidth;
+                SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
             }
             if (i.Cmd != "MEDIA")
             {
@@ -1020,142 +1083,6 @@ namespace ActiveDesktop
         public static extern bool DestroyWindow(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
-        
-        // Literally all these do is emulate the behaviour of a watermark in the TextBoxes because WPF really sucks so that's why they're all down here alone.
-
-        private void MediaButton_Click(object sender, RoutedEventArgs e)
-        {
-            CmdBox.Text = "MEDIA";
-            FlagBox.Text = "Path to Video";
-        }
-
-        private void CmdBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (CmdBox.Text == "MEDIA" || CmdBox.Text == "Command Line")
-            {
-                CmdBox.Text = "";
-                FlagBox.Text = "Flags";
-            }
-        }
-
-        private void FlagBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (FlagBox.Text == "")
-            {
-                if (CmdBox.Text == "MEDIA")
-                {
-                    FlagBox.Text = "Path to Video";
-                }
-                else
-                {
-                    FlagBox.Text = "Flags";
-                }
-            }
-        }
-
-        private void FlagBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags")
-            {
-                FlagBox.Text = "";
-            }
-        }
-
-        private void XBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (XBox.Text == "")
-            {
-                XBox.Text = "X";
-            }
-        }
-
-        private void XBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (XBox.Text == "X")
-            {
-                XBox.Text = "";
-            }
-        }
-
-        private void YBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (YBox.Text == "")
-            {
-                YBox.Text = "Y";
-            }
-        }
-
-        private void YBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (YBox.Text == "Y")
-            {
-                YBox.Text = "";
-            }
-        }
-
-        private void WidthBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (WidthBox.Text == "")
-            {
-                WidthBox.Text = "Width";
-            }
-        }
-
-        private void WidthBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (WidthBox.Text == "Width")
-            {
-                WidthBox.Text = "";
-            }
-        }
-
-        private void HeightBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (HeightBox.Text == "")
-            {
-                HeightBox.Text = "Height";
-            }
-        }
-
-        private void HeightBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (HeightBox.Text == "Height")
-            {
-                HeightBox.Text = "";
-            }
-        }
-
-        private void NameBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (NameBox.Text == "")
-            {
-                NameBox.Text = "Friendly Name";
-            }
-        }
-
-        private void NameBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (NameBox.Text == "Friendly Name")
-            {
-                NameBox.Text = "";
-            }
-        }
-
-        private void TimeBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (TimeBox.Text == "")
-            {
-                TimeBox.Text = "Wait Time";
-            }
-        }
-
-        private void TimeBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (TimeBox.Text == "Wait Time")
-            {
-                TimeBox.Text = "";
-            }
-        }
     }
 
 }

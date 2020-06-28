@@ -4,13 +4,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        mc:Ignorable="d" Height="408.917" KeyDown="OnKeyDownHandler" KeyUp="OnKeyUpHandler" Width="674" ResizeMode="NoResize" Title="Active Desktop Plus">
+        mc:Ignorable="d" Height="497" Width="372" KeyDown="OnKeyDownHandler" KeyUp="OnKeyUpHandler"  ResizeMode="NoResize" Title="Active Desktop Plus"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True">
 
     <!-- I don't actually understand XAML at all give my my WinForms back. 
     Seriously, the tab UI thing I had before actually worked why did I switch to this mess?
     Also if you're reading this yes I am going to redo the UI but if I can't get a pile of buttons working what even is the point in going on -->
 
-    <Grid Height="376" VerticalAlignment="Top">
+
+
+    <Grid>
         <tb:TaskbarIcon x:Name="tbi" IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
@@ -19,50 +23,25 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
+        <ui:NavigationView
+            x:Name="NavView"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="False"
+            IsPaneOpen="True"
+            Loaded="NavView_Loaded"
+            SelectionChanged="NavView_SelectionChanged"
+            ItemInvoked="NavView_ItemInvoked" PaneDisplayMode="LeftCompact">
 
-        <Rectangle Fill="#06000000" Stroke="#22000000" Height="164" VerticalAlignment="Top" Margin="332,18,0,0" HorizontalAlignment="Left" Width="317"/>
-        <Rectangle Fill="#06000000" Stroke="#22000000" Height="153" VerticalAlignment="Top" Margin="9,210,0,0" HorizontalAlignment="Left" Width="317"/>
-        <Rectangle Fill="#06000000" Stroke="#22000000" Height="153" VerticalAlignment="Top" Margin="332,210,0,0" HorizontalAlignment="Left" Width="317"/>
-        <Rectangle Fill="#06000000" Stroke="#22000000" Height="164" VerticalAlignment="Top" Margin="9,18,0,0" HorizontalAlignment="Left" Width="317"/>
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Icon="AllApps" Tag="Page_Current">
+                    <TextBlock Tag="Nav_Current">Current Apps</TextBlock>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Icon="Save" Tag="Page_Saved">
+                    <TextBlock Tag="Nav_Saved">Saved Apps</TextBlock>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
 
-        <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" Margin="11,50,0,0" VerticalAlignment="Top" Width="104" Height="26"/>
-        <TextBox x:Name="HwndInputTextBox" Height="26" Margin="120,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Left" Width="205" ToolTip="The handle of the currently selected window"/>
-        <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Margin="10,81,0,0" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top" IsDefault="True" ToolTip="Send the selected window to the desktop"/>
-        <ListBox x:Name="HandleListBox" Margin="333,19,0,0" Height="130" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="List of apps currently open on the desktop">
-            <UniformGrid Columns="2"/>
-        </ListBox>
-        <Button x:Name="BorderlessButton" Content="Toggle Borders" Margin="120,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="BorderlessButton_Click" HorizontalAlignment="Left" Width="98" ToolTip="Hide and show the selected window's borders"/>
-        <Button x:Name="LockButton" Content="Toggle Lock" Margin="227,121,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="LockButton_Click" HorizontalAlignment="Left" Width="98" ToolTip="Lock the selected window, preventing you from interacting or moving it"/>
-        <Button x:Name="FixButton" Content="Fix Alignment" Margin="120,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="98" Click="FixButton_Click" ToolTip="If your window appears partially or completely off-screen, this button might fix it"/>
-        <Button x:Name="CloseButton" Content="Close" Margin="227,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="98" ToolTip="Close the selected window"/>
-        <Button x:Name="SaveButton" Content="Copy selected app to Saved Apps" Margin="333,154,0,0" HorizontalContentAlignment="Center" Height="27" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315" ToolTip="Copies the properties of the selected app to the Saved Apps section below, so you can quickly add it to your list of saved apps"/>
-        <TextBox x:Name="CmdBox" Margin="10,211,0,0" Text="Command Line" HorizontalAlignment="Left" Width="236" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus" GotFocus="CmdBox_GotFocus" ToolTip="Path to the executable you wish to start. &quot;MEDIA&quot; will set a video as your wallpaper"/>
-        <TextBox x:Name="FlagBox" Margin="10,238,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="236" LostFocus="FlagBox_LostFocus" GotFocus="FlagBox_GotFocus" ToolTip="Any paths, flags or switches you want your application to start with. If the command-line is &quot;MEDIA&quot;, then this box acts as a path to the video you wish to play."/>
-        <TextBox x:Name="XBox" Margin="10,262,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="XBox_GotFocus" LostFocus="XBox_LostFocus" ToolTip="The X coordinate of the top-left of your window"/>
-        <TextBox x:Name="YBox" Margin="131,262,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="YBox_GotFocus" LostFocus="YBox_LostFocus" ToolTip="The Y coordinate of the top-left of your window"/>
-        <TextBox x:Name="WidthBox" Margin="10,287,0,0" Text="Width" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="WidthBox_GotFocus" LostFocus="WidthBox_LostFocus" ToolTip="The width of the window"/>
-        <TextBox x:Name="HeightBox" Margin="131,287,0,0" Text="Height" HorizontalAlignment="Left" Width="115" Height="20" VerticalAlignment="Top" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="HeightBox_GotFocus" LostFocus="HeightBox_LostFocus" ToolTip="The height of the window"/>
-        <TextBox x:Name="NameBox" Margin="10,311,0,0" Text="Friendly Name" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" GotFocus="NameBox_GotFocus" LostFocus="NameBox_LostFocus" ToolTip="The name you want this app to appear as in the list of saved apps"/>
-        <TextBox x:Name="TimeBox" Margin="131,311,0,0" Text="Wait Time" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" GotFocus="TimeBox_GotFocus" LostFocus="TimeBox_LostFocus" ToolTip="How long ADP should wait before attempting to send the app to the desktop"/>
-        <Button x:Name="AddButton" Content="   Add to&#xD;&#xA;saved apps" Margin="250,311,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="51" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" ToolTip="Adds the configured app to the list of saved apps"/>
-        <ListBox x:Name="SavedListBox" Margin="333,211,0,0" HorizontalAlignment="Left" Width="315" Height="126" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679" ToolTip="List of apps saved in the config"/>
-        <Button x:Name="RemoveButton" Content="Remove" Margin="440,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="101" ToolTip="Removes an entry on the saved apps list" />
-        <Button x:Name="TestButton" Content="Launch" Margin="547,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" Width="101" ToolTip="Launches the selected app from the list"/>
-        <Button x:Name="WriteButton" Content="Save changes" Margin="333,342,0,0" HorizontalContentAlignment="Center" Height="20" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="101" IsEnabled="False" Foreground="Red" ToolTip="Saves changes to the config file"/>
-        <Separator Height="11" Margin="10,188,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
-        <CheckBox x:Name="LockedCheckBox" Content="Start Locked" HorizontalAlignment="Left" Margin="11,332,0,0" VerticalAlignment="Top" Width="110" Height="15" ToolTip="Start the app with interaction disabled"/>
-        <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="11,347,0,0" VerticalAlignment="Top" Width="100" Height="15" ToolTip="Starts the app as soon as ADP opens"/>
-        <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" Margin="11,19,0,0" VerticalAlignment="Top" Width="109" Height="26"/>
-        <TextBox x:Name="TitleTextBox" Height="26" Margin="120,19,0,0" VerticalAlignment="Top" Focusable="False" HorizontalAlignment="Left" Width="205" MaxLines="1" ToolTip="The name of the currently selected window"/>
-        <Separator Height="13" Margin="10,108,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" Background="Black"/>
-        <Label x:Name="SavedAppsLabel" Content="Saved Apps" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Height="26" Width="72"/>
-        <Separator Height="11" Margin="10,-4,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="638" Background="Black"/>
-        <Label x:Name="CurrentAppsLabel" Content="Current Apps" HorizontalAlignment="Left" Margin="10,-4,0,0" VerticalAlignment="Top" Height="26" Width="80"/>
-        <CheckBox x:Name="StartupCheckBox" Content="Run at startup" HorizontalAlignment="Left" Margin="10,128,0,0" VerticalAlignment="Top" Checked="StartupCheckBox_Checked" Unchecked="StartupCheckBox_Unchecked" Height="15" Width="95" ToolTip="Add ADP to startup apps so it opens when you log in"/>
-        <CheckBox x:Name="DarkThemeCheckBox" Content="Dark Theme" HorizontalAlignment="Left" Margin="10,161,0,0" VerticalAlignment="Top" IsEnabled="False" Height="15" Width="84" ToolTip="Enable the dark theme for ADP's UI"/>
-        <Button x:Name="MonitorSelectButton" Content="  Select &#xD;&#xA;Monitor" HorizontalAlignment="Left" Margin="250,262,0,0" VerticalAlignment="Top" Width="75" Height="45" Click="MonitorSelectButton_Click" ToolTip="Cycles through all monitors and automatically fills out their X, Y, Width and Height"/>
-        <Button x:Name="MediaButton" Content="Use Video" HorizontalAlignment="Left" Margin="250,211,0,0" VerticalAlignment="Top" Width="75" Height="47" Click="MediaButton_Click" ToolTip="Click this to add a video as opposed to an app"/>
-        <CheckBox x:Name="PinnedCheckBox" Content="Start pinned" HorizontalAlignment="Left" Margin="131,332,0,0" VerticalAlignment="Top" ToolTip="Removes the borders from the app after its started"/>
-        <CheckBox x:Name="FixCheckBox" Content="Fix alignment" HorizontalAlignment="Left" Margin="131,347,0,0" VerticalAlignment="Top" ToolTip="Attempts to fix the alignment of an app once it's opened"/>
+            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden"></Frame>
+        </ui:NavigationView>
     </Grid>
 </Window>
