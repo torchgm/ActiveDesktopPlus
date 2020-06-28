@@ -3,17 +3,18 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:ActiveDesktop.Views"
-      mc:Ignorable="d" 
-      d:DesignHeight="462" d:DesignWidth="325"
+      mc:Ignorable="d" d:DesignWidth="325"
       Title="Settings"
-      xmlns:ui="http://schemas.modernwpf.com/2019">
+      xmlns:ui="http://schemas.modernwpf.com/2019" Height="488">
 
 
     <Grid>
-        <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,29,0,389" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled"/>
-        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,101,0,329" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32"/>
-        <Label x:Name="label" Content="Run on startup" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="label_Copy" Content="Use dark theme" HorizontalAlignment="Left" Margin="10,76,0,0" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,58,0,0" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,128,0,0" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,198,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="StartupLabel" Content="Run on startup" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="DarkThemeLabel" Content="Use dark theme" HorizontalAlignment="Left" Margin="10,109,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="DarkTrayIconLabel" Content="Use dark tray icon" HorizontalAlignment="Left" Margin="10,179,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="label" Content="   Thank you for using ADP! Sorry if it breaks :c" HorizontalAlignment="Left" Height="25" Margin="0,453,0,0" VerticalAlignment="Top" Width="315"/>
     </Grid>
 </Page>

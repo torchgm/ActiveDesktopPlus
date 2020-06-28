@@ -29,22 +29,27 @@ namespace ActiveDesktop.Views
         {
             ((MainWindow)Application.Current.MainWindow).AddButton_Click(null, null);
         }
+
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).RemoveButton_Click(null, null);
         }
+
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).TestButton_Click(null, null);
         }
+
         private void WriteButton_Click(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).WriteButton_Click(null, null);
         }
+
         private void MonitorSelectButton_Click(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).MonitorSelectButton_Click(null, null);
         }
+
         private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).CmdBox_LostFocus(null, null);
@@ -55,11 +60,20 @@ namespace ActiveDesktop.Views
             ((MainWindow)Application.Current.MainWindow).ResetMonitorSelectButton(null, null);
         }
 
-
         private void MediaButton_Click(object sender, RoutedEventArgs e)
         {
-            CmdBox.Text = "MEDIA";
-            FlagBox.Text = "Path to Video";
+            if (CmdBox.Text != "MEDIA")
+            {
+                CmdBox.Text = "MEDIA";
+                FlagBox.Text = "Path to Video";
+                CmdBox_LostFocus(null, null);
+            }
+            else
+            {
+                CmdBox.Text = "Command Line";
+                FlagBox.Text = "Flags";
+                CmdBox_LostFocus(null, null);
+            }
         }
 
         private void CmdBox_GotFocus(object sender, RoutedEventArgs e)

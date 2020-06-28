@@ -32,16 +32,23 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
+        public System.Drawing.Icon TrayDark;
         
-        // Generates pages first
-        Settings SettingsPage = new Settings();
-        CurrentApps CurrentAppsPage = new CurrentApps();
-        SavedApps SavedAppsPage = new SavedApps();
+        // Generates pages
+        public Settings SettingsPage;
+        public CurrentApps CurrentAppsPage;
+        public SavedApps SavedAppsPage;
 
         // On-start tasks
         public MainWindow()
         {
+            // Important thingies
             InitializeComponent();
+            CurrentAppsPage = new CurrentApps();
+            SavedAppsPage = new SavedApps();
+            SettingsPage = new Settings();
+            tbi.Visibility = Visibility.Visible;
+            
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
@@ -373,8 +380,8 @@ namespace ActiveDesktop
                 GetWindowRect(hwnd, out PosTarget);
                 GetWindowText(hwnd, WindowTitle, 1000);
                 SavedAppsPage.CmdBox.Text = SyllyIsAwesome;
-                SavedAppsPage.XBox.Text = PosTarget.Top.ToString();
-                SavedAppsPage.YBox.Text = PosTarget.Left.ToString();
+                SavedAppsPage.XBox.Text = PosTarget.Left.ToString();
+                SavedAppsPage.YBox.Text = PosTarget.Top.ToString();
                 SavedAppsPage.WidthBox.Text = GetWindowSize(hwnd).Width.ToString();
                 SavedAppsPage.HeightBox.Text = GetWindowSize(hwnd).Height.ToString();
                 SavedAppsPage.NameBox.Text = WindowTitle.ToString();
@@ -446,7 +453,7 @@ namespace ActiveDesktop
             {
                 SelectedDisplay = 0;
             }
-            SavedAppsPage.MonitorSelectButton.Content = "Monitor: " + (SelectedDisplay + 1).ToString();
+            SavedAppsPage.MonitorSelectButton.Content = "Monitor:\n      " + (SelectedDisplay + 1).ToString();
             try
             {
                 SavedAppsPage.XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
@@ -480,7 +487,11 @@ namespace ActiveDesktop
                 SavedAppsPage.YBox.IsEnabled = false;
                 SavedAppsPage.WidthBox.IsEnabled = false;
                 SavedAppsPage.HeightBox.IsEnabled = false;
-                MonitorSelectButton_Click(null, null);
+                SavedAppsPage.XBox.Text = Displays[0].MonitorArea.Left.ToString();
+                SavedAppsPage.YBox.Text = Displays[0].MonitorArea.Top.ToString();
+                SavedAppsPage.WidthBox.Text = Displays[0].ScreenWidth;
+                SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
+                SavedAppsPage.MonitorSelectButton.Content = "Monitor:\n      1";
             }
             else
             {
@@ -517,6 +528,7 @@ namespace ActiveDesktop
         // Proper close button thingy
         public void CloseMenuItem_Click(object sender, EventArgs e)
         {
+            tbi.Visibility = Visibility.Hidden;
             Application.Current.Shutdown();
         }
 
@@ -530,6 +542,7 @@ namespace ActiveDesktop
             }
         }
 
+        // Navigation View Loading Handler Thing™
         private void NavView_Loaded(object sender, RoutedEventArgs e)
         {
             NavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
@@ -546,10 +559,12 @@ namespace ActiveDesktop
             NavView.SelectedItem = NavView.MenuItems[0];
         }
 
+        // Navigation View Selection Handler Thing™
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
         }
 
+        // Navigation View Invoke Handler Thing™
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             {
@@ -678,8 +693,6 @@ namespace ActiveDesktop
             public bool Fix { get; set; }
             public bool Pin { get; set; }
         }
-
-
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT

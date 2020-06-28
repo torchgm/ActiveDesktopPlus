@@ -1,21 +1,30 @@
-﻿<Window x:Class="ActiveDesktop.MainWindow"
+﻿<Window 
+        x:Name="ADPWindow"
+        x:Class="ActiveDesktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        mc:Ignorable="d" Height="497" Width="372" KeyDown="OnKeyDownHandler" KeyUp="OnKeyUpHandler"  ResizeMode="NoResize" Title="Active Desktop Plus"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True">
+        xmlns:fw="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
+        mc:Ignorable="d"
+        Height="497" Width="372"
+        KeyDown="OnKeyDownHandler"
+        KeyUp="OnKeyUpHandler"
+        ResizeMode="NoResize"
+        Title="Active Desktop Plus"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        fw:AcrylicWindow.Enabled="true"
+        fw:AcrylicWindow.ExtendViewIntoTitleBar="True"
+        fw:PointerTracker.Enabled="True"
+        >
 
-    <!-- I don't actually understand XAML at all give my my WinForms back. 
-    Seriously, the tab UI thing I had before actually worked why did I switch to this mess?
-    Also if you're reading this yes I am going to redo the UI but if I can't get a pile of buttons working what even is the point in going on -->
 
 
 
     <Grid>
-        <tb:TaskbarIcon x:Name="tbi" IconSource="/desktop.ico" ToolTipText="Active Desktop Plus">
+        <tb:TaskbarIcon x:Name="tbi" Visibility ="Hidden" IconSource="/tray.ico" ToolTipText="Active Desktop Plus">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <MenuItem x:Name ="ShowMenuItem" Header="Hide ADP" Click="ShowMenuItem_Click"/>
@@ -23,6 +32,10 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
+        <!--This is because storing and embedding icons is near-impossible aaaaa-->
+        <tb:TaskbarIcon x:Name="DarkIcon" Visibility="Hidden" IconSource="/traydark.ico"/>
+        <tb:TaskbarIcon x:Name="LightIcon" Visibility="Hidden" IconSource="/tray.ico"/>
+
         <ui:NavigationView
             x:Name="NavView"
             IsBackButtonVisible="Visible"
@@ -30,9 +43,16 @@
             IsPaneOpen="True"
             Loaded="NavView_Loaded"
             SelectionChanged="NavView_SelectionChanged"
-            ItemInvoked="NavView_ItemInvoked" PaneDisplayMode="LeftCompact">
+            ItemInvoked="NavView_ItemInvoked" PaneDisplayMode="LeftCompact"
+            
+            >
+            <!--<fw:AcrylicPanel Target="{Binding ElementName=ContentGrid}" TintOpacity="0.3" TintColor="{DynamicResource SystemChromeMediumColor}" NoiseOpacity="0.025">
+                <Rectangle Fill="{DynamicResource NavigationViewExpandedPaneBackground}" Opacity="0.2"/>
+            </fw:AcrylicPanel>-->
+
 
             <ui:NavigationView.MenuItems>
+
                 <ui:NavigationViewItem Icon="AllApps" Tag="Page_Current">
                     <TextBlock Tag="Nav_Current">Current Apps</TextBlock>
                 </ui:NavigationViewItem>
@@ -41,7 +61,11 @@
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
 
-            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden"></Frame>
+            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden">
+
+            </Frame>
+
         </ui:NavigationView>
+
     </Grid>
 </Window>

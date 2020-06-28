@@ -1,16 +1,15 @@
-﻿using IWshRuntimeLibrary;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Threading;
 using System.Windows;
 using ModernWpf;
+using System.Drawing;
+using System.Windows.Media;
 
 namespace ActiveDesktop.Views
 {
     /// <summary>
-    /// Interaction logic for Settings.xaml+		SetRep	{ActiveDesktop.Views.Settings.SettingsRepresentative}	ActiveDesktop.Views.Settings.SettingsRepresentative
-
+    /// Interaction logic for Settings.xaml
     /// </summary>
     public partial class Settings : System.Windows.Controls.Page
     {
@@ -38,11 +37,18 @@ namespace ActiveDesktop.Views
             {
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                 ThemeToggle.IsOn = true;
+                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
             }
             else
             {
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                 ThemeToggle.IsOn = false;
+                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+            }
+            if (SetRep.UseDarkTrayIcon == true)
+            {
+                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
+                TrayIconToggle.IsOn = true;
             }
         }
 
@@ -78,18 +84,37 @@ namespace ActiveDesktop.Views
                 SetRep.UseDarkTheme = true;
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
             }
             else
             {
                 SetRep.UseDarkTheme = false;
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
+                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void TrayIconToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (TrayIconToggle.IsOn)
+            {
+                SetRep.UseDarkTrayIcon = true;
+                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
+                WriteSettingsJSON();
+            }
+            else
+            {
+                SetRep.UseDarkTrayIcon = false;
+                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).LightIcon.Icon;
+                WriteSettingsJSON();
             }
         }
 
         public class SettingsRepresentative
         {
             public bool UseDarkTheme { get; set; }
+            public bool UseDarkTrayIcon { get; set; }
         }
     }
 }
