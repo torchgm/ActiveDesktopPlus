@@ -11,9 +11,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Controls;
-using System.Windows.Media;
-using PInvoke;
+using System.ComponentModel;
 
 namespace ActiveDesktop
 {
@@ -32,14 +30,13 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
-        int DesktopXMisalignment = 0;
-        int DesktopYMisalignment = 0;
+
 
         // On-start tasks
         public MainWindow()
         {
             InitializeComponent();
-            
+
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
             IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
             DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
@@ -48,42 +45,24 @@ namespace ActiveDesktop
                 RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
                 DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
             }
-            
 
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             FileSystem();
             JSONArrayList = ReadJSON();
             Displays = GetDisplays();
+            RefreshLists();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
-            RefreshLists();
 
             if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
             {
                 StartupCheckBox.IsChecked = false;
             }
-            
+
             TitleTextBox.Text = "[Hold Ctrl to select an app]";
             HwndInputTextBox.Text = "";
-        }
-
-        // This exists because for some insanely stupid reason, scaling simply doesn't work unless a video is played across all desktops first
-        public void FixOriginScalingWithVideoWallpaperBecauseItDoesntWorkOtherwise()
-        {
-            ADPVideoWallpaper TempVideoWallpaper = new ADPVideoWallpaper(@"C:\.mp4");
-            IntPtr hvid = new WindowInteropHelper(TempVideoWallpaper).Handle;
-            Thread.Sleep(20);
-            SetParent(hvid, DesktopHandle);
-            foreach (DisplayInfo di in Displays)
-            {
-                MoveWindow(hvid, TranslateCanvasX(di.Top), TranslateCanvasY(di.Top), Convert.ToInt32(di.ScreenWidth), Convert.ToInt32(di.ScreenHeight), true);
-                Thread.Sleep(20);
-            }
-            Thread.Sleep(20);
-            DestroyWindow(hvid);
-            RefreshLists();
         }
 
         // Stores window properties
@@ -166,7 +145,7 @@ namespace ActiveDesktop
             MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
             TitleTextBox.Text = "[Hold Ctrl to select an app]";
             HwndInputTextBox.Text = "";
-            
+
             RefreshLists();
         }
 
@@ -178,25 +157,45 @@ namespace ActiveDesktop
 
         // Makes the selected window borderless
         private void BorderlessButton_Click(object sender, RoutedEventArgs e)
-        { // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made above ^
-            if (HandleListBox.SelectedItem != null)
-            {
-                RemoveBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            }
-            RefreshLists();
+        {
+            // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made
+            //    if (HandleListBox.SelectedItem != null && DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] == "false")
+            //    {
+            //        RemoveBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+            //        DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] = "true";
+            //    }
+            //    else if (HandleListBox.SelectedItem != null)
+            //    {
+            //        try
+            //        {
+            //            // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
+            //            AddBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+            //            DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] = "false";
+            //        }
+            //        catch (Exception) { }
+            //    }
+            PinApp(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]);
         }
 
-        // Makes the selected window bordered
-        private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
+        private void PinApp(string hwnd)
         {
-            // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
-            if (HandleListBox.SelectedItem != null)
+            RefreshLists();
+            foreach (List<string> l in DesktopWindowPropertyList)
             {
-                try
+                if (l[2] == hwnd && l[3] == "false")
                 {
-                    AddBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
+                    RemoveBorders(Convert.ToInt32(l[2]));
+                    l[3] = "true";
                 }
-                catch (Exception) { }
+                else if (l[2] == hwnd)
+                {
+                    try
+                    {
+                        AddBorders(Convert.ToInt32(l[2]), RetrieveWindowProperties(Convert.ToInt32(l[2]), 0), RetrieveWindowProperties(Convert.ToInt32(l[2]), 1));
+                        l[3] = "false";
+                    }
+                    catch (Exception) { }
+                }
             }
             RefreshLists();
         }
@@ -204,6 +203,8 @@ namespace ActiveDesktop
         // Refresh event for children of the desktop
         public void RefreshLists()
         {
+            List<List<string>> OldList = DesktopWindowPropertyList;
+
             // Quite frankly I've forgotten how this bit works but it needs to be a StringBuilder and I just hope window titles aren't too long
             StringBuilder WindowTitle = new StringBuilder(1000);
             int count = 0;
@@ -222,9 +223,20 @@ namespace ActiveDesktop
                     DesktopWindowPropertyList[count].Add(WindowTitle.ToString()); // Window Title
                     DesktopWindowPropertyList[count].Add(ChildHandle.ToString()); // Window Handle
                     StoreWindowProperties(ChildHandle.ToInt32(), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_STYLE), (int)GetWindowLong(ChildHandle, WeirdMagicalNumbers.GWL_EXSTYLE));
+                    DesktopWindowPropertyList[count].Add("false");
+                    if (OldList != null)
+                    {
+                        foreach (List<string> i in OldList)
+                        {
+                            if (i[2] == DesktopWindowPropertyList[count][2])
+                            {
+                                DesktopWindowPropertyList[count][3] = i[3];
+                            }
+                        }
+                    }
+
                     HandleListBox.Items.Add(DesktopWindowPropertyList[count][1] + " " + DesktopWindowPropertyList[count][0]);
                     count++;
-
                 }
             }
             SavedListRefreshEvent();
@@ -264,6 +276,8 @@ namespace ActiveDesktop
                 AppToAdd.Time = TimeBox.Text;
                 AppToAdd.Lock = LockedCheckBox.IsChecked ?? false;
                 AppToAdd.Startup = AutostartCheckBox.IsChecked ?? false;
+                AppToAdd.Fix = FixCheckBox.IsChecked ?? false;
+                AppToAdd.Pin = PinnedCheckBox.IsChecked ?? false;
                 JSONArrayList.Add(AppToAdd);
 
 
@@ -346,15 +360,13 @@ namespace ActiveDesktop
             RefreshLists();
         }
 
-        // Draws a locking window over any given app [Temporarily replaced with Fix Button]
+        // Draws a locking window over any given app
         private void LockButton_Click(object sender, RoutedEventArgs e)
         {
             if (HandleListBox.SelectedItem != null)
             {
                 IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-                //FixAppButton(hwnd);
-
-
+                LockApp(hwnd);
             }
         }
 
@@ -481,7 +493,7 @@ namespace ActiveDesktop
         {
             MonitorSelectButton.Content = " Select\nMonitor";
         }
-        
+
         // Limits media entry
         private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -513,7 +525,7 @@ namespace ActiveDesktop
             IntPtr MainHandle = new WindowInteropHelper(this).Handle;
             if (IsHidden == true)
             {
-                ShowWindow(MainHandle, 5); 
+                ShowWindow(MainHandle, 5);
                 IsHidden = false;
                 ShowMenuItem.Header = "Hide ADP";
             }
@@ -540,7 +552,7 @@ namespace ActiveDesktop
         // Starts saved apps automatically
         private void StartSavedApps()
         {
-            
+
 
             foreach (App i in JSONArrayList)
             {
@@ -572,7 +584,7 @@ namespace ActiveDesktop
         {
             get;
         }
-        
+
         // Super-handy to do things or something
         public class DisplayInfoCollection : List<DisplayInfo>
         {
@@ -629,6 +641,8 @@ namespace ActiveDesktop
             public string Time { get; set; }
             public bool Lock { get; set; }
             public bool Startup { get; set; }
+            public bool Fix { get; set; }
+            public bool Pin { get; set; }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -664,7 +678,7 @@ namespace ActiveDesktop
 
         // It's like a normal bool but delegate, perhaps its also delicate? I don't know. That's up to you, I suppose!
         public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
-        
+
         // Gets a list of display info
         public DisplayInfoCollection GetDisplays()
         {
@@ -815,24 +829,10 @@ namespace ActiveDesktop
         // Locks an app for real this time
         private void LockApp(IntPtr hwnd)
         {
-            StringBuilder WindowTitle = new StringBuilder(1000);
-            GetWindowText(hwnd, WindowTitle, 1000);
-
-            LockWindow GeneratedLockWindow = new LockWindow();
-            GeneratedLockWindow.Title = "LockWindow For " + WindowTitle;
-            GeneratedLockWindow.Show();
-
-            IntPtr hlock = new WindowInteropHelper(GeneratedLockWindow).Handle;
-
-            RECT WindowTargetLock;
-            GetWindowRect(hwnd, out WindowTargetLock);
-            // SetParent(hlock, DesktopHandle);
-            GeneratedLockWindow.Width = GetWindowSize(hwnd).Width;
-            GeneratedLockWindow.Height = GetWindowSize(hwnd).Height;
-            GeneratedLockWindow.Left = WindowTargetLock.Left;
-            GeneratedLockWindow.Top = WindowTargetLock.Top;
-
-            RefreshLists();
+            if (EnableWindow(hwnd, false))
+            {
+                EnableWindow(hwnd, true);
+            }
         }
 
         // Actually deals with window properties or smth idk
@@ -857,7 +857,11 @@ namespace ActiveDesktop
                 ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
                 IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
                 Thread.Sleep(Convert.ToInt32(t));
-                SetWindowSizeAndLock(i, hvid);
+                try
+                {
+                    SetWindowSizeAndLock(i, hvid);
+                }
+                catch (Exception) { }
             }
         }
 
@@ -893,6 +897,15 @@ namespace ActiveDesktop
                 if (i.Lock)
                 {
                     LockApp(hwnd);
+                }
+                if (i.Fix)
+                {
+                    Thread.Sleep(100);
+                    FixApp(hwnd);
+                }
+                if (i.Pin)
+                {
+                    PinApp(hwnd.ToString());
                 }
             }
             catch (Exception) { }
@@ -1136,6 +1149,22 @@ namespace ActiveDesktop
             {
                 TimeBox.Text = "";
             }
+        }
+
+        private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (HandleListBox.SelectedItem != null)
+            {
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                FixApp(hwnd);
+            }
+        }
+
+        private void FixApp(IntPtr hwnd)
+        {
+            RECT WinPos = new RECT();
+            GetWindowRect(hwnd, out WinPos);
+            MoveWindow(hwnd, TranslateCanvasX(TranslateCanvasX(WinPos.Left)), TranslateCanvasY(TranslateCanvasY(WinPos.Top)), WinPos.Right - WinPos.Left, WinPos.Bottom - WinPos.Top, true);
         }
     }
 
