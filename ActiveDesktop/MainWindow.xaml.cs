@@ -31,7 +31,6 @@ namespace ActiveDesktop
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
 
-
         // On-start tasks
         public MainWindow()
         {
@@ -127,6 +126,7 @@ namespace ActiveDesktop
             }
         }
 
+        // See above
         private void OnKeyUpHandler(object sender, KeyEventArgs e)
         {
             ApplyHwndButton.Content = "Send to Desktop";
@@ -158,46 +158,10 @@ namespace ActiveDesktop
         // Makes the selected window borderless
         private void BorderlessButton_Click(object sender, RoutedEventArgs e)
         {
-            // This long potato does some mighty magic that takes the ID and gets the handle from the WindowList thing that I made
-            //    if (HandleListBox.SelectedItem != null && DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] == "false")
-            //    {
-            //        RemoveBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-            //        DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] = "true";
-            //    }
-            //    else if (HandleListBox.SelectedItem != null)
-            //    {
-            //        try
-            //        {
-            //            // Yes I am well-aware this line is insanely long and could be shorter, and that catching everything is an awful idea. It is never going to be updated though because I know it annoys Sylly and that's cute.
-            //            AddBorders(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 0), RetrieveWindowProperties(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]), 1));
-            //            DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][3] = "false";
-            //        }
-            //        catch (Exception) { }
-            //    }
-            PinApp(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]);
-        }
-
-        private void PinApp(string hwnd)
-        {
-            RefreshLists();
-            foreach (List<string> l in DesktopWindowPropertyList)
+            if (HandleListBox.SelectedItem != null)
             {
-                if (l[2] == hwnd && l[3] == "false")
-                {
-                    RemoveBorders(Convert.ToInt32(l[2]));
-                    l[3] = "true";
-                }
-                else if (l[2] == hwnd)
-                {
-                    try
-                    {
-                        AddBorders(Convert.ToInt32(l[2]), RetrieveWindowProperties(Convert.ToInt32(l[2]), 0), RetrieveWindowProperties(Convert.ToInt32(l[2]), 1));
-                        l[3] = "false";
-                    }
-                    catch (Exception) { }
-                }
+                PinApp(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]);
             }
-            RefreshLists();
         }
 
         // Refresh event for children of the desktop
@@ -543,6 +507,16 @@ namespace ActiveDesktop
             Application.Current.Shutdown();
         }
 
+        // Handles the fix button
+        private void FixButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (HandleListBox.SelectedItem != null)
+            {
+                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
+                FixApp(hwnd);
+            }
+        }
+
 
         // /////////////////////////////////////////////////////////////////////////////////////// //
         // //////////// All the weird non-GUIey bits are here don't question it shhhh //////////// //
@@ -835,6 +809,38 @@ namespace ActiveDesktop
             }
         }
 
+        // Fixes an app for real this time
+        private void FixApp(IntPtr hwnd)
+        {
+            RECT WinPos = new RECT();
+            GetWindowRect(hwnd, out WinPos);
+            MoveWindow(hwnd, TranslateCanvasX(TranslateCanvasX(WinPos.Left)), TranslateCanvasY(TranslateCanvasY(WinPos.Top)), WinPos.Right - WinPos.Left, WinPos.Bottom - WinPos.Top, true);
+        }
+
+        // Pins an app for real this time
+        private void PinApp(string hwnd)
+        {
+            RefreshLists();
+            foreach (List<string> l in DesktopWindowPropertyList)
+            {
+                if (l[2] == hwnd && l[3] == "false")
+                {
+                    RemoveBorders(Convert.ToInt32(l[2]));
+                    l[3] = "true";
+                }
+                else if (l[2] == hwnd)
+                {
+                    try
+                    {
+                        AddBorders(Convert.ToInt32(l[2]), RetrieveWindowProperties(Convert.ToInt32(l[2]), 0), RetrieveWindowProperties(Convert.ToInt32(l[2]), 1));
+                        l[3] = "false";
+                    }
+                    catch (Exception) { }
+                }
+            }
+            RefreshLists();
+        }
+
         // Actually deals with window properties or smth idk
         private void WindowFromListToDesktop(App i, int t)
         {
@@ -1014,6 +1020,8 @@ namespace ActiveDesktop
         public static extern bool DestroyWindow(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+        
+        // Literally all these do is emulate the behaviour of a watermark in the TextBoxes because WPF really sucks so that's why they're all down here alone.
 
         private void MediaButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1045,8 +1053,6 @@ namespace ActiveDesktop
             }
         }
 
-
-        // Literally all these do is emulate the behaviour of a watermark in the TextBoxes because WPF really sucks so that's why they're all down here alone.
         private void FlagBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags")
@@ -1149,22 +1155,6 @@ namespace ActiveDesktop
             {
                 TimeBox.Text = "";
             }
-        }
-
-        private void UnborderlessButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (HandleListBox.SelectedItem != null)
-            {
-                IntPtr hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(HandleListBox.SelectedItem.ToString().Substring(HandleListBox.SelectedItem.ToString().Length - 3))][2]));
-                FixApp(hwnd);
-            }
-        }
-
-        private void FixApp(IntPtr hwnd)
-        {
-            RECT WinPos = new RECT();
-            GetWindowRect(hwnd, out WinPos);
-            MoveWindow(hwnd, TranslateCanvasX(TranslateCanvasX(WinPos.Left)), TranslateCanvasY(TranslateCanvasY(WinPos.Top)), WinPos.Right - WinPos.Left, WinPos.Bottom - WinPos.Top, true);
         }
     }
 
