@@ -413,7 +413,7 @@ namespace ActiveDesktop
                 {
                     Directory.CreateDirectory(shortcutFolder);
                 }
-                WshShellClass shellClass = new WshShellClass();
+                WshShell shellClass = new WshShell();
                 string ADPStartupLink = Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
                 IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(ADPStartupLink);
                 shortcut.TargetPath = Environment.GetCommandLineArgs()[0];
