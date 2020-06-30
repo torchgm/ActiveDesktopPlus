@@ -10,11 +10,23 @@
 
     <Grid>
         <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,58,0,0" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled" VerticalAlignment="Top"/>
-        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,128,0,0" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32" VerticalAlignment="Top"/>
-        <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,198,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top"/>
         <Label x:Name="StartupLabel" Content="Run on startup" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="DarkThemeLabel" Content="Use dark theme" HorizontalAlignment="Left" Margin="10,109,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="DarkTrayIconLabel" Content="Use dark tray icon" HorizontalAlignment="Left" Margin="10,179,0,0" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,118,0,0" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="DarkThemeLabel" Content="Use dark theme" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,178,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="DarkTrayIconLabel" Content="Use dark tray icon" HorizontalAlignment="Left" Margin="10,159,0,0" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="PauseBatteryToggle" Margin="10,298,0,0" ToolTip="Toggles whether or not a video should play when the system is running on battery power" Toggled="PauseBatteryToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="PauseBatteryLabel" Content="Pause videos on battery" HorizontalAlignment="Left" Margin="10,279,0,0" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="PauseMaximisedToggle" Margin="10,238,0,0" ToolTip="Toggles whether or not a video should pause when a maximised window obscures it" Toggled="PauseMaximisedToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="PauseMaximisedLabel" Content="Pause videos on maximise" HorizontalAlignment="Left" Margin="10,219,0,0" VerticalAlignment="Top"/>
+
         <Label x:Name="label" Content="   Thank you for using ADP! Sorry if it breaks :c" HorizontalAlignment="Left" Height="25" Margin="0,453,0,0" VerticalAlignment="Top" Width="315"/>
+        <ui:ToggleSwitch x:Name="PauseBatterySaverToggle" Margin="10,358,0,0" ToolTip="Toggles whether or not a video should pause when the system has Battery Saver enabled" Toggled="PauseBatterySaverToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+        <Label x:Name="PauseBatterySaverLabel" Content="Pause videos on Battery Saver" HorizontalAlignment="Left" Margin="10,339,0,0" VerticalAlignment="Top"/>
+
     </Grid>
 </Page>

@@ -52,7 +52,15 @@ namespace ActiveDesktop.Views
 
         private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
+            if (CmdBox.Text == "MEDIA")
+            {
+                CmdBox.IsEnabled = false;
+                FlagBox.Text = "Path to Video";
+                FlagBox.ToolTip = "The file path to the video you wish to use as a wallpaper";
+                MediaButton.Content = "    Use \nProgram";
+            }
             ((MainWindow)Application.Current.MainWindow).CmdBox_LostFocus(null, null);
+
         }
 
         private void ResetMonitorSelectButton(object sender, RoutedEventArgs e)
@@ -65,14 +73,17 @@ namespace ActiveDesktop.Views
             if (CmdBox.Text != "MEDIA")
             {
                 CmdBox.Text = "MEDIA";
-                FlagBox.Text = "Path to Video";
                 CmdBox_LostFocus(null, null);
+                MediaButton.Content = "    Use \nProgram";
             }
             else
             {
                 CmdBox.Text = "Command Line";
+                CmdBox.IsEnabled = true;
                 FlagBox.Text = "Flags";
+                FlagBox.ToolTip = "Any paths, flags or command-line-switches you wish to apply to the program at startup";
                 CmdBox_LostFocus(null, null);
+                MediaButton.Content = "  Use \nVideo";
             }
         }
 

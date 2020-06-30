@@ -8,9 +8,6 @@ using System.Windows.Media;
 
 namespace ActiveDesktop.Views
 {
-    /// <summary>
-    /// Interaction logic for Settings.xaml
-    /// </summary>
     public partial class Settings : System.Windows.Controls.Page
     {
         public SettingsRepresentative SetRep = new SettingsRepresentative();
@@ -22,18 +19,20 @@ namespace ActiveDesktop.Views
             string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             LocalFolder = Path.Combine(AppData, "ActiveDesktopPlus");
             Directory.CreateDirectory(LocalFolder);
-            if (!System.IO.File.Exists(Path.Combine(LocalFolder, "settings.json")))
+            if (!File.Exists(Path.Combine(LocalFolder, "settings.json")))
             {
                 WriteSettingsJSON();
             }
-            if (System.IO.File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == "" || System.IO.File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == null)
+            if (File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == "" || System.IO.File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == null)
             {
                 SetRep.UseDarkTheme = false;
+                SetRep.PauseOnBattery = true;
+                SetRep.PauseOnMaximise = true;
                 WriteSettingsJSON();
             }
             SetRep = ReadSettingsJSON();
 
-            if (SetRep.UseDarkTheme == true)
+            if (SetRep.UseDarkTheme)
             {
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                 ThemeToggle.IsOn = true;
@@ -45,17 +44,47 @@ namespace ActiveDesktop.Views
                 ThemeToggle.IsOn = false;
                 ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
             }
-            if (SetRep.UseDarkTrayIcon == true)
+            if (SetRep.UseDarkTrayIcon)
             {
                 ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
                 TrayIconToggle.IsOn = true;
+            }
+            if (SetRep.PauseOnMaximise)
+            {
+                PauseMaximisedToggle.IsOn = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = true;
+            }
+            else
+            {
+                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = false;
+            }
+            if (SetRep.PauseOnBatterySaver)
+            {
+                PauseBatterySaverToggle.IsOn = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+            }
+            else
+            {
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = false;
+            }
+            if (SetRep.PauseOnBattery)
+            {
+                PauseBatteryToggle.IsOn = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                PauseBatterySaverToggle.IsOn = true;
+                PauseBatterySaverToggle.IsEnabled = false;
+            }
+            else
+            {
+                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
             }
         }
 
         public void WriteSettingsJSON()
         {
-            System.IO.File.Create(Path.Combine(LocalFolder, "settings.json")).Close();
-            System.IO.File.WriteAllText(Path.Combine(LocalFolder, "settings.json"), JsonConvert.SerializeObject(SetRep, Formatting.Indented));
+            File.Create(Path.Combine(LocalFolder, "settings.json")).Close();
+            File.WriteAllText(Path.Combine(LocalFolder, "settings.json"), JsonConvert.SerializeObject(SetRep, Formatting.Indented));
         }
 
         public SettingsRepresentative ReadSettingsJSON()
@@ -64,6 +93,8 @@ namespace ActiveDesktop.Views
             SettingsRepresentative sr = JsonConvert.DeserializeObject<SettingsRepresentative>(JsonSettingsList);
             return sr;
         }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private void StartupToggle_Toggled(object sender, RoutedEventArgs e)
         {
@@ -111,10 +142,73 @@ namespace ActiveDesktop.Views
             }
         }
 
+        private void PauseBatteryToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (PauseBatteryToggle.IsOn)
+            {
+                SetRep.PauseOnBattery = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = true;
+                SetRep.PauseOnBatterySaver = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                PauseBatterySaverToggle.IsOn = true;
+                PauseBatterySaverToggle.IsEnabled = false;
+
+                WriteSettingsJSON();
+            }
+            else
+            {
+                SetRep.PauseOnBattery = false;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
+                PauseBatterySaverToggle.IsEnabled = true;
+                WriteSettingsJSON();
+            }
+        }
+
+        private void PauseMaximisedToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (PauseMaximisedToggle.IsOn)
+            {
+                SetRep.PauseOnMaximise = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = true;
+
+                WriteSettingsJSON();
+            }
+            else
+            {
+                SetRep.PauseOnMaximise = false;
+                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = false;
+
+                WriteSettingsJSON();
+            }
+        }
+
+        private void PauseBatterySaverToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (PauseBatteryToggle.IsOn)
+            {
+                SetRep.PauseOnBatterySaver = true;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+
+                WriteSettingsJSON();
+            }
+            else
+            {
+                SetRep.PauseOnBatterySaver = false;
+                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = false;
+
+                WriteSettingsJSON();
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         public class SettingsRepresentative
         {
             public bool UseDarkTheme { get; set; }
             public bool UseDarkTrayIcon { get; set; }
+            public bool PauseOnMaximise { get; set; }
+            public bool PauseOnBattery { get; set; }
+            public bool PauseOnBatterySaver { get; set; }
         }
     }
 }

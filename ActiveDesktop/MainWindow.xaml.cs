@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 
+
 namespace ActiveDesktop
 {
     public partial class MainWindow : Window
@@ -32,8 +33,12 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
-        public System.Drawing.Icon TrayDark;
         
+        //
+        public bool PauseOnBattery = true;
+        public bool PauseOnMaximise = true;
+        public bool PauseOnBatterySaver = true;
+
         // Generates pages
         public Settings SettingsPage;
         public CurrentApps CurrentAppsPage;
@@ -79,6 +84,7 @@ namespace ActiveDesktop
 
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
+
         }
 
         // Stores window properties
@@ -695,6 +701,17 @@ namespace ActiveDesktop
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        public struct SYSTEM_POWER_STATUS
+        {
+            public byte ACLineStatus;
+            public byte BatteryFlag;
+            public byte BatteryLifePercent;
+            public byte SystemStatusFlag;
+            public uint BatteryLifeTime;
+            public uint BatteryFullLifeTime;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
             public int Left;
@@ -1096,6 +1113,8 @@ namespace ActiveDesktop
         public static extern bool DestroyWindow(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+        [DllImport("kernel32.dll")]
+        public static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS lpSystemPowerStatus);
     }
 
 }
