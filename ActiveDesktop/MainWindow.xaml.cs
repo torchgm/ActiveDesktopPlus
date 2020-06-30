@@ -253,19 +253,21 @@ namespace ActiveDesktop
         {
             if (SavedAppsPage.CmdBox.Text != "Command Line")
             {
-                App AppToAdd = new App();
-                AppToAdd.Cmd = SavedAppsPage.CmdBox.Text;
-                AppToAdd.Xpos = SavedAppsPage.XBox.Text;
-                AppToAdd.Ypos = SavedAppsPage.YBox.Text;
-                AppToAdd.Width = SavedAppsPage.WidthBox.Text;
-                AppToAdd.Height = SavedAppsPage.HeightBox.Text;
-                AppToAdd.Flags = SavedAppsPage.FlagBox.Text;
-                AppToAdd.Name = SavedAppsPage.NameBox.Text;
-                AppToAdd.Time = SavedAppsPage.TimeBox.Text;
-                AppToAdd.Lock = SavedAppsPage.LockedCheckBox.IsChecked ?? false;
-                AppToAdd.Startup = SavedAppsPage.AutostartCheckBox.IsChecked ?? false;
-                AppToAdd.Fix = SavedAppsPage.FixCheckBox.IsChecked ?? false;
-                AppToAdd.Pin = SavedAppsPage.PinnedCheckBox.IsChecked ?? false;
+                App AppToAdd = new App
+                {
+                    Cmd = SavedAppsPage.CmdBox.Text,
+                    Xpos = SavedAppsPage.XBox.Text,
+                    Ypos = SavedAppsPage.YBox.Text,
+                    Width = SavedAppsPage.WidthBox.Text,
+                    Height = SavedAppsPage.HeightBox.Text,
+                    Flags = SavedAppsPage.FlagBox.Text,
+                    Name = SavedAppsPage.NameBox.Text,
+                    Time = SavedAppsPage.TimeBox.Text,
+                    Lock = SavedAppsPage.LockedCheckBox.IsChecked ?? false,
+                    Startup = SavedAppsPage.AutostartCheckBox.IsChecked ?? false,
+                    Fix = SavedAppsPage.FixCheckBox.IsChecked ?? false,
+                    Pin = SavedAppsPage.PinnedCheckBox.IsChecked ?? false
+                };
                 JSONArrayList.Add(AppToAdd);
 
 
@@ -363,15 +365,13 @@ namespace ActiveDesktop
         {
             if (CurrentAppsPage.HandleListBox.SelectedIndex != -1)
             {
-                RECT PosTarget;
-                uint PID;
                 string SyllyIsAwesome;
                 IntPtr hwnd = IntPtr.Zero;
                 hwnd = new IntPtr(Convert.ToInt32(DesktopWindowPropertyList[Convert.ToInt32(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Substring(CurrentAppsPage.HandleListBox.SelectedItem.ToString().Length - 3))][2]));
                 StringBuilder WindowTitle = new StringBuilder(1000);
                 StringBuilder FileName = new StringBuilder(1000);
                 uint size = (uint)FileName.Capacity;
-                GetWindowThreadProcessId(hwnd, out PID);
+                GetWindowThreadProcessId(hwnd, out uint PID);
                 IntPtr handle = OpenProcess(0x1000, false, PID);
                 if (QueryFullProcessImageNameW(handle, 0, FileName, ref size) != 0)
                 {
@@ -383,7 +383,7 @@ namespace ActiveDesktop
                 }
                 CloseHandle(handle);
 
-                GetWindowRect(hwnd, out PosTarget);
+                GetWindowRect(hwnd, out RECT PosTarget);
                 GetWindowText(hwnd, WindowTitle, 1000);
                 SavedAppsPage.CmdBox.Text = SyllyIsAwesome;
                 SavedAppsPage.XBox.Text = PosTarget.Left.ToString();
@@ -580,8 +580,7 @@ namespace ActiveDesktop
                 }
                 else
                 {
-                    TextBlock ItemContent = args.InvokedItem as TextBlock;
-                    if (ItemContent != null)
+                    if (args.InvokedItem is TextBlock ItemContent)
                     {
                         switch (ItemContent.Tag)
                         {
@@ -758,15 +757,17 @@ namespace ActiveDesktop
                     bool success = GetMonitorInfo(hMonitor, ref mi);
                     if (success)
                     {
-                        DisplayInfo di = new DisplayInfo();
-                        di.ScreenWidth = (mi.rcMonitor.Right - mi.rcMonitor.Left).ToString();
-                        di.ScreenHeight = (mi.rcMonitor.Bottom - mi.rcMonitor.Top).ToString();
-                        di.MonitorArea = mi.rcMonitor;
-                        di.WorkArea = mi.rcWork;
-                        di.Availability = mi.dwFlags.ToString();
-                        di.Handle = hMonitor;
-                        di.Top = mi.rcMonitor.Top;
-                        di.Left = mi.rcMonitor.Left;
+                        DisplayInfo di = new DisplayInfo
+                        {
+                            ScreenWidth = (mi.rcMonitor.Right - mi.rcMonitor.Left).ToString(),
+                            ScreenHeight = (mi.rcMonitor.Bottom - mi.rcMonitor.Top).ToString(),
+                            MonitorArea = mi.rcMonitor,
+                            WorkArea = mi.rcWork,
+                            Availability = mi.dwFlags.ToString(),
+                            Handle = hMonitor,
+                            Top = mi.rcMonitor.Top,
+                            Left = mi.rcMonitor.Left
+                        };
                         col.Add(di);
                     }
                     return true;
@@ -777,10 +778,9 @@ namespace ActiveDesktop
         // Deals with getting a window's size
         public static Size GetWindowSize(IntPtr hWnd)
         {
-            RECT pRect;
             Size cSize = new Size();
             // get coordinates relative to window
-            GetWindowRect(hWnd, out pRect);
+            GetWindowRect(hWnd, out RECT pRect);
 
             cSize.Width = pRect.Right - pRect.Left;
             cSize.Height = pRect.Bottom - pRect.Top;
@@ -790,8 +790,7 @@ namespace ActiveDesktop
         // Have a guess what this does you fkn idiot
         public static Point GetCursorPosition()
         {
-            POINT lpPoint;
-            GetCursorPos(out lpPoint);
+            GetCursorPos(out POINT lpPoint);
             return lpPoint;
         }
 
@@ -820,8 +819,7 @@ namespace ActiveDesktop
         private static bool EnumWindow(IntPtr handle, IntPtr pointer)
         {
             GCHandle gch = GCHandle.FromIntPtr(pointer);
-            List<IntPtr> list = gch.Target as List<IntPtr>;
-            if (list == null)
+            if (!(gch.Target is List<IntPtr> list))
             {
                 throw new InvalidCastException("GCHandle Target could not be cast as List<IntPtr>");
             }
@@ -970,8 +968,7 @@ namespace ActiveDesktop
             try
             {
                 SetParent(hwnd, DesktopHandle);
-                RECT PosTarget;
-                GetWindowRect(hwnd, out PosTarget);
+                GetWindowRect(hwnd, out RECT PosTarget);
                 if (i.Xpos == "X")
                 {
                     i.Xpos = PosTarget.Top.ToString();

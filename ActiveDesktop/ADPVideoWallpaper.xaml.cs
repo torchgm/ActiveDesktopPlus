@@ -65,13 +65,13 @@ namespace ActiveDesktop
                         MainWindow.DwmGetWindowAttribute(wnd, Convert.ToInt32(DwmApi.DWMWINDOWATTRIBUTE.DWMWA_CLOAKED), out cloaked, Marshal.SizeOf(typeof(bool)));
                         if (MainWindow.IsZoomed(wnd) && MainWindow.IsWindowVisible(wnd) && cloaked <= 0)
                         {
-                            MainWindow.RECT WindowRect;
-                            MainWindow.RECT VideoPlayerRect;
-                            MainWindow.GetWindowRect(wnd, out WindowRect);
-                            MainWindow.GetWindowRect(VideoPlayerHandle, out VideoPlayerRect);
-                            MainWindow.POINT Corner = new MainWindow.POINT();
-                            Corner.X = VideoPlayerRect.Left + 10;
-                            Corner.Y = VideoPlayerRect.Top + 10;
+                            MainWindow.GetWindowRect(wnd, out MainWindow.RECT WindowRect);
+                            MainWindow.GetWindowRect(VideoPlayerHandle, out MainWindow.RECT VideoPlayerRect);
+                            MainWindow.POINT Corner = new MainWindow.POINT
+                            {
+                                X = VideoPlayerRect.Left + 10,
+                                Y = VideoPlayerRect.Top + 10
+                            };
                             if (MainWindow.PtInRect(in WindowRect, Corner) && PauseOnMax)
                             {
                                 Dispatcher.Invoke(() =>
