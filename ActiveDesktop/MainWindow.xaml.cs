@@ -251,7 +251,7 @@ namespace ActiveDesktop
         // Handles adding a new app to the saved apps list
         public void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SavedAppsPage.CmdBox.Text != "Command Line")
+            if (SavedAppsPage.CmdBox.Text != "Command Line" && !(SavedAppsPage.CmdBox.Text == "MEDIA" && SavedAppsPage.FlagBox.Text == "Path to Video"))
             {
                 App AppToAdd = new App
                 {
@@ -273,14 +273,21 @@ namespace ActiveDesktop
 
 
                 SavedAppsPage.CmdBox.Text = "Command Line";
+                SavedAppsPage.CmdBox.IsEnabled = true;
                 SavedAppsPage.XBox.Text = "X";
+                SavedAppsPage.XBox.IsEnabled = true;
                 SavedAppsPage.YBox.Text = "Y";
+                SavedAppsPage.YBox.IsEnabled = true;
                 SavedAppsPage.WidthBox.Text = "Width";
+                SavedAppsPage.WidthBox.IsEnabled = true;
                 SavedAppsPage.HeightBox.Text = "Height";
+                SavedAppsPage.HeightBox.IsEnabled = true;
                 SavedAppsPage.FlagBox.Text = "Flags";
                 SavedAppsPage.NameBox.Text = "Friendly Name";
                 SavedAppsPage.TimeBox.Text = "Wait Time";
                 SavedAppsPage.WriteButton.IsEnabled = true;
+                SavedAppsPage.MediaButton.Content = "  Use \nVideo";
+
             }
             SavedListRefreshEvent();
         }
