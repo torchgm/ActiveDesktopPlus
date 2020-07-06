@@ -7,18 +7,18 @@
       Title="CurrentApps" Width="325" Height="488">
 
     <Grid>
-        <TextBox x:Name="HwndInputTextBox" Height="26" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="The handle of the currently selected window" Margin="117,68,0,0" HorizontalAlignment="Left" Width="203"/>
+        <TextBox x:Name="TitleTextBox" Height="26" VerticalAlignment="Top" Focusable="False" MaxLines="1" ToolTip="The name of the currently selected window" Margin="117,31,0,0" HorizontalAlignment="Left" Width="203"/>
+        <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="109" Height="26" Margin="5,34,0,0"/>
+        <TextBox x:Name="HwndInputTextBox" Height="26" TextWrapping="Wrap" Focusable="False" VerticalAlignment="Top" ToolTip="The handle of the currently selected window" Margin="117,68,0,0" HorizontalAlignment="Left" Width="203"/>
+        <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="104" Height="26" Margin="10,71,0,0"/>
         <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="55" VerticalAlignment="Top" IsDefault="True" ToolTip="Send the selected window to the desktop" Margin="5,105,0,0"/>
         <ListBox x:Name="HandleListBox" Height="195" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="List of apps currently open on the desktop" Margin="5,165,0,0">
             <UniformGrid Columns="2"/>
         </ListBox>
-        <Button x:Name="BorderlessButton" Content="Toggle Borders" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="BorderlessButton_Click" HorizontalAlignment="Left" Width="154" ToolTip="Hide and show the selected window's borders" Margin="5,448,0,0" Height="35"/>
+        <Button x:Name="SaveButton" Content="Copy selected app to Saved Apps" HorizontalContentAlignment="Center" Height="35" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315" ToolTip="Copies the properties of the selected app to the Saved Apps page and switches you there to customise it" Margin="5,368,0,0"/>
         <Button x:Name="LockButton" Content="Toggle Lock" HorizontalContentAlignment="Center" Height="35" VerticalAlignment="Top" Click="LockButton_Click" HorizontalAlignment="Left" Width="154" ToolTip="Lock the selected window, preventing you from interacting or moving it" Margin="5,408,0,0"/>
-        <Button x:Name="FixButton" Content="Fix Alignment" HorizontalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Click="FixButton_Click" ToolTip="If your window appears partially or completely off-screen, this button might fix it" Margin="166,448,0,0" Width="154" Height="35"/>
         <Button x:Name="CloseButton" Content="Close" HorizontalContentAlignment="Center" Height="35" VerticalAlignment="Top" Click="CloseButton_Click" HorizontalAlignment="Left" Width="154" ToolTip="Close the selected window" Margin="166,408,0,0"/>
-        <Button x:Name="SaveButton" Content="Copy selected app to Saved Apps" HorizontalContentAlignment="Center" Height="35" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315" ToolTip="Copies the properties of the selected app to the Saved Apps section below, so you can quickly add it to your list of saved apps" Margin="5,368,0,0"/>
-        <Label x:Name="WindowLabel" Content="Selected window: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="109" Height="26" Margin="5,34,0,0"/>
-        <TextBox x:Name="TitleTextBox" Height="26" VerticalAlignment="Top" Focusable="False" MaxLines="1" ToolTip="The name of the currently selected window" Margin="117,31,0,0" HorizontalAlignment="Left" Width="203"/>
-        <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="104" Height="26" Margin="10,71,0,0"/>
+        <Button x:Name="BorderlessButton" Content="Toggle Borders" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="BorderlessButton_Click" HorizontalAlignment="Left" Width="154" ToolTip="Hide and show the selected window's borders" Margin="5,448,0,0" Height="35"/>
+        <Button x:Name="FixButton" Content="Fix Alignment" HorizontalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Click="FixButton_Click" ToolTip="If your window appears partially or completely off-screen, this button might fix it" Margin="166,448,0,0" Width="154" Height="35"/>
     </Grid>
 </Page>

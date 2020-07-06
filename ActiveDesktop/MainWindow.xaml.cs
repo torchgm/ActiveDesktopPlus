@@ -43,6 +43,7 @@ namespace ActiveDesktop
         public Settings SettingsPage;
         public CurrentApps CurrentAppsPage;
         public SavedApps SavedAppsPage;
+        public Help HelpPage;
 
         // On-start tasks
         public MainWindow()
@@ -52,6 +53,7 @@ namespace ActiveDesktop
             CurrentAppsPage = new CurrentApps();
             SavedAppsPage = new SavedApps();
             SettingsPage = new Settings();
+            HelpPage = new Help();
             tbi.Visibility = Visibility.Visible;
             
             // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
@@ -597,6 +599,10 @@ namespace ActiveDesktop
 
                             case "Nav_Saved":
                                 ContentFrame.Navigate(SavedAppsPage);
+                                break;
+
+                            case "Nav_Help":
+                                ContentFrame.Navigate(HelpPage);
                                 break;
                         }
                     }

@@ -46,10 +46,6 @@
             ItemInvoked="NavView_ItemInvoked" PaneDisplayMode="LeftCompact"
             
             >
-            <!--<fw:AcrylicPanel Target="{Binding ElementName=ContentGrid}" TintOpacity="0.3" TintColor="{DynamicResource SystemChromeMediumColor}" NoiseOpacity="0.025">
-                <Rectangle Fill="{DynamicResource NavigationViewExpandedPaneBackground}" Opacity="0.2"/>
-            </fw:AcrylicPanel>-->
-
 
             <ui:NavigationView.MenuItems>
 
@@ -58,6 +54,9 @@
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Icon="Save" Tag="Page_Saved">
                     <TextBlock Tag="Nav_Saved">Saved Apps</TextBlock>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Icon="Help" Tag="Page_Help">
+                    <TextBlock Tag="Nav_Help">Help</TextBlock>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
 
