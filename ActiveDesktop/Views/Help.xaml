@@ -7,9 +7,12 @@
       Title="Help" Width="325" Height="488">
 
     <Grid>
-        <Label x:Name="HelpLabel" Content="Help" HorizontalAlignment="Left" Margin="94,108,0,0" VerticalAlignment="Top" FontSize="48" FontWeight="Bold"/>
-        <Label x:Name="HelpLabel_Copy" Content="save me I'm being held hostage" HorizontalAlignment="Left" Margin="10,230,0,0" VerticalAlignment="Top" FontSize="20
-               " FontWeight="Bold"/>
-
+        <Label x:Name="HelpLabel" Content="Help" FontSize="48" FontWeight="DemiBold" Margin="10,0,0,0" HorizontalAlignment="Left" Width="102" Height="64" VerticalAlignment="Top"/>
+        <Label x:Name="HelpTitleLabel1" Content="Why can't I see any windows?" FontSize="18" FontWeight="Bold" Margin="10,80,0,0" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
+        <Label x:Name="HelpBodyLabel1" Content="Make sure you have desktop icons&#xD;&#xA;disabled as ADP may not correctly&#xD;&#xA;work with them enabled." FontSize="18" Margin="10,107,0,0" HorizontalAlignment="Left" Width="315" Height="73" VerticalAlignment="Top"/>
+        <Label x:Name="HelpTitleLabel2" Content="Does ADP support multi-monitors?" FontSize="18" FontWeight="Bold" Margin="10,202,0,0" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
+        <Label x:Name="HelpBodyLabel2" Content="Yes, although there may be issues with&#xD;&#xA;some windows not appearing in the&#xD;&#xA;correct place. If this happens, use the&#xD;&#xA;Fix Alignment option.&#xD;&#xA;" FontSize="18" Margin="10,229,0,0" HorizontalAlignment="Left" Width="315" Height="98" VerticalAlignment="Top"/>
+        <Label x:Name="HelpTitleLabel2_Copy" Content="What apps can I use with ADP?" FontSize="18" FontWeight="Bold" Margin="10,349,0,0" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
+        <Label x:Name="HelpBodyLabel2_Copy" Content="ADP supports most apps although &#xD;&#xA;some may not be able to be sent to&#xD;&#xA;the desktop or saved and launched.&#xD;&#xA;This includes all UWP apps." FontSize="18" Margin="10,376,0,0" HorizontalAlignment="Left" Width="315" Height="98" VerticalAlignment="Top"/>
     </Grid>
 </Page>

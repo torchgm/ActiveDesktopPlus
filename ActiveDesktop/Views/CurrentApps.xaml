@@ -12,7 +12,7 @@
         <TextBox x:Name="HwndInputTextBox" Height="26" TextWrapping="Wrap" Focusable="False" VerticalAlignment="Top" ToolTip="The handle of the currently selected window" Margin="117,68,0,0" HorizontalAlignment="Left" Width="203"/>
         <Label x:Name="HandleLabel" Content="Selected handle: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="104" Height="26" Margin="10,71,0,0"/>
         <Button x:Name="ApplyHwndButton" Content="Send to Desktop" Click="ApplyHwndButton_Click" HorizontalAlignment="Left" Width="315" Height="55" VerticalAlignment="Top" IsDefault="True" ToolTip="Send the selected window to the desktop" Margin="5,105,0,0"/>
-        <ListBox x:Name="HandleListBox" Height="195" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="List of apps currently open on the desktop" Margin="5,165,0,0">
+        <ListBox x:Name="HandleListBox" Height="198" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="List of apps currently open on the desktop" Margin="5,165,0,0">
             <UniformGrid Columns="2"/>
         </ListBox>
         <Button x:Name="SaveButton" Content="Copy selected app to Saved Apps" HorizontalContentAlignment="Center" Height="35" VerticalAlignment="Top" Click="SaveButton_Click" HorizontalAlignment="Left" Width="315" ToolTip="Copies the properties of the selected app to the Saved Apps page and switches you there to customise it" Margin="5,368,0,0"/>
