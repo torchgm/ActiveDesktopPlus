@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 
@@ -22,9 +23,9 @@ namespace ActiveDesktop
     {
         // I'm sure it's bad practice to ever declare anything up here ever but screw that I'm doing it anyway
         // It's easier and I need them everywhere so shh it'll be fine I promise aaaa
-        IntPtr DesktopHandle; // The handle of the desktop
-        IntPtr TargetHandle; // The handle of the targeted app
-        string LocalFolder; // %AppData%/ActiveDesktopPlus
+        public IntPtr DesktopHandle; // The handle of the desktop
+        public IntPtr TargetHandle; // The handle of the targeted app
+        public string LocalFolder; // %AppData%/ActiveDesktopPlus
         List<App> JSONArrayList = new List<App>(); // ArrayList that holds data from JSON for on-the-fly reading and writing or something
         List<List<string>> DesktopWindowPropertyList; // Not entirely sure, probably something to do with the children of the desktop
         List<int> WindowHandles = new List<int>(); // List of handles
@@ -34,41 +35,48 @@ namespace ActiveDesktop
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
         
-        //
+        // Predefined settings, they don't actually *need* to be assigned a value here but hey
         public bool PauseOnBattery = true;
         public bool PauseOnMaximise = true;
         public bool PauseOnBatterySaver = true;
+        public bool DebugMode = true;
 
         // Generates pages
         public Settings SettingsPage;
         public CurrentApps CurrentAppsPage;
         public SavedApps SavedAppsPage;
-        public Help HelpPage;
+        public Views.Help HelpPage;
+        public Views.Debug DebugPage;
 
         // On-start tasks
         public MainWindow()
         {
-            // Important thingies
+            
+            // Creating and doing important thingies, such as making pages
             InitializeComponent();
+            FileSystem();
+
             CurrentAppsPage = new CurrentApps();
             SavedAppsPage = new SavedApps();
             SettingsPage = new Settings();
-            HelpPage = new Help();
+            HelpPage = new Views.Help();
+            DebugPage = new Views.Debug();
+
             tbi.Visibility = Visibility.Visible;
-            
-            // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
-            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
-            DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
-            while (DesktopHandle == IntPtr.Zero)
+            // Sets Debug Mode initial visiblity
+            if (DebugMode)
             {
-                RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
-                DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+                DebugPageForToggling.Visibility = Visibility.Visible;
             }
 
-            // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
-            FileSystem();
+            // Gets desktop handle
+            DesktopHandle = GetDesktopWindowHandle();
+
+            // Creates blank log file on startup and sets up JSON config
+            System.IO.File.Create(Path.Combine(LocalFolder, "adp.log")).Close();
             JSONArrayList = ReadJSON();
-            
+
+            // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             Displays = GetDisplays();
             RefreshLists();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
@@ -78,15 +86,44 @@ namespace ActiveDesktop
             if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
             {
                 SettingsPage.StartupToggle.IsOn = false;
+                LogEntry("Startup shortcut not found");
             }
             else
             {
                 SettingsPage.StartupToggle.IsOn = true;
+                LogEntry("Startup shortcut found");
             }
 
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
 
+            LogEntry("ADP initialised successfully");
+        }
+
+        // Adds an item to the log
+        public void LogEntry(string Message)
+        {
+            if (DebugMode == true)
+            {
+                using (StreamWriter sw = System.IO.File.AppendText(Path.Combine(LocalFolder, "adp.log")))
+                {
+                    sw.WriteLine("[" + DateTime.Now + "] " + Message);
+                }
+            }
+            
+        }
+
+        // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
+        public IntPtr GetDesktopWindowHandle()
+        {
+            IntPtr RootHandle = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Progman", "Program Manager");
+            IntPtr DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+            while (DesktopHandle == IntPtr.Zero)
+            {
+                RootHandle = FindWindowExA(IntPtr.Zero, RootHandle, "WorkerW", "");
+                DesktopHandle = FindWindowExA(RootHandle, IntPtr.Zero, "SHELLDLL_DefView", "");
+            }
+            return DesktopHandle;
         }
 
         // Stores window properties
@@ -127,7 +164,7 @@ namespace ActiveDesktop
         }
 
         // Deals with listening to the Ctrl key
-        public void OnKeyDownHandler(object sender, KeyEventArgs e)
+        public void OnKeyDownHandler(object sender, System.Windows.Input.KeyEventArgs e)
         {
             // Deals with finding the target window the user wants to send to the desktop
             // I'll probably work out how to do it with the mouse at some point but 🅱 was easier at the time
@@ -152,7 +189,7 @@ namespace ActiveDesktop
         }
 
         // See above
-        public void OnKeyUpHandler(object sender, KeyEventArgs e)
+        public void OnKeyUpHandler(object sender, System.Windows.Input.KeyEventArgs e)
         {
             CurrentAppsPage.ApplyHwndButton.Content = "Send to Desktop";
             CurrentAppsPage.ApplyHwndButton.IsEnabled = true;
@@ -170,7 +207,7 @@ namespace ActiveDesktop
             MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
-
+            LogEntry("Sent HWND[" + TargetHandle.ToString() + "] to the desktop");
             RefreshLists();
         }
 
@@ -230,6 +267,7 @@ namespace ActiveDesktop
                 }
             }
             SavedListRefreshEvent();
+            LogEntry("Refreshed in-app lists");
         }
 
         // Refresh event for the saved apps list
@@ -248,6 +286,19 @@ namespace ActiveDesktop
                     SavedAppsPage.SavedListBox.Items.Add(i.Name);
                 }
             }
+            LogEntry("Refreshed JSON lists");
+        }
+
+        public void DebugRefreshEvent()
+        {
+            DebugPage.DebugDesktopSizeXBox.Text = GetWindowSize(DesktopHandle).Width.ToString();
+            DebugPage.DebugDesktopSizeYBox.Text = GetWindowSize(DesktopHandle).Height.ToString();
+            DebugPage.DebugDesktopOffsetXBox.Text = TranslateCanvasX(0).ToString();
+            DebugPage.DebugDesktopOffsetYBox.Text = TranslateCanvasY(0).ToString();
+            DebugPage.DebugMonitorCountBox.Text = Displays.Count.ToString();
+            DebugPage.DebugDesktopWindowsBox.Text = DesktopWindowPropertyList.Count.ToString();
+            DebugPage.DebugDesktopHandleBox.Text = DesktopHandle.ToString();
+            LogEntry("Refreshed debug lists");
         }
 
         // Handles adding a new app to the saved apps list
@@ -290,6 +341,7 @@ namespace ActiveDesktop
                 SavedAppsPage.WriteButton.IsEnabled = true;
                 SavedAppsPage.MediaButton.Content = "  Use \nVideo";
 
+                LogEntry("Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd);
             }
             SavedListRefreshEvent();
         }
@@ -308,6 +360,7 @@ namespace ActiveDesktop
                 JSONArrayList.RemoveAt(SavedAppsPage.SavedListBox.SelectedIndex);
                 SavedListRefreshEvent();
                 SavedAppsPage.WriteButton.IsEnabled = true;
+                LogEntry("Removed app");
             }
 
         }
@@ -544,7 +597,7 @@ namespace ActiveDesktop
         public void CloseMenuItem_Click(object sender, EventArgs e)
         {
             tbi.Visibility = Visibility.Hidden;
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         // Handles the fix button
@@ -586,6 +639,7 @@ namespace ActiveDesktop
                 if (args.IsSettingsInvoked)
                 {
                     ContentFrame.Navigate(SettingsPage);
+                    LogEntry("Switched to settings page");
                 }
                 else
                 {
@@ -595,14 +649,24 @@ namespace ActiveDesktop
                         {
                             case "Nav_Current":
                                 ContentFrame.Navigate(CurrentAppsPage);
+                                LogEntry("Switched to current apps page");
                                 break;
 
                             case "Nav_Saved":
                                 ContentFrame.Navigate(SavedAppsPage);
+                                LogEntry("Switched to saved apps page");
+
                                 break;
 
                             case "Nav_Help":
                                 ContentFrame.Navigate(HelpPage);
+                                LogEntry("Switched to help page");
+                                break;
+
+                            case "Nav_Debug":
+                                DebugRefreshEvent();
+                                ContentFrame.Navigate(DebugPage);
+                                LogEntry("Switched to debug page");
                                 break;
                         }
                     }
@@ -640,6 +704,7 @@ namespace ActiveDesktop
                         i.Flags = string.Empty;
                     }
                     WindowFromListToDesktop(i, t);
+                    LogEntry("Started [" + i.Name + "] [" + i.Cmd + "]");
                 }
 
             }
@@ -785,6 +850,7 @@ namespace ActiveDesktop
                     }
                     return true;
                 }, IntPtr.Zero);
+            LogEntry("Detected " + col.Count.ToString() + " displays");
             return col;
         }
 
@@ -886,6 +952,10 @@ namespace ActiveDesktop
             {
                 WriteJSON(); // Initialises empty file
             }
+            if (!System.IO.File.Exists(Path.Combine(LocalFolder, "adp.log")))
+            {
+                System.IO.File.Create(Path.Combine(LocalFolder, "adp.log")).Close();
+            }
             
         }
 
@@ -894,6 +964,7 @@ namespace ActiveDesktop
         {
             System.IO.File.Create(Path.Combine(LocalFolder, "saved.json")).Close();
             System.IO.File.WriteAllText(Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
+            LogEntry("Written changes to disk");
         }
 
         // Reads stuff from the JSON file into the array
@@ -961,17 +1032,24 @@ namespace ActiveDesktop
                 SavedProcess.Refresh();
                 Thread.Sleep(t);
                 SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
+                LogEntry("Started [" + i.Name + "] [" + i.Cmd + "]");
             }
             else
             {
                 ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
                 IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
                 Thread.Sleep(Convert.ToInt32(t));
+                LogEntry("Started [ADPVideoWallpaper]");
+
                 try
                 {
                     SetWindowSizeAndLock(i, hvid);
+                    LogEntry("SetWindowSizeAndLock successful");
                 }
-                catch (Exception) { }
+                catch (Exception)
+                { 
+                    LogEntry("SetWindowSizeAndLock failure");
+                }
             }
         }
 

@@ -28,6 +28,7 @@ namespace ActiveDesktop.Views
                 SetRep.UseDarkTheme = false;
                 SetRep.PauseOnBattery = true;
                 SetRep.PauseOnMaximise = true;
+                SetRep.DebugMode = false;
                 WriteSettingsJSON();
             }
             SetRep = ReadSettingsJSON();
@@ -79,6 +80,15 @@ namespace ActiveDesktop.Views
             {
                 ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
             }
+            if (SetRep.DebugMode)
+            {
+                DebugModeToggle.IsOn = true;
+                ((MainWindow)Application.Current.MainWindow).DebugMode = true;
+            }
+            else
+            {
+                ((MainWindow)Application.Current.MainWindow).DebugMode = false;
+            }
         }
 
         public void WriteSettingsJSON()
@@ -101,10 +111,12 @@ namespace ActiveDesktop.Views
             if (StartupToggle.IsOn)
             {
                 ((MainWindow)Application.Current.MainWindow).EnableStartup(null, null);
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Startup enabled");
             }
             else
             {
                 ((MainWindow)Application.Current.MainWindow).DisableStartup(null, null);
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Startup disabled");
             }
         }
 
@@ -116,6 +128,7 @@ namespace ActiveDesktop.Views
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                 ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Switched to dark theme");
             }
             else
             {
@@ -123,6 +136,7 @@ namespace ActiveDesktop.Views
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                 ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Switched to light theme");
             }
         }
 
@@ -132,12 +146,16 @@ namespace ActiveDesktop.Views
             {
                 SetRep.UseDarkTrayIcon = true;
                 ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Switched to dark tray icon");
+
                 WriteSettingsJSON();
             }
             else
             {
                 SetRep.UseDarkTrayIcon = false;
                 ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).LightIcon.Icon;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Switched to light tray icon");
+
                 WriteSettingsJSON();
             }
         }
@@ -152,6 +170,7 @@ namespace ActiveDesktop.Views
                 ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
                 PauseBatterySaverToggle.IsOn = true;
                 PauseBatterySaverToggle.IsEnabled = false;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Enabled pausing on battery");
 
                 WriteSettingsJSON();
             }
@@ -160,6 +179,8 @@ namespace ActiveDesktop.Views
                 SetRep.PauseOnBattery = false;
                 ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
                 PauseBatterySaverToggle.IsEnabled = true;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Disabled pausing on battery");
+
                 WriteSettingsJSON();
             }
         }
@@ -170,6 +191,7 @@ namespace ActiveDesktop.Views
             {
                 SetRep.PauseOnMaximise = true;
                 ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = true;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Enabled pausing on maximised");
 
                 WriteSettingsJSON();
             }
@@ -177,6 +199,7 @@ namespace ActiveDesktop.Views
             {
                 SetRep.PauseOnMaximise = false;
                 ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = false;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Disabled pausing on maximised");
 
                 WriteSettingsJSON();
             }
@@ -184,10 +207,11 @@ namespace ActiveDesktop.Views
 
         private void PauseBatterySaverToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            if (PauseBatteryToggle.IsOn)
+            if (PauseBatterySaverToggle.IsOn)
             {
                 SetRep.PauseOnBatterySaver = true;
                 ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Enabled pausing on Battery Saver");
 
                 WriteSettingsJSON();
             }
@@ -195,6 +219,29 @@ namespace ActiveDesktop.Views
             {
                 SetRep.PauseOnBatterySaver = false;
                 ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = false;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Disabled Pausing on Battery Saver");
+                
+                WriteSettingsJSON();
+            }
+        }
+
+        private void DebugModeToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (DebugModeToggle.IsOn)
+            {
+                SetRep.DebugMode = true;
+                ((MainWindow)Application.Current.MainWindow).DebugMode = true;
+                ((MainWindow)Application.Current.MainWindow).DebugPageForToggling.Visibility = Visibility.Visible;
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Enabled debug mode");
+
+                WriteSettingsJSON();
+            }
+            else
+            {
+                ((MainWindow)Application.Current.MainWindow).LogEntry("[Settings] Disabled debug mode");
+                SetRep.DebugMode = false;
+                ((MainWindow)Application.Current.MainWindow).DebugMode = false;
+                ((MainWindow)Application.Current.MainWindow).DebugPageForToggling.Visibility = Visibility.Hidden;
 
                 WriteSettingsJSON();
             }
@@ -209,6 +256,9 @@ namespace ActiveDesktop.Views
             public bool PauseOnMaximise { get; set; }
             public bool PauseOnBattery { get; set; }
             public bool PauseOnBatterySaver { get; set; }
+            public bool DebugMode { get; set; }
         }
+
+
     }
 }

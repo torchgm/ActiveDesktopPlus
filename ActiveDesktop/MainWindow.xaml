@@ -49,14 +49,29 @@
 
             <ui:NavigationView.MenuItems>
 
-                <ui:NavigationViewItem Icon="AllApps" Tag="Page_Current">
+                <ui:NavigationViewItem Tag="Page_Current">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:PathIcon Data="{StaticResource CurrentAppsIcon}"/>
+                    </ui:NavigationViewItem.Icon>
                     <TextBlock Tag="Nav_Current">Current Apps</TextBlock>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Icon="Save" Tag="Page_Saved">
+                <ui:NavigationViewItem Tag="Page_Saved">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:PathIcon Data="{StaticResource SavedAppsIcon}"/>
+                    </ui:NavigationViewItem.Icon>
                     <TextBlock Tag="Nav_Saved">Saved Apps</TextBlock>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Icon="Help" Tag="Page_Help">
+                <ui:NavigationViewItem Tag="Page_Help">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:PathIcon Data="{StaticResource HelpIcon}"/>
+                    </ui:NavigationViewItem.Icon>
                     <TextBlock Tag="Nav_Help">Help</TextBlock>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem x:Name ="DebugPageForToggling" Tag="Page_Debug" Visibility="Hidden">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:PathIcon Data="{StaticResource DebugIcon}"/>
+                    </ui:NavigationViewItem.Icon>
+                    <TextBlock Tag="Nav_Debug">Debug</TextBlock>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
 
@@ -68,3 +83,4 @@
 
     </Grid>
 </Window>
+

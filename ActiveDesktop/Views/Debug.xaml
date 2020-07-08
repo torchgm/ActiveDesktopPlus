@@ -1,0 +1,27 @@
+﻿<Page x:Class="ActiveDesktop.Views.Debug"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      Title="Debug" Width="325" Height="488">
+
+    <Grid>
+        <TextBox x:Name="DebugDesktopSizeXBox" HorizontalAlignment="Left" Height="23" Margin="133,31,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugDesktopSizeYBox" HorizontalAlignment="Left" Height="23" Margin="133,68,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugDesktopOffsetXBox" HorizontalAlignment="Left" Height="23" Margin="133,105,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugDesktopOffsetYBox" HorizontalAlignment="Left" Height="23" Margin="133,142,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugMonitorCountBox" HorizontalAlignment="Left" Height="23" Margin="133,179,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugDesktopWindowsBox" HorizontalAlignment="Left" Height="23" Margin="133,216,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <TextBox x:Name="DebugDesktopHandleBox" HorizontalAlignment="Left" Height="23" Margin="133,253,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="99" Focusable="False"/>
+        <Label x:Name="label1" Content="DesktopSizeX" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.RowSpan="1"/>
+        <Label x:Name="label2" Content="DesktopSizeY" HorizontalAlignment="Left" Margin="10,73,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.Row="0"/>
+        <Label x:Name="label3" Content="DesktopOffsetX" HorizontalAlignment="Left" Margin="10,110,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.RowSpan="1"/>
+        <Label x:Name="label4" Content="DesktopOffsetY" HorizontalAlignment="Left" Margin="10,147,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.Row="0"/>
+        <Label x:Name="label5" Content="MonitorCount" HorizontalAlignment="Left" Margin="10,184,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.RowSpan="1"/>
+        <Label x:Name="label6" Content="DesktopWindows" HorizontalAlignment="Left" Margin="10,221,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.Row="0"/>
+        <Label x:Name="label7" Content="DesktopHandle" HorizontalAlignment="Left" Margin="10,258,0,0" VerticalAlignment="Top" Height="32" Width="123" Grid.Row="0"/>
+        <Button x:Name="DebugRefreshButton" Content="Reload" HorizontalAlignment="Left" Margin="237,31,0,0" VerticalAlignment="Top" Width="78" Height="254" Click="DebugRefreshButton_Click"/>
+        <Button x:Name="OpenLogsButton" Content="Open Log" HorizontalAlignment="Left" Height="183" Margin="10,295,0,0" VerticalAlignment="Top" Width="305" Click="OpenLogsButton_Click"/>
+    </Grid>
+</Page>

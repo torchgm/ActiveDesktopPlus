@@ -7,7 +7,7 @@
       Title="Help" Width="325" Height="488">
 
     <Grid>
-        <Label x:Name="HelpLabel" Content="Help" FontSize="48" FontWeight="DemiBold" Margin="10,0,0,0" HorizontalAlignment="Left" Width="102" Height="64" VerticalAlignment="Top"/>
+        <Label x:Name="HelpLabel" Content="Help" FontSize="40" FontWeight="DemiBold" Margin="10,10,0,0" HorizontalAlignment="Left" Width="102" Height="64" VerticalAlignment="Top"/>
         <Label x:Name="HelpTitleLabel1" Content="Why can't I see any windows?" FontSize="18" FontWeight="Bold" Margin="10,80,0,0" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
         <Label x:Name="HelpBodyLabel1" Content="Make sure you have desktop icons&#xD;&#xA;disabled as ADP may not correctly&#xD;&#xA;work with them enabled." FontSize="18" Margin="10,107,0,0" HorizontalAlignment="Left" Width="315" Height="73" VerticalAlignment="Top"/>
         <Label x:Name="HelpTitleLabel2" Content="Does ADP support multi-monitors?" FontSize="18" FontWeight="Bold" Margin="10,202,0,0" HorizontalAlignment="Left" Width="315" Height="27" VerticalAlignment="Top"/>
