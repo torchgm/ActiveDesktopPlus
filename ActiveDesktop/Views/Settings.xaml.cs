@@ -16,7 +16,7 @@ namespace ActiveDesktop.Views
         public Settings()
         {
             InitializeComponent();
-            string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string AppData = Environment.GetFolderPath(Environment.SpecialFolder.MyDoc‌​uments);
             LocalFolder = Path.Combine(AppData, "ActiveDesktopPlus");
             Directory.CreateDirectory(LocalFolder);
             if (!File.Exists(Path.Combine(LocalFolder, "settings.json")))

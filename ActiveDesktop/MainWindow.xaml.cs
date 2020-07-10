@@ -937,9 +937,9 @@ namespace ActiveDesktop
         // Checks for AppData directory/configs and creates them if they doesn't exist
         private void FileSystem()
         {
-            string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string DocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDoc‌​uments);
 
-            LocalFolder = Path.Combine(AppData, "ActiveDesktopPlus");
+            LocalFolder = Path.Combine(DocumentsFolder, "ActiveDesktopPlus");
 
             Directory.CreateDirectory(LocalFolder);
 
