@@ -15,7 +15,9 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-
+using DesktopBridge;
+using Windows.ApplicationModel;
+using System.Threading.Tasks;
 
 namespace ActiveDesktop
 {
@@ -34,6 +36,7 @@ namespace ActiveDesktop
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
         int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
+
         
         // Predefined settings, they don't actually *need* to be assigned a value here but hey
         public bool PauseOnBattery = true;
@@ -73,31 +76,62 @@ namespace ActiveDesktop
             DesktopHandle = GetDesktopWindowHandle();
 
             // Creates blank log file on startup and sets up JSON config
-            System.IO.File.Create(Path.Combine(LocalFolder, "adp.log")).Close();
+            try
+            {
+                System.IO.File.Create(Path.Combine(LocalFolder, "adp.log")).Close();
+            }
+            catch (Exception)
+            {
+                ErrorNotif.Visibility = Visibility.Visible;
+            }
             JSONArrayList = ReadJSON();
-
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             Displays = GetDisplays();
             RefreshLists();
+            DebugRefreshEvent();
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
             }
-            if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")))
+            if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Active Desktop Plus.lnk")) && !IsRunningAsUWP())
             {
                 SettingsPage.StartupToggle.IsOn = false;
-                LogEntry("Startup shortcut not found");
+                LogEntry("[SET] Startup shortcut not found");
+            }
+            else if (!IsRunningAsUWP())
+            {
+                SettingsPage.StartupToggle.IsOn = true;
+                LogEntry("[SET] Startup shortcut found");
             }
             else
             {
-                SettingsPage.StartupToggle.IsOn = true;
-                LogEntry("Startup shortcut found");
+                StartupInit();
             }
+            if (IsRunningAsUWP())
+            {
+                LogEntry("[ADP] Running in UWP mode");
+            }
+            else
+            {
+                LogEntry("[ADP] Running in legacy win32 mode");
+            }
+
 
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
 
-            LogEntry("ADP initialised successfully");
+
+            LogEntry("");
+            LogEntry("[BEGIN SYSTEM INFO]");
+            LogEntry("DesktopSizeX: " + DebugPage.DebugDesktopSizeXBox.Text);
+            LogEntry("DesktopSizeY: " + DebugPage.DebugDesktopSizeYBox.Text);
+            LogEntry("DesktopOffsetX: " + DebugPage.DebugDesktopOffsetXBox.Text);
+            LogEntry("DesktopOffsetY: " + DebugPage.DebugDesktopOffsetYBox.Text);
+            LogEntry("DesktopHandle: " + DebugPage.DebugDesktopHandleBox.Text);
+            LogEntry("[END SYSTEM INFO]");
+            LogEntry("");
+
+            LogEntry("[ADP] Initialised successfully");
         }
 
         // Adds an item to the log
@@ -105,9 +139,16 @@ namespace ActiveDesktop
         {
             if (DebugMode == true)
             {
-                using (StreamWriter sw = System.IO.File.AppendText(Path.Combine(LocalFolder, "adp.log")))
+                try
+                {   using (StreamWriter LogWriter = System.IO.File.AppendText(Path.Combine(LocalFolder, "adp.log")))
+                    {
+                        LogWriter.WriteLine("[" + DateTime.Now + "] " + Message);
+                    }
+                }
+                catch (Exception) { }
+                if (Message.Contains("[ERR]"))
                 {
-                    sw.WriteLine("[" + DateTime.Now + "] " + Message);
+                    ErrorNotif.Visibility = Visibility.Visible;
                 }
             }
             
@@ -207,7 +248,7 @@ namespace ActiveDesktop
             MoveWindow(TargetHandle, (TempRect.Left + x), (TempRect.Top + y), Convert.ToInt32(GetWindowSize(TargetHandle).Width), Convert.ToInt32(GetWindowSize(TargetHandle).Height), true);
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
-            LogEntry("Sent HWND[" + TargetHandle.ToString() + "] to the desktop");
+            LogEntry("[ADP] Sent HWND[" + TargetHandle.ToString() + "] to the desktop");
             RefreshLists();
         }
 
@@ -267,7 +308,8 @@ namespace ActiveDesktop
                 }
             }
             SavedListRefreshEvent();
-            LogEntry("Refreshed in-app lists");
+            StartupInit();
+            LogEntry("[ADP] Refreshed in-app lists");
         }
 
         // Refresh event for the saved apps list
@@ -286,7 +328,7 @@ namespace ActiveDesktop
                     SavedAppsPage.SavedListBox.Items.Add(i.Name);
                 }
             }
-            LogEntry("Refreshed JSON lists");
+            LogEntry("[ADP] Refreshed JSON lists");
         }
 
         public void DebugRefreshEvent()
@@ -298,7 +340,7 @@ namespace ActiveDesktop
             DebugPage.DebugMonitorCountBox.Text = Displays.Count.ToString();
             DebugPage.DebugDesktopWindowsBox.Text = DesktopWindowPropertyList.Count.ToString();
             DebugPage.DebugDesktopHandleBox.Text = DesktopHandle.ToString();
-            LogEntry("Refreshed debug lists");
+            LogEntry("[ADP] Refreshed debug lists");
         }
 
         // Handles adding a new app to the saved apps list
@@ -341,7 +383,7 @@ namespace ActiveDesktop
                 SavedAppsPage.WriteButton.IsEnabled = true;
                 SavedAppsPage.MediaButton.Content = "  Use \nVideo";
 
-                LogEntry("Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd);
+                LogEntry("[ADP] Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd);
             }
             SavedListRefreshEvent();
         }
@@ -360,7 +402,7 @@ namespace ActiveDesktop
                 JSONArrayList.RemoveAt(SavedAppsPage.SavedListBox.SelectedIndex);
                 SavedListRefreshEvent();
                 SavedAppsPage.WriteButton.IsEnabled = true;
-                LogEntry("Removed app");
+                LogEntry("[ADP] Removed app");
             }
 
         }
@@ -387,7 +429,10 @@ namespace ActiveDesktop
                         {
                             t = Convert.ToInt32(i.Time);
                         }
-                        catch (Exception) { }
+                        catch (Exception ex)
+                        {
+                            LogEntry("[ERR] TestButton failed to convert wait time " + ex.ToString());
+                        }
                     }
 
                     if (i.Flags == "Flags")
@@ -471,6 +516,83 @@ namespace ActiveDesktop
             RefreshLists();
         }
 
+        async Task StartupToggle()
+        {
+            StartupTask startupTask = await StartupTask.GetAsync("ADP"); // Pass the task ID you specified in the appxmanifest file
+            switch (startupTask.State)
+            {
+                case StartupTaskState.Disabled:
+                    // Task is disabled but can be enabled.
+                    StartupTaskState newState = await startupTask.RequestEnableAsync();
+                    LogEntry("[SET] Request to enable startup, result = " + newState);
+                    SettingsPage.StartupWarningLabel.Content = "";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+
+                case StartupTaskState.DisabledByUser:
+                    // Task is disabled and user must enable it manually.
+                    LogEntry("[SET] Startup is user-disabled");
+                    SettingsPage.StartupWarningLabel.Content = "(disabled in Settings)";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Visible;
+                    break;
+
+                case StartupTaskState.DisabledByPolicy:
+                    LogEntry("[SET] Startup disabled by group policy, or not supported on this device");
+                    SettingsPage.StartupWarningLabel.Content = "(disabled by group policy)";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+
+                case StartupTaskState.Enabled:
+                    startupTask.Disable();
+                    LogEntry("[SET] Startup has been disabled.");
+                    SettingsPage.StartupWarningLabel.Content = "";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+            }
+        }
+
+        async Task StartupInit()
+        {
+            StartupTask startupTask = await StartupTask.GetAsync("ADP");
+            switch (startupTask.State)
+            {
+                case StartupTaskState.Disabled:
+                    LogEntry("[SET] Detected that startup is disabled");
+                    SettingsPage.StartupToggle.IsOn = false;
+                    SettingsPage.StartupToggle.IsEnabled = true;
+                    SettingsPage.StartupWarningLabel.Content = "";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+
+                case StartupTaskState.DisabledByUser:
+                    LogEntry("[SET] Detected that startup is user-disabled");
+                    SettingsPage.StartupToggle.IsOn = false;
+                    SettingsPage.StartupToggle.IsEnabled = false;
+                    SettingsPage.StartupWarningLabel.Content = "(disabled in Settings)";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Visible;
+                    break;
+
+                case StartupTaskState.DisabledByPolicy:
+                    SettingsPage.StartupToggle.IsOn = false;
+                    SettingsPage.StartupToggle.IsEnabled = false;
+                    LogEntry("[SET] Detected that startup disabled by group policy, or not supported on this device");
+                    SettingsPage.StartupWarningLabel.Content = "(disabled by group policy)";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+
+                case StartupTaskState.Enabled:
+                    LogEntry("[SET] Startup is enabled.");
+                    SettingsPage.StartupToggle.IsOn = true;
+                    SettingsPage.StartupToggle.IsEnabled = true;
+                    SettingsPage.StartupWarningLabel.Content = "";
+                    SettingsPage.EnableInSettingsButton.Visibility = Visibility.Hidden;
+                    break;
+            }
+        }
+
+
+
+
         // Adds startup shortcut
         public void EnableStartup(object sender, RoutedEventArgs e)
         {
@@ -490,10 +612,9 @@ namespace ActiveDesktop
                 shortcut.Description = "Start Active Desktop Plus";
                 shortcut.Save();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                LogEntry("[ERR] EnableStartupLegacy " + ex.ToString());
             }
         }
 
@@ -506,10 +627,9 @@ namespace ActiveDesktop
                 string ADPStartupLink = Path.Combine(shortcutFolder, "Active Desktop Plus.lnk");
                 System.IO.File.Delete(ADPStartupLink);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                LogEntry("[ERR] DisableStartupLegacy " + ex.ToString());
             }
         }
 
@@ -531,6 +651,7 @@ namespace ActiveDesktop
             }
             catch (Exception)
             {
+                LogEntry("[ADP] Monitor has no properties (probably disconnected) " + e.ToString());
                 SavedAppsPage.XBox.Text = "[Disconnected]";
                 SavedAppsPage.YBox.Text = "[Disconnected]";
                 SavedAppsPage.WidthBox.Text = "[Disconnected]";
@@ -627,11 +748,6 @@ namespace ActiveDesktop
             NavView.SelectedItem = NavView.MenuItems[0];
         }
 
-        // Navigation View Selection Handler Thing™
-        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-        }
-
         // Navigation View Invoke Handler Thing™
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
@@ -639,7 +755,6 @@ namespace ActiveDesktop
                 if (args.IsSettingsInvoked)
                 {
                     ContentFrame.Navigate(SettingsPage);
-                    LogEntry("Switched to settings page");
                 }
                 else
                 {
@@ -649,24 +764,25 @@ namespace ActiveDesktop
                         {
                             case "Nav_Current":
                                 ContentFrame.Navigate(CurrentAppsPage);
-                                LogEntry("Switched to current apps page");
                                 break;
 
                             case "Nav_Saved":
                                 ContentFrame.Navigate(SavedAppsPage);
-                                LogEntry("Switched to saved apps page");
 
                                 break;
 
                             case "Nav_Help":
                                 ContentFrame.Navigate(HelpPage);
-                                LogEntry("Switched to help page");
                                 break;
 
                             case "Nav_Debug":
                                 DebugRefreshEvent();
                                 ContentFrame.Navigate(DebugPage);
-                                LogEntry("Switched to debug page");
+                                break;
+
+                            case "Nav_Error":
+                                DebugRefreshEvent();
+                                ErrorNotif.Visibility = Visibility.Hidden;
                                 break;
                         }
                     }
@@ -696,7 +812,10 @@ namespace ActiveDesktop
                         {
                             t = Convert.ToInt32(i.Time);
                         }
-                        catch (Exception) { }
+                        catch (Exception e)
+                        {
+                            LogEntry("[ERR] StartSavedApps failed to convert wait time " + e.ToString());
+                        }
                     }
 
                     if (i.Flags == "Flags")
@@ -704,7 +823,7 @@ namespace ActiveDesktop
                         i.Flags = string.Empty;
                     }
                     WindowFromListToDesktop(i, t);
-                    LogEntry("Started [" + i.Name + "] [" + i.Cmd + "]");
+                    LogEntry("[ADP] Started [" + i.Name + "] [" + i.Cmd + "]");
                 }
 
             }
@@ -850,7 +969,7 @@ namespace ActiveDesktop
                     }
                     return true;
                 }, IntPtr.Zero);
-            LogEntry("Detected " + col.Count.ToString() + " displays");
+            LogEntry("[ADP] Detected " + col.Count.ToString() + " displays");
             return col;
         }
 
@@ -906,6 +1025,12 @@ namespace ActiveDesktop
             return true;
         }
 
+        public bool IsRunningAsUWP()
+        {
+            Helpers helpers = new Helpers();
+            return helpers.IsRunningAsUwp();
+        }
+
         // Actually removes the borders
         public void RemoveBorders(int TargetHandlePtr)
         {
@@ -937,11 +1062,18 @@ namespace ActiveDesktop
         // Checks for AppData directory/configs and creates them if they doesn't exist
         private void FileSystem()
         {
-            string DocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDoc‌​uments);
+            string TargetFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            LocalFolder = Path.Combine(DocumentsFolder, "ActiveDesktopPlus");
+            if (IsRunningAsUWP())
+            {
+                LocalFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
+            }
+            else
+            {
+                LocalFolder = Path.Combine(TargetFolder, "ActiveDesktopPlus");
+                Directory.CreateDirectory(LocalFolder);
+            }
 
-            Directory.CreateDirectory(LocalFolder);
 
 
             if (!System.IO.File.Exists(Path.Combine(LocalFolder, "saved.json")))
@@ -964,7 +1096,7 @@ namespace ActiveDesktop
         {
             System.IO.File.Create(Path.Combine(LocalFolder, "saved.json")).Close();
             System.IO.File.WriteAllText(Path.Combine(LocalFolder, "saved.json"), JsonConvert.SerializeObject(JSONArrayList, Formatting.Indented));
-            LogEntry("Written changes to disk");
+            LogEntry("[ADP] Written changes to disk");
         }
 
         // Reads stuff from the JSON file into the array
@@ -1010,7 +1142,10 @@ namespace ActiveDesktop
                         AddBorders(Convert.ToInt32(l[2]), RetrieveWindowProperties(Convert.ToInt32(l[2]), 0), RetrieveWindowProperties(Convert.ToInt32(l[2]), 1));
                         l[3] = "false";
                     }
-                    catch (Exception) { }
+                    catch (Exception e)
+                    {
+                        LogEntry("[ERR] Failed to restore borders to window " + hwnd.ToString() + e.ToString());
+                    }
                 }
             }
             RefreshLists();
@@ -1019,38 +1154,47 @@ namespace ActiveDesktop
         // Actually deals with window properties or smth idk
         private void WindowFromListToDesktop(App i, int t)
         {
-            if (SavedAppsPage.XBox.Text == "[Disconnected]")
+            try
             {
-                SavedAppsPage.XBox.Text = Displays[0].MonitorArea.Left.ToString();
-                SavedAppsPage.YBox.Text = Displays[0].MonitorArea.Top.ToString();
-                SavedAppsPage.WidthBox.Text = Displays[0].ScreenWidth;
-                SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
-            }
-            if (i.Cmd != "MEDIA")
-            {
-                Process SavedProcess = Process.Start(i.Cmd, i.Flags);
-                SavedProcess.Refresh();
-                Thread.Sleep(t);
-                SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
-                LogEntry("Started [" + i.Name + "] [" + i.Cmd + "]");
-            }
-            else
-            {
-                ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
-                IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
-                Thread.Sleep(Convert.ToInt32(t));
-                LogEntry("Started [ADPVideoWallpaper]");
-
-                try
+                if (SavedAppsPage.XBox.Text == "[Disconnected]")
                 {
-                    SetWindowSizeAndLock(i, hvid);
-                    LogEntry("SetWindowSizeAndLock successful");
+                    SavedAppsPage.XBox.Text = Displays[0].MonitorArea.Left.ToString();
+                    SavedAppsPage.YBox.Text = Displays[0].MonitorArea.Top.ToString();
+                    SavedAppsPage.WidthBox.Text = Displays[0].ScreenWidth;
+                    SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
                 }
-                catch (Exception)
-                { 
-                    LogEntry("SetWindowSizeAndLock failure");
+                if (i.Cmd != "MEDIA")
+                {
+                    Process SavedProcess = Process.Start(i.Cmd, i.Flags);
+                    SavedProcess.Refresh();
+                    Thread.Sleep(t);
+                    SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
+                    LogEntry("[ADP] Started [" + i.Name + "] [" + i.Cmd + "]");
+                }
+                else
+                {
+                    ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
+                    IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
+                    Thread.Sleep(Convert.ToInt32(t));
+                    LogEntry("[ADP] Started video window");
+
+                    try
+                    {
+                        SetWindowSizeAndLock(i, hvid);
+                        LogEntry("[ADP] SetWindowSizeAndLock successful");
+                    }
+                    catch (Exception e)
+                    {
+                        LogEntry("[ERR] To SetWindowSizeAndLock " + e.ToString());
+
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                LogEntry("[ERR] WindowFromListToDesktop " + e.ToString());
+            }
+
         }
 
         // WindowFromListToDesktop 2 Electric Boogaloo
@@ -1095,7 +1239,10 @@ namespace ActiveDesktop
                     PinApp(hwnd.ToString());
                 }
             }
-            catch (Exception) { }
+            catch (Exception e) 
+            {
+                LogEntry("[ERR] SetWindowSizeAndLock " + e.ToString());
+            }
         }
 
         // Deals with misaligned desktop/monitor origins for the X axis.
@@ -1206,3 +1353,4 @@ namespace ActiveDesktop
     }
 
 }
+

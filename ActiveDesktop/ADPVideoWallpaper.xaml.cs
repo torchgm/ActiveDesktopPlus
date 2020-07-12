@@ -12,12 +12,12 @@ namespace ActiveDesktop
 {
     public partial class ADPVideoWallpaper : Window
     {
+        // Things I need
         bool PauseOnBat = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnBattery;
         bool PauseOnMax = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnMaximise;
         bool PauseOnBatSave = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnBatterySaver;
         string LogID;
         IntPtr VideoPlayerHandle;
-        //MainWindow.DisplayInfoCollection Displays = ((MainWindow)Application.Current.MainWindow).Displays;
         bool IsPlaying;
 
         // Startup events
@@ -56,7 +56,7 @@ namespace ActiveDesktop
             });
             List<IntPtr> ObscuringList = new List<IntPtr>();
             List<IntPtr> RemoveList = new List<IntPtr>();
-            Thread.Sleep(5000);
+            Thread.Sleep(3000); //Time before video starts caring about auto-pausing properties
 
             bool IsOnBattery = false;
             bool IsOnBatterySaver = false;

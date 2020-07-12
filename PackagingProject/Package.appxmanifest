@@ -4,6 +4,7 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   IgnorableNamespaces="uap rescap">
 
   <Identity
@@ -30,6 +31,7 @@
     <Application Id="App"
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
+
       <uap:VisualElements
         DisplayName="Active Desktop Plus"
         Description="PackagingProject"
@@ -45,6 +47,11 @@
         </uap:DefaultTile >
         <uap:SplashScreen Image="Images\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <desktop:Extension Category="windows.startupTask" Executable="ActiveDesktop.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="ADP" Enabled="true" DisplayName="Active Desktop Plus" />
+        </desktop:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

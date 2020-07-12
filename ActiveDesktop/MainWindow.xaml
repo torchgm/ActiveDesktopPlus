@@ -42,9 +42,7 @@
             IsBackEnabled="False"
             IsPaneOpen="True"
             Loaded="NavView_Loaded"
-            SelectionChanged="NavView_SelectionChanged"
             ItemInvoked="NavView_ItemInvoked" PaneDisplayMode="LeftCompact"
-            
             >
 
             <ui:NavigationView.MenuItems>
@@ -72,6 +70,12 @@
                         <ui:PathIcon Data="{StaticResource DebugIcon}"/>
                     </ui:NavigationViewItem.Icon>
                     <TextBlock Tag="Nav_Debug">Debug</TextBlock>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem x:Name ="ErrorNotif" Tag="Notif_Error" Visibility="Hidden">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:PathIcon x:Name ="ErrorIcon" Data="{StaticResource ErrorIcon}" Foreground="Red" />
+                    </ui:NavigationViewItem.Icon>
+                    <TextBlock Tag="Nav_Error">Error occurred, click to dismiss</TextBlock>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
 

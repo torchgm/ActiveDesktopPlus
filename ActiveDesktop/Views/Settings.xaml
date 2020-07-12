@@ -9,28 +9,30 @@
 
 
     <Grid>
-        <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,35,0,0" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,39,0,0" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="StartupLabel" Content="Run on startup" HorizontalAlignment="Left" Margin="10,16,0,0" VerticalAlignment="Top"/>
 
-        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,95,0,0" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="ThemeToggle" Margin="10,99,0,0" ToolTip="Enable the dark theme for ADP's UI" Toggled="ThemeToggle_Toggled" Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="DarkThemeLabel" Content="Use dark theme" HorizontalAlignment="Left" Margin="10,76,0,0" VerticalAlignment="Top"/>
 
-        <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,155,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,159,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="DarkTrayIconLabel" Content="Use dark tray icon" HorizontalAlignment="Left" Margin="10,136,0,0" VerticalAlignment="Top"/>
 
-        <ui:ToggleSwitch x:Name="PauseBatteryToggle" Margin="10,275,0,0" ToolTip="Toggles whether or not a video should play when the system is running on battery power" Toggled="PauseBatteryToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="PauseBatteryToggle" Margin="10,279,0,0" ToolTip="Toggles whether or not a video should play when the system is running on battery power" Toggled="PauseBatteryToggle_Toggled"  Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="PauseBatteryLabel" Content="Pause videos on battery" HorizontalAlignment="Left" Margin="10,256,0,0" VerticalAlignment="Top"/>
 
-        <ui:ToggleSwitch x:Name="PauseMaximisedToggle" Margin="10,215,0,0" ToolTip="Toggles whether or not a video should pause when a maximised window obscures it" Toggled="PauseMaximisedToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+        <ui:ToggleSwitch x:Name="PauseMaximisedToggle" Margin="10,219,0,0" ToolTip="Toggles whether or not a video should pause when a maximised window obscures it" Toggled="PauseMaximisedToggle_Toggled"  Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="PauseMaximisedLabel" Content="Pause videos on maximise" HorizontalAlignment="Left" Margin="10,196,0,0" VerticalAlignment="Top"/>
 
-        
-        <ui:ToggleSwitch x:Name="PauseBatterySaverToggle" Margin="10,335,0,0" ToolTip="Toggles whether or not a video should pause when the system has Battery Saver enabled" Toggled="PauseBatterySaverToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="PauseBatterySaverToggle" Margin="10,339,0,0" ToolTip="Toggles whether or not a video should pause when the system has Battery Saver enabled" Toggled="PauseBatterySaverToggle_Toggled"  Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="PauseBatterySaverLabel" Content="Pause videos on Battery Saver" HorizontalAlignment="Left" Margin="10,316,0,0" VerticalAlignment="Top"/>
-        
-        <ui:ToggleSwitch x:Name="DebugModeToggle" Margin="10,395,0,0" ToolTip="Enables debugging features" Toggled="DebugModeToggle_Toggled"  Height="32" VerticalAlignment="Top"/>
+
+        <ui:ToggleSwitch x:Name="DebugModeToggle" Margin="10,399,0,0" ToolTip="Enables debugging features" Toggled="DebugModeToggle_Toggled"  Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="DebugModeLabel" Content="Debug Mode (enables logging)" HorizontalAlignment="Left" Margin="10,376,0,0" VerticalAlignment="Top"/>
 
         <Label x:Name="label" Content="   Thank you for using ADP! Sorry if it breaks :c" HorizontalAlignment="Left" Height="25" Margin="0,453,0,0" VerticalAlignment="Top" Width="315"/>
+        <Label x:Name="StartupWarningLabel" Content="" HorizontalAlignment="Left" Margin="107,16,0,0" VerticalAlignment="Top" Width="218" Foreground="Red" Height="19"/>
+        <Button x:Name="EnableInSettingsButton" Content="Enable in Settings" HorizontalAlignment="Left" Margin="107,39,0,0" VerticalAlignment="Top" Width="130" Click="EnableInSettingsButton_Click" Visibility="Hidden"/>
     </Grid>
 </Page>
