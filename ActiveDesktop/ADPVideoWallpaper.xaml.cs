@@ -27,7 +27,7 @@ namespace ActiveDesktop
             Show();
             Random rnd = new Random();
             LogID = rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString();
-            ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Player started");
+            ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Player started");
             VideoPlayerHandle = new WindowInteropHelper(this).Handle;
             VideoPlayer.Source = new Uri(path);
             VideoPlayer.Play();
@@ -52,7 +52,7 @@ namespace ActiveDesktop
         {
             Dispatcher.Invoke(() =>
             {
-                ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] BackgroundWorker started");
+                ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] BackgroundWorker started");
             });
             List<IntPtr> ObscuringList = new List<IntPtr>();
             List<IntPtr> RemoveList = new List<IntPtr>();
@@ -100,7 +100,8 @@ namespace ActiveDesktop
                                     {
                                         VideoPlayer.Play();
                                         IsPlaying = true;
-                                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Video playing (unobscured)");
+                                        // Spams the log, not sure why. Probably should fix that.
+                                        // ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (unobscured)");
                                     });
                                     RemoveList.Add(wnd);
 
@@ -112,7 +113,7 @@ namespace ActiveDesktop
                                 {
                                     VideoPlayer.Play();
                                     IsPlaying = true;
-                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Video playing (not on battery)");
+                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (not on battery)");
                                 });
                                 IsOnBattery = false;
                             }
@@ -122,7 +123,7 @@ namespace ActiveDesktop
                                 {
                                     VideoPlayer.Play();
                                     IsPlaying = true;
-                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Video playing (battery saver disabled)");
+                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (battery saver disabled)");
                                 });
                                 IsOnBatterySaver = false;
                             }
@@ -141,7 +142,7 @@ namespace ActiveDesktop
                     {
                         VideoPlayer.Pause();
                         IsPlaying = false;
-                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Video paused (on battery)");
+                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video paused (on battery)");
                     });
                 }
                 else if (sps.SystemStatusFlag == 1 && PauseOnBatSave)
@@ -151,7 +152,7 @@ namespace ActiveDesktop
                     {
                         VideoPlayer.Pause();
                         IsPlaying = false;
-                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ADPVideoPlayer" + LogID + "] Video paused (battery saver enabled)");
+                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video paused (battery saver enabled)");
                     });
                 }
             }
