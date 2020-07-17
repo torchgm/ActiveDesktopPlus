@@ -365,8 +365,6 @@ namespace ActiveDesktop
                 };
                 JSONArrayList.Add(AppToAdd);
 
-
-
                 SavedAppsPage.CmdBox.Text = "Command Line";
                 SavedAppsPage.CmdBox.IsEnabled = true;
                 SavedAppsPage.XBox.Text = "X";
@@ -383,7 +381,7 @@ namespace ActiveDesktop
                 SavedAppsPage.WriteButton.IsEnabled = true;
                 SavedAppsPage.MediaButton.Content = "  Use \nVideo";
 
-                LogEntry("[ADP] Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd);
+                LogEntry("[ADP] Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd + "]");
             }
             SavedListRefreshEvent();
         }
@@ -639,26 +637,37 @@ namespace ActiveDesktop
             SelectedDisplay++;
             if (SelectedDisplay > Displays.Count)
             {
-                SelectedDisplay = 0;
+                RECT dRect = new RECT();
+                GetWindowRect(DesktopHandle, out dRect);
+                
+                SelectedDisplay = -1;
+                SavedAppsPage.MonitorSelectButton.Content = "Span";
+                SavedAppsPage.XBox.Text = "[Span]";
+                SavedAppsPage.YBox.Text = "[Span]";
+                SavedAppsPage.WidthBox.Text = (dRect.Right - dRect.Left).ToString();
+                SavedAppsPage.HeightBox.Text = (dRect.Bottom - dRect.Top).ToString();
             }
-            SavedAppsPage.MonitorSelectButton.Content = "Monitor:\n      " + (SelectedDisplay + 1).ToString();
-            try
+            if (SelectedDisplay >= 0)
             {
-                SavedAppsPage.XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
-                SavedAppsPage.YBox.Text = Displays[SelectedDisplay].MonitorArea.Top.ToString();
-                SavedAppsPage.WidthBox.Text = Displays[SelectedDisplay].ScreenWidth;
-                SavedAppsPage.HeightBox.Text = Displays[SelectedDisplay].ScreenHeight;
-            }
-            catch (Exception)
-            {
-                LogEntry("[ADP] Monitor has no properties (probably disconnected) " + e.ToString());
-                SavedAppsPage.XBox.Text = "[Disconnected]";
-                SavedAppsPage.YBox.Text = "[Disconnected]";
-                SavedAppsPage.WidthBox.Text = "[Disconnected]";
-                SavedAppsPage.HeightBox.Text = "[Disconnected]";
+                SavedAppsPage.MonitorSelectButton.Content = "Monitor:\n      " + (SelectedDisplay + 1).ToString();
 
-            }
+                try
+                {
+                    SavedAppsPage.XBox.Text = Displays[SelectedDisplay].MonitorArea.Left.ToString();
+                    SavedAppsPage.YBox.Text = Displays[SelectedDisplay].MonitorArea.Top.ToString();
+                    SavedAppsPage.WidthBox.Text = Displays[SelectedDisplay].ScreenWidth;
+                    SavedAppsPage.HeightBox.Text = Displays[SelectedDisplay].ScreenHeight;
+                }
+                catch (Exception)
+                {
+                    LogEntry("[ADP] Monitor has no properties (probably disconnected) ");
+                    SavedAppsPage.XBox.Text = "[Disconnected]";
+                    SavedAppsPage.YBox.Text = "[Disconnected]";
+                    SavedAppsPage.WidthBox.Text = "[Disconnected]";
+                    SavedAppsPage.HeightBox.Text = "[Disconnected]";
 
+                }
+            }
         }
 
         // Clears monitor select button
@@ -1163,6 +1172,7 @@ namespace ActiveDesktop
                     SavedAppsPage.WidthBox.Text = Displays[0].ScreenWidth;
                     SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
                 }
+
                 if (i.Cmd != "MEDIA")
                 {
                     Process SavedProcess = Process.Start(i.Cmd, i.Flags);
@@ -1202,6 +1212,7 @@ namespace ActiveDesktop
         {
             try
             {
+
                 SetParent(hwnd, DesktopHandle);
                 GetWindowRect(hwnd, out RECT PosTarget);
                 if (i.Xpos == "X")
@@ -1221,10 +1232,17 @@ namespace ActiveDesktop
                     i.Height = GetWindowSize(hwnd).Height.ToString();
                 }
 
-                int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
-                int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
+                if (i.Xpos != "[Span]")
+                {
+                    int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
+                    int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
+                    MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                }
+                else
+                {
+                    MoveWindow(hwnd, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                }
 
-                MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                 if (i.Lock)
                 {
                     LockApp(hwnd);
