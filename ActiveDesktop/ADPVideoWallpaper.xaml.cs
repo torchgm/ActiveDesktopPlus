@@ -29,7 +29,15 @@ namespace ActiveDesktop
             LogID = rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString();
             ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Player started");
             VideoPlayerHandle = new WindowInteropHelper(this).Handle;
-            VideoPlayer.Source = new Uri(path);
+            try
+            {
+                VideoPlayer.Source = new Uri(path);
+            }
+            catch (Exception e)
+            {
+                ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ERR] [ADPVideoPlayer" + LogID + "] failed to assign URI " + e.ToString());
+                Close();
+            }
             VideoPlayer.Play();
             IsPlaying = true;
             worker.RunWorkerAsync();
@@ -159,5 +167,6 @@ namespace ActiveDesktop
         }
     }
 }
+
 
                         

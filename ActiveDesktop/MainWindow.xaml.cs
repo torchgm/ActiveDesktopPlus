@@ -350,12 +350,12 @@ namespace ActiveDesktop
             {
                 App AppToAdd = new App
                 {
-                    Cmd = SavedAppsPage.CmdBox.Text,
+                    Cmd = SavedAppsPage.CmdBox.Text.Trim('"'),
                     Xpos = SavedAppsPage.XBox.Text,
                     Ypos = SavedAppsPage.YBox.Text,
                     Width = SavedAppsPage.WidthBox.Text,
                     Height = SavedAppsPage.HeightBox.Text,
-                    Flags = SavedAppsPage.FlagBox.Text,
+                    Flags = SavedAppsPage.FlagBox.Text.Trim('"'),
                     Name = SavedAppsPage.NameBox.Text,
                     Time = SavedAppsPage.TimeBox.Text,
                     Lock = SavedAppsPage.LockedCheckBox.IsChecked ?? false,
@@ -514,6 +514,7 @@ namespace ActiveDesktop
             RefreshLists();
         }
 
+        // Weird stuff to do with UWP Startup
         async Task StartupToggle()
         {
             StartupTask startupTask = await StartupTask.GetAsync("ADP"); // Pass the task ID you specified in the appxmanifest file
@@ -549,6 +550,7 @@ namespace ActiveDesktop
             }
         }
 
+        // More weird stuff to do with UWP Startup
         async Task StartupInit()
         {
             StartupTask startupTask = await StartupTask.GetAsync("ADP");
@@ -587,9 +589,6 @@ namespace ActiveDesktop
                     break;
             }
         }
-
-
-
 
         // Adds startup shortcut
         public void EnableStartup(object sender, RoutedEventArgs e)
@@ -1183,21 +1182,29 @@ namespace ActiveDesktop
                 }
                 else
                 {
-                    ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
-                    IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
-                    Thread.Sleep(Convert.ToInt32(t));
-                    LogEntry("[ADP] Started video window");
-
                     try
                     {
-                        SetWindowSizeAndLock(i, hvid);
-                        LogEntry("[ADP] SetWindowSizeAndLock successful");
+                        ADPVideoWallpaper GeneratedVideoWallpaper = new ADPVideoWallpaper(i.Flags);
+                        IntPtr hvid = new WindowInteropHelper(GeneratedVideoWallpaper).Handle;
+                        Thread.Sleep(Convert.ToInt32(t));
+                        LogEntry("[ADP] Started video window");
+                        try
+                        {
+                            SetWindowSizeAndLock(i, hvid);
+                            LogEntry("[ADP] SetWindowSizeAndLock successful");
+                        }
+                        catch (Exception e)
+                        {
+                            LogEntry("[ERR] SetWindowSizeAndLock " + e.ToString());
+                        }
                     }
                     catch (Exception e)
                     {
-                        LogEntry("[ERR] To SetWindowSizeAndLock " + e.ToString());
-
+                        LogEntry("[ERR] ADPVideoPlayer creation failed " + e.ToString());
                     }
+
+
+
                 }
             }
             catch (Exception e)
