@@ -17,7 +17,6 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         fw:AcrylicWindow.Enabled="true"
         fw:AcrylicWindow.ExtendViewIntoTitleBar="True"
-        fw:PointerTracker.Enabled="True"
         >
 
 
@@ -71,7 +70,7 @@
                     </ui:NavigationViewItem.Icon>
                     <TextBlock Tag="Nav_Debug">Debug</TextBlock>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem x:Name ="ErrorNotif" Tag="Notif_Error" Visibility="Hidden">
+                <ui:NavigationViewItem x:Name ="ErrorNotif" Tag="Notif_Error" Visibility="Hidden" Grid.Row="7">
                     <ui:NavigationViewItem.Icon>
                         <ui:PathIcon x:Name ="ErrorIcon" Data="{StaticResource ErrorIcon}" Foreground="Red" />
                     </ui:NavigationViewItem.Icon>

@@ -114,6 +114,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ADPMessageBox.xaml.cs">
+      <DependentUpon>ADPMessageBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CurrentApps.xaml.cs">
       <DependentUpon>CurrentApps.xaml</DependentUpon>
     </Compile>
@@ -129,6 +132,10 @@
     <Compile Include="Views\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
+    <Page Include="ADPMessageBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ADPVideoWallpaper.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -4,11 +4,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:ActiveDesktop.Views"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
       mc:Ignorable="d" d:DesignWidth="325"
       Title="SavedApps" Height="486.667">
 
     <Grid>
-        <TextBox x:Name="CmdBox" Margin="8,31,0,0" Text="Command Line" HorizontalAlignment="Left" Width="236" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus" GotFocus="CmdBox_GotFocus" ToolTip="Path to the executable you wish to start. &quot;MEDIA&quot; will set a video as your wallpaper"/>
+
+
+        <TextBox x:Name="CmdBox" Margin="8,31,0,0" Text="Command Line" HorizontalAlignment="Left" Width="202" Height="21" VerticalAlignment="Top" LostFocus="CmdBox_LostFocus" GotFocus="CmdBox_GotFocus" ToolTip="Path to the executable you wish to start. &quot;MEDIA&quot; will set a video as your wallpaper"/>
         <TextBox x:Name="FlagBox" Margin="8,67,0,0" Text="Flags" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="236" LostFocus="FlagBox_LostFocus" GotFocus="FlagBox_GotFocus" ToolTip="Any paths, flags or command-line-switches you wish to apply to the program at startup"/>
         <TextBox x:Name="XBox" Margin="8,104,0,0" Text="X" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="XBox_GotFocus" LostFocus="XBox_LostFocus" ToolTip="The X coordinate of the top-left of your window"/>
         <TextBox x:Name="YBox" Margin="129,104,0,0" Text="Y" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="115" PreviewMouseDown="ResetMonitorSelectButton" GotFocus="YBox_GotFocus" LostFocus="YBox_LostFocus" ToolTip="The Y coordinate of the top-left of your window"/>
@@ -27,5 +30,11 @@
         <Button x:Name="WriteButton" Content="Save changes" Margin="8,449,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="101" IsEnabled="False" Foreground="Red" ToolTip="Saves changes to the config file" Height="34"/>
         <Button x:Name="RemoveButton" Content="Remove" Margin="115,449,0,0" HorizontalContentAlignment="Center" Height="34" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="101" ToolTip="Removes an entry on the saved apps list" />
         <Button x:Name="TestButton" Content="Launch" Margin="222,449,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" ToolTip="Launches the selected app from the list" Height="34" Width="101"/>
+
+        <Button x:Name="FileSelectButton" HorizontalAlignment="Left" Margin="212,31,0,0" VerticalAlignment="Top" Width="32" Height="31" Click="FileSelectButton_Click"/>
+        <ui:PathIcon x:Name ="FileOpenIcon" Data="{StaticResource OpenIcon}" Margin="218,39,91,431.5" IsHitTestVisible="False" Foreground="White"/>
+        <Button x:Name="VideoSelectButton" Content="" HorizontalAlignment="Left" Margin="212,67,0,0" VerticalAlignment="Top" Width="32" Height="32" Click="VideoSelectButton_Click" Visibility="Hidden"/>
+        <ui:PathIcon x:Name ="VideoOpenIcon" Data="{StaticResource OpenIcon}" Margin="218,75,91,395.5" IsHitTestVisible="False" Visibility="Hidden" Foreground="White"/>
+
     </Grid>
 </Page>

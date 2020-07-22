@@ -1,0 +1,18 @@
+﻿<Window x:Class="ActiveDesktop.ADPMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ActiveDesktop"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:fw="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
+        mc:Ignorable="d"
+        Title="ADPMessageBox" Height="208.078" Width="342.479" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" ui:WindowHelper.UseModernWindowStyle="True"
+        fw:AcrylicWindow.Enabled="true"
+        fw:AcrylicWindow.ExtendViewIntoTitleBar="True">
+    <Grid>
+        <ui:PathIcon x:Name ="ErrorIcon" Data="{StaticResource ErrorIcon}" Margin="10,0,0.5,144.5" Height="35" VerticalAlignment="Bottom" />
+        <TextBlock x:Name="MessageTextBlock" HorizontalAlignment="Left" Margin="10,0,0,46.5" TextWrapping="Wrap" Text="ADP has encountered an error!" Width="316" FontSize="14" Height="86" VerticalAlignment="Bottom"/>
+        <Button x:Name="MessageOKButton" Content="OK" HorizontalAlignment="Stretch" Margin="10,0,10,6.5" VerticalAlignment="Bottom" Click="MessageOKButton_Click"/>
+    </Grid>
+</Window>

@@ -146,12 +146,12 @@ namespace ActiveDesktop
                     }
                 }
                 catch (Exception) { }
-                if (Message.Contains("[ERR]"))
-                {
-                    ErrorNotif.Visibility = Visibility.Visible;
-                }
             }
-            
+            if (Message.Contains("[ERR]"))
+            {
+                ErrorNotif.Visibility = Visibility.Visible;
+            }
+
         }
 
         // Find and assign desktop handle because microsoft dumb and this can't just be the same thing each boot
@@ -382,6 +382,10 @@ namespace ActiveDesktop
                 SavedAppsPage.MediaButton.Content = "  Use \nVideo";
 
                 LogEntry("[ADP] Added app [" + AppToAdd.Name + "] [" + AppToAdd.Cmd + "]");
+            }
+            else
+            {
+                ShowMessageBox("Please provide the path to a file.");
             }
             SavedListRefreshEvent();
         }
@@ -1315,6 +1319,13 @@ namespace ActiveDesktop
         {
             UnusedButNecessaryRECT = new RECT();
             return true;
+        }
+
+        public void ShowMessageBox(string message)
+        {
+            ADPMessageBox mb = new ADPMessageBox();
+            mb.MessageTextBlock.Text = message;
+            mb.Show();
         }
 
         // Weird cursed external stuff that terrifies me

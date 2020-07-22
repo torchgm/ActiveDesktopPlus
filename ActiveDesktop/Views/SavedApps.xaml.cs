@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace ActiveDesktop.Views
 {
@@ -58,6 +59,20 @@ namespace ActiveDesktop.Views
                 FlagBox.Text = "Path to Video";
                 FlagBox.ToolTip = "The file path to the video you wish to use as a wallpaper";
                 MediaButton.Content = "    Use \nProgram";
+                MediaButton.Content = "    Use \nProgram";
+                FileSelectButton.Visibility = Visibility.Hidden;
+                VideoSelectButton.Visibility = Visibility.Visible;
+                FileOpenIcon.Visibility = Visibility.Hidden;
+                VideoOpenIcon.Visibility = Visibility.Visible;
+                CmdBox.Width = 236;
+                FlagBox.Width = 202;
+            }
+            else
+            {
+                FileSelectButton.Visibility = Visibility.Visible;
+                VideoSelectButton.Visibility = Visibility.Hidden;
+                FileOpenIcon.Visibility = Visibility.Visible;
+                VideoOpenIcon.Visibility = Visibility.Hidden;
             }
             ((MainWindow)Application.Current.MainWindow).CmdBox_LostFocus(null, null);
 
@@ -74,16 +89,45 @@ namespace ActiveDesktop.Views
             {
                 CmdBox.Text = "MEDIA";
                 CmdBox_LostFocus(null, null);
-                MediaButton.Content = "    Use \nProgram";
+
             }
             else
             {
                 CmdBox.Text = "Command Line";
+
+                CmdBox.Width = 202;
+                FlagBox.Width = 236;
                 CmdBox.IsEnabled = true;
                 FlagBox.Text = "Flags";
                 FlagBox.ToolTip = "Any paths, flags or command-line-switches you wish to apply to the program at startup";
                 CmdBox_LostFocus(null, null);
                 MediaButton.Content = "  Use \nVideo";
+            }
+        }
+
+        private void FileSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dl = new OpenFileDialog();
+            dl.Filter = dl.Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
+            dl.ShowDialog();
+            dl.FilterIndex = 2;
+            dl.RestoreDirectory = true;
+            if (dl.FileName != "")
+            {
+                CmdBox.Text = dl.FileName;
+            }
+        }
+
+        private void VideoSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dl = new OpenFileDialog();
+            dl.Filter = dl.Filter = "Video files (*.mp4)|*.mp4|All files (*.*)|*.*";
+            dl.ShowDialog();
+            dl.FilterIndex = 2;
+            dl.RestoreDirectory = true;
+            if (dl.FileName != "")
+            {
+                FlagBox.Text = dl.FileName;
             }
         }
 
