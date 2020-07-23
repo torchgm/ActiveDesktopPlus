@@ -331,6 +331,7 @@ namespace ActiveDesktop
             LogEntry("[ADP] Refreshed JSON lists");
         }
 
+        // Probably a refresh event to do with debug information
         public void DebugRefreshEvent()
         {
             DebugPage.DebugDesktopSizeXBox.Text = GetWindowSize(DesktopHandle).Width.ToString();
@@ -705,7 +706,6 @@ namespace ActiveDesktop
             {
                 SavedAppsPage.CmdBox.Text = "Command Line";
             }
-
         }
 
         // Tray icon handler thingy
@@ -888,7 +888,6 @@ namespace ActiveDesktop
             public const int SW_SHOWNOACTIVATE = 4;
             public const int SW_RESTORE = 9;
             public const int WM_EXITSIZEMOVE = 0x0232;
-
         }
 
         // The thing that defines an app uwu
@@ -1037,6 +1036,7 @@ namespace ActiveDesktop
             return true;
         }
 
+        // Checks if running as a UWP app
         public bool IsRunningAsUWP()
         {
             Helpers helpers = new Helpers();
@@ -1129,11 +1129,25 @@ namespace ActiveDesktop
         }
 
         // Fixes an app for real this time
-        private void FixApp(IntPtr hwnd)
+        private IntPtr FixApp(IntPtr hwnd)
         {
-            RECT WinPos = new RECT();
-            GetWindowRect(hwnd, out WinPos);
-            MoveWindow(hwnd, TranslateCanvasX(TranslateCanvasX(WinPos.Left)), TranslateCanvasY(TranslateCanvasY(WinPos.Top)), WinPos.Right - WinPos.Left, WinPos.Bottom - WinPos.Top, true);
+            ADPFrameWallpaper frame = new ADPFrameWallpaper();
+            frame.Show();
+            IntPtr AriaWindowHandle = new WindowInteropHelper(frame).Handle;
+            SetParent(AriaWindowHandle, DesktopHandle);
+            //int fx = Displays[MonitorToApplyFrameTo].MonitorArea.Left;
+            //int fy = Displays[MonitorToApplyFrameTo].MonitorArea.Top;
+            //int fw = Convert.ToInt32(Displays[MonitorToApplyFrameTo].ScreenWidth);
+            //int fh = Convert.ToInt32(Displays[MonitorToApplyFrameTo].ScreenHeight);
+            //MoveWindow(AriaWindowHandle, TranslateCanvasX(fx), TranslateCanvasY(fy), fw, fh, true);
+            SetParent(hwnd, AriaWindowHandle);
+            return AriaWindowHandle;
+
+
+            //RECT WinPos = new RECT();
+
+            //GetWindowRect(hwnd, out WinPos);
+            //MoveWindow(hwnd, TranslateCanvasX(TranslateCanvasX(WinPos.Left)), TranslateCanvasY(TranslateCanvasY(WinPos.Top)), WinPos.Right - WinPos.Left, WinPos.Bottom - WinPos.Top, true);
         }
 
         // Pins an app for real this time
@@ -1221,10 +1235,14 @@ namespace ActiveDesktop
         // WindowFromListToDesktop 2 Electric Boogaloo
         public void SetWindowSizeAndLock(App i, IntPtr hwnd)
         {
+
             try
             {
+                if (!i.Fix)
+                {
+                    SetParent(hwnd, DesktopHandle);
+                }
 
-                SetParent(hwnd, DesktopHandle);
                 GetWindowRect(hwnd, out RECT PosTarget);
                 if (i.Xpos == "X")
                 {
@@ -1247,7 +1265,14 @@ namespace ActiveDesktop
                 {
                     int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
                     int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
-                    MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                    if (i.Fix)
+                    {
+                        MoveWindow(FixApp(hwnd), CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                    }
+                    else
+                    {
+                        MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                    }
                 }
                 else
                 {
@@ -1258,11 +1283,7 @@ namespace ActiveDesktop
                 {
                     LockApp(hwnd);
                 }
-                if (i.Fix)
-                {
-                    Thread.Sleep(100);
-                    FixApp(hwnd);
-                }
+
                 if (i.Pin)
                 {
                     PinApp(hwnd.ToString());
@@ -1321,6 +1342,7 @@ namespace ActiveDesktop
             return true;
         }
 
+        // Shows a message box, I'd hope that was obvious but hey ¯\_(ツ)_/¯
         public void ShowMessageBox(string message)
         {
             ADPMessageBox mb = new ADPMessageBox();
@@ -1387,6 +1409,5 @@ namespace ActiveDesktop
         [DllImport("kernel32.dll")]
         public static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS lpSystemPowerStatus);
     }
-
 }
 
