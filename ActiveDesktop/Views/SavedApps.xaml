@@ -25,8 +25,8 @@
         <CheckBox x:Name="PinnedCheckBox" Content="Start pinned" HorizontalAlignment="Left" Margin="173,210,0,0" VerticalAlignment="Top" ToolTip="Removes the borders from the app after its started"/>
         <CheckBox x:Name="AutostartCheckBox" Content="Start with ADP" HorizontalAlignment="Left" Margin="8,236,0,0" VerticalAlignment="Top" Width="100" Height="15" ToolTip="Starts the app as soon as ADP opens"/>
         <CheckBox x:Name="FixCheckBox" Content="Fix alignment" HorizontalAlignment="Left" Margin="173,236,0,0" VerticalAlignment="Top" ToolTip="Attempts to fix the alignment of an app once it's opened"/>
-        <Button x:Name="AddButton" Content="Add to saved apps" Margin="8,267,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="Adds the configured app to the list of saved apps"/>
-        <ListBox x:Name="SavedListBox" Margin="8,302,0,0" HorizontalAlignment="Left" Width="315" Height="140" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679" ToolTip="List of apps saved in the config"/>
+        <Button x:Name="AddButton" Content="Add to saved apps" Margin="8,305,0,0" HorizontalContentAlignment="Center" Click="AddButton_Click" Height="34" VerticalAlignment="Top" HorizontalAlignment="Left" Width="315" ToolTip="Adds the configured app to the list of saved apps"/>
+        <ListBox x:Name="SavedListBox" Margin="8,344,0,0" HorizontalAlignment="Left" Width="315" Height="98" VerticalAlignment="Top" RenderTransformOrigin="0.365,0.679" ToolTip="List of apps saved in the config"/>
         <Button x:Name="WriteButton" Content="Save changes" Margin="8,449,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="WriteButton_Click" HorizontalAlignment="Left" Width="101" IsEnabled="False" Foreground="Red" ToolTip="Saves changes to the config file" Height="34"/>
         <Button x:Name="RemoveButton" Content="Remove" Margin="115,449,0,0" HorizontalContentAlignment="Center" Height="34" VerticalAlignment="Top" Click="RemoveButton_Click" HorizontalAlignment="Left" Width="101" ToolTip="Removes an entry on the saved apps list" />
         <Button x:Name="TestButton" Content="Launch" Margin="222,449,0,0" HorizontalContentAlignment="Center" VerticalAlignment="Top" Click="TestButton_Click" HorizontalAlignment="Left" ToolTip="Launches the selected app from the list" Height="34" Width="101"/>
@@ -35,6 +35,15 @@
         <ui:PathIcon x:Name ="FileOpenIcon" Data="{StaticResource OpenIcon}" Margin="218,39,91,431.5" IsHitTestVisible="False" Foreground="White"/>
         <Button x:Name="VideoSelectButton" Content="" HorizontalAlignment="Left" Margin="212,67,0,0" VerticalAlignment="Top" Width="32" Height="32" Click="VideoSelectButton_Click" Visibility="Hidden"/>
         <ui:PathIcon x:Name ="VideoOpenIcon" Data="{StaticResource OpenIcon}" Margin="218,75,91,395.5" IsHitTestVisible="False" Visibility="Hidden" Foreground="White"/>
+        <ComboBox x:Name="FullscreenComboBox" HorizontalAlignment="Left" Margin="8,268,0,0" VerticalAlignment="Top" Width="315" SelectedIndex="0">
+            <Label Content="[No fullscreen key]" />
+            <Label Content="Alt+Enter" />
+            <Label Content="F11" />
+            <Label Content="F12" />
+            <Label Content="Ctrl+Shift+F" />
+            <Label Content="Alt+Space, Alt+X" />
+            <Label Content="F" />
+        </ComboBox>
 
     </Grid>
 </Page>
