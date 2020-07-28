@@ -392,14 +392,6 @@ namespace ActiveDesktop
             SavedListRefreshEvent();
         }
 
-
-
-
-
-
-
-
-
         public void SendFullscreenKeys(IntPtr hwnd, int shortcut)
         {
             const uint WM_KEYDOWN = 0x100;
@@ -452,6 +444,7 @@ namespace ActiveDesktop
                     SendMessage(hwnd, WM_KEYUP, (IntPtr)(Keys.F), IntPtr.Zero);
                     break;
             }
+
         }
 
         // Calls a refresh of the children of the desktop
@@ -1304,62 +1297,54 @@ namespace ActiveDesktop
             {
                 if (!i.Fix)
                 {
-                    GetWindowRect(hwnd, out RECT PosTarget);
-                    if (i.Xpos == "X")
-                    {
-                        i.Xpos = PosTarget.Top.ToString();
-                    }
-                    if (i.Ypos == "Y")
-                    {
-                        i.Ypos = PosTarget.Left.ToString();
-                    }
-                    if (i.Width == "Width")
-                    {
-                        i.Width = GetWindowSize(hwnd).Width.ToString();
-                    }
-                    if (i.Height == "Height")
-                    {
-                        i.Height = GetWindowSize(hwnd).Height.ToString();
-                    }
+                    SetParent(hwnd, DesktopHandle);
                 }
-                else
+                GetWindowRect(hwnd, out RECT PosTarget);
+                if (i.Xpos == "X")
                 {
-                    i.Xpos = "0";
-                    i.Ypos = "0";
-                    i.Width = "200";
-                    i.Height = "200";
+                    i.Xpos = PosTarget.Top.ToString();
+                }
+                if (i.Ypos == "Y")
+                {
+                    i.Ypos = PosTarget.Left.ToString();
+                }
+                if (i.Width == "Width")
+                {
+                    i.Width = GetWindowSize(hwnd).Width.ToString();
+                }
+                if (i.Height == "Height")
+                {
+                    i.Height = GetWindowSize(hwnd).Height.ToString();
                 }
 
-                if (i.Xpos != "[Span]")
+                int CorrectedXpos;
+                int CorrectedYpos;
+                if (i.Xpos == "[Span]")
                 {
-                    int CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
-                    int CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
-                    if (i.Fix)
-                    {
-                        MoveWindow(hwnd, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                        IntPtr AriaTarget = FixApp();
-                        Thread.Sleep(2000);
-                        MoveWindow(AriaTarget, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                        Thread.Sleep(2000);
-                        SetParent(hwnd, AriaTarget);
-                        Thread.Sleep(2000);
-                        MoveWindow(AriaTarget, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                        Thread.Sleep(2000);
-                        SetParent(AriaTarget, DesktopHandle);
-                    }
-                    else
-                    {
-                        MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                    }
+                    CorrectedXpos = 0;
+                    CorrectedYpos = 0;
                 }
                 else
                 {
+                    CorrectedXpos = TranslateCanvasX(Convert.ToInt32(i.Xpos));
+                    CorrectedYpos = TranslateCanvasY(Convert.ToInt32(i.Ypos));
+                }
+                if (i.Fix)
+                {
+                    IntPtr AriaTarget = FixApp();
+                    Thread.Sleep(20);
+                    MoveWindow(AriaTarget, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                    Thread.Sleep(20);
+                    MoveWindow(AriaTarget, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
+                    Thread.Sleep(20);
+                    SetParent(AriaTarget, DesktopHandle);
+                    Thread.Sleep(20);
+                    SetParent(hwnd, AriaTarget);
                     MoveWindow(hwnd, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                 }
-
-                if (!i.Fix)
+                else
                 {
-                    SetParent(hwnd, DesktopHandle);
+                    MoveWindow(hwnd, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                 }
 
                 if (i.Lock)
@@ -1371,8 +1356,39 @@ namespace ActiveDesktop
                 {
                     PinApp(hwnd.ToString());
                 }
-                Thread.Sleep(200);
-                SendFullscreenKeys(hwnd, i.FullscreenKey);
+
+                switch (i.FullscreenKey)
+                {
+                    default:
+                        break;
+                    case (0):
+                        break;
+                    case (1):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("%{ENTER}");
+                        break;
+                    case (2):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("{F11}");
+                        break;
+                    case (3):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("{F12}");
+                        break;
+                    case (4):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("^+F");
+                        break;
+                    case (5):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("%{{SPACE}X}");
+                        break;
+                    case (6):
+                        SetFocus(hwnd);
+                        SendKeys.SendWait("F");
+                        break;
+                }
+
             }
             catch (Exception e) 
             {
@@ -1494,9 +1510,7 @@ namespace ActiveDesktop
         [DllImport("kernel32.dll")]
         public static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS lpSystemPowerStatus);
         [DllImport("user32.dll")]
-        public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll")]
-        private static extern uint MapVirtualKey(uint uCode, uint uMapType);
+        public static extern IntPtr SetFocus(IntPtr hwnd);
     }
 }
 

@@ -5,8 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActiveDesktop"
         mc:Ignorable="d"
-        Title="ADPFrameWallpaper" Height="100" Width="100" WindowStyle="None" Background="Black" ResizeMode="NoResize">
+        Title="ADPFrameWallpaper" Height="417.333" Width="430" WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Opacity="0.2">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <LinearGradientBrush.RelativeTransform>
+                <TransformGroup>
+                    <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                    <SkewTransform CenterY="0.5" CenterX="0.5"/>
+                    <RotateTransform Angle="154.093" CenterY="0.5" CenterX="0.5"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </LinearGradientBrush.RelativeTransform>
+            <GradientStop Color="#FF919191" Offset="1"/>
+            <GradientStop Color="#FF646464"/>
+        </LinearGradientBrush>
+    </Window.Background>
     <Grid>
-        
+        <Label x:Name="label" Content="Frame window, close from ADP" Margin="10,10,10,10" Foreground="#FFB4B4B4" FontFamily="Segoe UI Semibold" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="410" Height="398"/>
     </Grid>
 </Window>
