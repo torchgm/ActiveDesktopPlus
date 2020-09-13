@@ -28,16 +28,17 @@ namespace ActiveDesktop
         public IntPtr DesktopHandle; // The handle of the desktop
         public IntPtr TargetHandle; // The handle of the targeted app
         public string LocalFolder; // %AppData%/ActiveDesktopPlus
-        List<App> JSONArrayList = new List<App>(); // ArrayList that holds data from JSON for on-the-fly reading and writing or something
+        List<App> JSONArrayList = new List<App>(); // AppList that holds data from JSON for on-the-fly reading and writing or something
         List<List<string>> DesktopWindowPropertyList; // Not entirely sure, probably something to do with the children of the desktop
         List<int> WindowHandles = new List<int>(); // List of handles
         List<int> WindowProperties = new List<int>(); // List of window properties
         List<int> WindowPropertiesEx = new List<int>(); // List of window properties but this time its ex
         public DisplayInfoCollection Displays = new DisplayInfoCollection(); // List of displays and their properties
-        int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
+        public int SelectedDisplay = -1; // Selected Display that needs to probably be global or smth
         public bool IsHidden = false; // Keeps track of whether or not the window is hidden
+        public int GlobalXCorrection = 0; // Primitive canvas translation
+        public int GlobalYCorrection = 0; // Primitive canvas translation
 
-        
         // Predefined settings, they don't actually *need* to be assigned a value here but hey
         public bool PauseOnBattery = true;
         public bool PauseOnMaximise = true;
@@ -50,6 +51,8 @@ namespace ActiveDesktop
         public SavedApps SavedAppsPage;
         public Views.Help HelpPage;
         public Views.Debug DebugPage;
+        public ImmersiveExperience ImmersiveExperiencePage;
+        public ImmersiveMonitor ImmersiveMonitorPage;
 
         // On-start tasks
         public MainWindow()
@@ -59,11 +62,14 @@ namespace ActiveDesktop
             InitializeComponent();
             FileSystem();
 
+
+            ImmersiveExperiencePage = new ImmersiveExperience();
             CurrentAppsPage = new CurrentApps();
             SavedAppsPage = new SavedApps();
             SettingsPage = new Settings();
             HelpPage = new Views.Help();
             DebugPage = new Views.Debug();
+            ImmersiveMonitorPage = new ImmersiveMonitor();
 
             tbi.Visibility = Visibility.Visible;
             // Sets Debug Mode initial visiblity
@@ -116,10 +122,8 @@ namespace ActiveDesktop
                 LogEntry("[ADP] Running in legacy win32 mode");
             }
 
-
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
-
 
             LogEntry("");
             LogEntry("[BEGIN SYSTEM INFO]");
@@ -132,6 +136,9 @@ namespace ActiveDesktop
             LogEntry("");
 
             LogEntry("[ADP] Initialised successfully");
+
+            GlobalXCorrection = TranslateCanvasX(0);
+            GlobalYCorrection = TranslateCanvasY(0);
         }
 
         // Adds an item to the log
@@ -812,7 +819,7 @@ namespace ActiveDesktop
                     break;
                 }
             }
-            ContentFrame.Navigate(CurrentAppsPage);
+            ContentFrame.Navigate(ImmersiveExperiencePage);
             NavView.SelectedItem = NavView.MenuItems[0];
         }
 
@@ -830,6 +837,11 @@ namespace ActiveDesktop
                     {
                         switch (ItemContent.Tag)
                         {
+                            case "Nav_Immersive1":
+                                ImmersiveExperiencePage.AddWallpaperIcon.Foreground = ImmersiveExperiencePage.CurrentColour;
+                                ContentFrame.Navigate(ImmersiveExperiencePage);
+                                break;
+
                             case "Nav_Current":
                                 ContentFrame.Navigate(CurrentAppsPage);
                                 break;
@@ -1186,10 +1198,11 @@ namespace ActiveDesktop
         }
 
         // Fixes an app for real this time
-        private IntPtr FixApp()
+        private IntPtr FixApp(string FriendlyTitle)
         {
             ADPFrameWallpaper frame = new ADPFrameWallpaper();
             frame.Show();
+            frame.Title = FriendlyTitle;
             IntPtr AriaWindowHandle = new WindowInteropHelper(frame).Handle;
             //SetParent(AriaWindowHandle, DesktopHandle);
             //int fx = Displays[MonitorToApplyFrameTo].MonitorArea.Left;
@@ -1331,13 +1344,13 @@ namespace ActiveDesktop
                 }
                 if (i.Fix)
                 {
-                    IntPtr AriaTarget = FixApp();
+                    IntPtr AriaTarget = FixApp(i.Name);
                     Thread.Sleep(20);
                     MoveWindow(AriaTarget, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                     Thread.Sleep(20);
-                    MoveWindow(AriaTarget, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
-                    Thread.Sleep(20);
                     SetParent(AriaTarget, DesktopHandle);
+                    Thread.Sleep(20);
+                    MoveWindow(AriaTarget, CorrectedXpos, CorrectedYpos, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
                     Thread.Sleep(20);
                     SetParent(hwnd, AriaTarget);
                     MoveWindow(hwnd, 0, 0, Convert.ToInt32(i.Width), Convert.ToInt32(i.Height), true);
@@ -1381,7 +1394,7 @@ namespace ActiveDesktop
                         break;
                     case (5):
                         SetFocus(hwnd);
-                        SendKeys.SendWait("%{{SPACE}X}");
+                        SendKeys.SendWait("% X");
                         break;
                     case (6):
                         SetFocus(hwnd);

@@ -1,0 +1,19 @@
+﻿<Page x:Class="ActiveDesktop.Views.ImmersiveExperience"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:ActiveDesktop.Views"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
+      mc:Ignorable="d" 
+      
+      Title="ImmersiveExperience" Width="325" Height="488">
+
+    <Grid>
+        <Label x:Name="Label" Content="      Drag-and-drop a file or&#xA; click to add a new wallpaper" Margin="10,73,10,351" FontFamily="Segoe UI Semibold" FontSize="22"/>
+        <Label x:Name="FiletypeLabel" Content="(.mp4 and .exe only)" Margin="100,137,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
+        <ui:PathIcon x:Name="AddWallpaperIcon" Data="{StaticResource ImageIcon}" Margin="106,179,118,205" />
+        <Rectangle x:Name="DragAndDropDetector" Fill="#00FFFFFF" HorizontalAlignment="Left" Height="487" RadiusY="6.9" RadiusX="10" Stroke="#00000000" VerticalAlignment="Top" Width="324" Drop="DragAndDropDetector_Drop" DragDrop.DragEnter="DragAndDropDetector_DragEnter" DragLeave="DragAndDropDetector_DragLeave" AllowDrop="True"/>
+        <Button x:Name="ContinueButton" Content="Continue" HorizontalAlignment="Stretch" Margin="112,415,112,36" VerticalAlignment="Stretch" Click="ContinueButton_Click" IsEnabled="True"/>
+    </Grid>
+</Page>

@@ -129,6 +129,12 @@
     <Compile Include="Views\Help.xaml.cs">
       <DependentUpon>Help.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ImmersiveExperience.xaml.cs">
+      <DependentUpon>ImmersiveExperience.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ImmersiveMonitor.xaml.cs">
+      <DependentUpon>ImmersiveMonitor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SavedApps.xaml.cs">
       <DependentUpon>SavedApps.xaml</DependentUpon>
     </Compile>
@@ -171,6 +177,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Help.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ImmersiveExperience.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ImmersiveMonitor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

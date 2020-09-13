@@ -6,6 +6,7 @@ using ModernWpf;
 using DesktopBridge;
 using System.Windows.Media;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace ActiveDesktop.Views
 {
@@ -13,12 +14,19 @@ namespace ActiveDesktop.Views
     {
         public SettingsRepresentative SetRep = new SettingsRepresentative();
         string LocalFolder;
+        MainWindow mw;
 
         public Settings()
         {
             InitializeComponent();
+            mw = (MainWindow)Application.Current.MainWindow;
+
+            int AppColour = Convert.ToInt32(Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\DWM", "AccentColor", null));
+            ThemeManager.Current.AccentColor = Color.FromRgb((byte)AppColour, (byte)(AppColour >> 8), (byte)(AppColour >> 16));
+            
+
             string TargetFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            if (((MainWindow)Application.Current.MainWindow).IsRunningAsUWP())
+            if (mw.IsRunningAsUWP())
             {
                 LocalFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
             }
@@ -33,10 +41,11 @@ namespace ActiveDesktop.Views
             {
                 WriteSettingsJSON();
             }
-            if (File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == "" || System.IO.File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == null)
+            if (File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == "" || File.ReadAllText(Path.Combine(LocalFolder, "settings.json")) == null)
             {
                 SetRep.UseDarkTheme = false;
                 SetRep.PauseOnBattery = true;
+                SetRep.UseSystemTheme = true;
                 SetRep.PauseOnMaximise = true;
                 SetRep.DebugMode = false;
                 WriteSettingsJSON();
@@ -47,62 +56,76 @@ namespace ActiveDesktop.Views
             {
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
                 ThemeToggle.IsOn = true;
-                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
-                ((MainWindow)Application.Current.MainWindow).ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
             }
             else
             {
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                 ThemeToggle.IsOn = false;
-                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
-                ((MainWindow)Application.Current.MainWindow).ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
             }
             if (SetRep.UseDarkTrayIcon)
             {
-                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
+                mw.tbi.Icon = mw.DarkIcon.Icon;
                 TrayIconToggle.IsOn = true;
+            }
+            if (SetRep.UseSystemTheme)
+            {
+                SystemThemeCheckBox_Checked(null, null);
+                SystemThemeCheckBox.IsChecked = true;
+            }
+            else
+            {
+                SystemThemeCheckBox_Unchecked(null, null);
             }
             if (SetRep.PauseOnMaximise)
             {
                 PauseMaximisedToggle.IsOn = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = true;
+                mw.PauseOnMaximise = true;
             }
             else
             {
-                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = false;
+                mw.PauseOnMaximise = false;
             }
             if (SetRep.PauseOnBatterySaver)
             {
                 PauseBatterySaverToggle.IsOn = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                mw.PauseOnBatterySaver = true;
             }
             else
             {
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = false;
+                mw.PauseOnBatterySaver = false;
             }
             if (SetRep.PauseOnBattery)
             {
                 PauseBatteryToggle.IsOn = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                mw.PauseOnBattery = true;
+                mw.PauseOnBatterySaver = true;
                 PauseBatterySaverToggle.IsOn = true;
                 PauseBatterySaverToggle.IsEnabled = false;
             }
             else
             {
-                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
+                mw.PauseOnBattery = false;
             }
             if (SetRep.DebugMode)
             {
                 DebugModeToggle.IsOn = true;
-                ((MainWindow)Application.Current.MainWindow).DebugMode = true;
+                mw.DebugMode = true;
             }
             else
             {
-                ((MainWindow)Application.Current.MainWindow).DebugMode = false;
+                mw.DebugMode = false;
             }
+
         }
 
         public void WriteSettingsJSON()
@@ -122,7 +145,7 @@ namespace ActiveDesktop.Views
 
         private void StartupToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            if (((MainWindow)Application.Current.MainWindow).IsRunningAsUWP())
+            if (mw.IsRunningAsUWP())
             {
 
             }
@@ -130,13 +153,13 @@ namespace ActiveDesktop.Views
             {
                 if (StartupToggle.IsOn)
                 {
-                    ((MainWindow)Application.Current.MainWindow).EnableStartup(null, null);
-                    ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Startup enabled");
+                    mw.EnableStartup(null, null);
+                    mw.LogEntry("[SET] Startup enabled");
                 }
                 else
                 {
-                    ((MainWindow)Application.Current.MainWindow).DisableStartup(null, null);
-                    ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Startup disabled");
+                    mw.DisableStartup(null, null);
+                    mw.LogEntry("[SET] Startup disabled");
                 }
             }
             
@@ -149,20 +172,25 @@ namespace ActiveDesktop.Views
                 SetRep.UseDarkTheme = true;
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
-                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
-                ((MainWindow)Application.Current.MainWindow).ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Switched to dark theme");
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
+                mw.LogEntry("[SET] Switched to dark theme");
             }
             else
             {
                 SetRep.UseDarkTheme = false;
                 WriteSettingsJSON();
                 ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
-                ((MainWindow)Application.Current.MainWindow).SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
-                ((MainWindow)Application.Current.MainWindow).ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Switched to light theme");
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
+                mw.LogEntry("[SET] Switched to light theme");
+
             }
         }
 
@@ -171,18 +199,76 @@ namespace ActiveDesktop.Views
             if (TrayIconToggle.IsOn)
             {
                 SetRep.UseDarkTrayIcon = true;
-                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).DarkIcon.Icon;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Switched to dark tray icon");
+                mw.tbi.Icon = mw.DarkIcon.Icon;
+                mw.LogEntry("[SET] Switched to dark tray icon");
 
                 WriteSettingsJSON();
             }
             else
             {
                 SetRep.UseDarkTrayIcon = false;
-                ((MainWindow)Application.Current.MainWindow).tbi.Icon = ((MainWindow)Application.Current.MainWindow).LightIcon.Icon;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Switched to light tray icon");
+                mw.tbi.Icon = mw.LightIcon.Icon;
+                mw.LogEntry("[SET] Switched to light tray icon");
 
                 WriteSettingsJSON();
+            }
+        }
+
+        private void SystemThemeCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            SetRep.UseSystemTheme = true;
+            ActOnSystemTheme();
+            TrayIconToggle.IsEnabled = false;
+            ThemeToggle.IsEnabled = false;
+            WriteSettingsJSON();
+        }
+
+        private void SystemThemeCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetRep.UseSystemTheme = false;
+            TrayIconToggle_Toggled(null, null);
+            ThemeToggle_Toggled(null, null);
+            TrayIconToggle.IsEnabled = true;
+            ThemeToggle.IsEnabled = true;
+            WriteSettingsJSON();
+        }
+
+        // Returns true if light, false if dark
+        private void ActOnSystemTheme()
+        {
+            int AppsUseLightTheme = Convert.ToInt32(Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", null));
+            int SystemUsesLightTheme = Convert.ToInt32(Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "SystemUsesLightTheme", null));
+
+            if (AppsUseLightTheme == 1)
+            {
+                ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
+                StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
+                mw.LogEntry("[SET] Switched to light theme (following system)");
+            }
+            else
+            {
+                ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
+                mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
+                StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
+                mw.LogEntry("[SET] Switched to dark theme (following system)");
+            }
+
+            if (SystemUsesLightTheme == 1)
+            {
+                mw.tbi.Icon = mw.DarkIcon.Icon;
+                mw.LogEntry("[SET] Switched to dark tray icon (following system)");
+            }
+            else
+            {
+                mw.tbi.Icon = mw.LightIcon.Icon;
+                mw.LogEntry("[SET] Switched to light tray icon (following system)");
             }
         }
 
@@ -191,21 +277,21 @@ namespace ActiveDesktop.Views
             if (PauseBatteryToggle.IsOn)
             {
                 SetRep.PauseOnBattery = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = true;
+                mw.PauseOnBattery = true;
                 SetRep.PauseOnBatterySaver = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
+                mw.PauseOnBatterySaver = true;
                 PauseBatterySaverToggle.IsOn = true;
                 PauseBatterySaverToggle.IsEnabled = false;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Enabled pausing on battery");
+                mw.LogEntry("[SET] Enabled pausing on battery");
 
                 WriteSettingsJSON();
             }
             else
             {
                 SetRep.PauseOnBattery = false;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBattery = false;
+                mw.PauseOnBattery = false;
                 PauseBatterySaverToggle.IsEnabled = true;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Disabled pausing on battery");
+                mw.LogEntry("[SET] Disabled pausing on battery");
 
                 WriteSettingsJSON();
             }
@@ -216,16 +302,16 @@ namespace ActiveDesktop.Views
             if (PauseMaximisedToggle.IsOn)
             {
                 SetRep.PauseOnMaximise = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = true;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Enabled pausing on maximised");
+                mw.PauseOnMaximise = true;
+                mw.LogEntry("[SET] Enabled pausing on maximised");
 
                 WriteSettingsJSON();
             }
             else
             {
                 SetRep.PauseOnMaximise = false;
-                ((MainWindow)Application.Current.MainWindow).PauseOnMaximise = false;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Disabled pausing on maximised");
+                mw.PauseOnMaximise = false;
+                mw.LogEntry("[SET] Disabled pausing on maximised");
 
                 WriteSettingsJSON();
             }
@@ -236,16 +322,16 @@ namespace ActiveDesktop.Views
             if (PauseBatterySaverToggle.IsOn)
             {
                 SetRep.PauseOnBatterySaver = true;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = true;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Enabled pausing on Battery Saver");
+                mw.PauseOnBatterySaver = true;
+                mw.LogEntry("[SET] Enabled pausing on Battery Saver");
 
                 WriteSettingsJSON();
             }
             else
             {
                 SetRep.PauseOnBatterySaver = false;
-                ((MainWindow)Application.Current.MainWindow).PauseOnBatterySaver = false;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Disabled Pausing on Battery Saver");
+                mw.PauseOnBatterySaver = false;
+                mw.LogEntry("[SET] Disabled Pausing on Battery Saver");
                 
                 WriteSettingsJSON();
             }
@@ -256,18 +342,18 @@ namespace ActiveDesktop.Views
             if (DebugModeToggle.IsOn)
             {
                 SetRep.DebugMode = true;
-                ((MainWindow)Application.Current.MainWindow).DebugMode = true;
-                ((MainWindow)Application.Current.MainWindow).DebugPageForToggling.Visibility = Visibility.Visible;
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Enabled debug mode");
+                mw.DebugMode = true;
+                mw.DebugPageForToggling.Visibility = Visibility.Visible;
+                mw.LogEntry("[SET] Enabled debug mode");
 
                 WriteSettingsJSON();
             }
             else
             {
-                ((MainWindow)Application.Current.MainWindow).LogEntry("[SET] Disabled debug mode");
+                mw.LogEntry("[SET] Disabled debug mode");
                 SetRep.DebugMode = false;
-                ((MainWindow)Application.Current.MainWindow).DebugMode = false;
-                ((MainWindow)Application.Current.MainWindow).DebugPageForToggling.Visibility = Visibility.Hidden;
+                mw.DebugMode = false;
+                mw.DebugPageForToggling.Visibility = Visibility.Hidden;
 
                 WriteSettingsJSON();
             }
@@ -279,6 +365,7 @@ namespace ActiveDesktop.Views
         {
             public bool UseDarkTheme { get; set; }
             public bool UseDarkTrayIcon { get; set; }
+            public bool UseSystemTheme { get; set; }
             public bool PauseOnMaximise { get; set; }
             public bool PauseOnBattery { get; set; }
             public bool PauseOnBatterySaver { get; set; }
@@ -289,5 +376,7 @@ namespace ActiveDesktop.Views
         {
             Process.Start("ms-settings:startupapps");
         }
+
+
     }
 }

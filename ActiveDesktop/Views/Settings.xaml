@@ -9,6 +9,9 @@
 
 
     <Grid>
+        <Rectangle Fill="#194B4B4B" HorizontalAlignment="Left" Height="125" Margin="6,71,0,0" Stroke="#00000000" VerticalAlignment="Top" Width="314" RadiusX="10" RadiusY="6.9"/>
+        <Rectangle Fill="#264B4B4B" HorizontalAlignment="Left" Height="123" Margin="133,72,0,0" Stroke="#00000000" VerticalAlignment="Top" Width="3"/>
+
         <ui:ToggleSwitch x:Name="StartupToggle" Margin="10,39,0,0" ToolTip="Add ADP to startup apps so it opens when you log in" Toggled="StartupToggle_Toggled" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="StartupLabel" Content="Run on startup" HorizontalAlignment="Left" Margin="10,16,0,0" VerticalAlignment="Top"/>
 
@@ -17,6 +20,8 @@
 
         <ui:ToggleSwitch x:Name="TrayIconToggle" Margin="10,159,0,0" ToolTip="Enable the dark theme for ADP's tray icon" Toggled="TrayIconToggle_Toggled" Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="DarkTrayIconLabel" Content="Use dark tray icon" HorizontalAlignment="Left" Margin="10,136,0,0" VerticalAlignment="Top"/>
+
+        <CheckBox x:Name="SystemThemeCheckBox" Content="Use Windows' theme" HorizontalAlignment="Left" Margin="154,116,0,0" VerticalAlignment="Top" Checked="SystemThemeCheckBox_Checked" Unchecked="SystemThemeCheckBox_Unchecked" Height="27"/>
 
         <ui:ToggleSwitch x:Name="PauseBatteryToggle" Margin="10,279,0,0" ToolTip="Toggles whether or not a video should play when the system is running on battery power" Toggled="PauseBatteryToggle_Toggled"  Height="32" VerticalAlignment="Top" Width="83"/>
         <Label x:Name="PauseBatteryLabel" Content="Pause videos on battery" HorizontalAlignment="Left" Margin="10,256,0,0" VerticalAlignment="Top"/>
