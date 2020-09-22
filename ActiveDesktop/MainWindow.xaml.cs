@@ -64,6 +64,7 @@ namespace ActiveDesktop
             FileSystem();
 
 
+
             ImmersiveExperiencePage = new ImmersiveExperience();
             ImmersiveFinalisePage = new ImmersiveFinalise();
             CurrentAppsPage = new CurrentApps();
@@ -92,11 +93,20 @@ namespace ActiveDesktop
             {
                 ErrorNotif.Visibility = Visibility.Visible;
             }
+
             JSONArrayList = ReadJSON();
             // Trigger a refresh of many things. Not strictly necessary for all of this but hey extra refreshing is always nice
             Displays = GetDisplays();
             RefreshLists();
             DebugRefreshEvent();
+            if (IsRunningAsUWP())
+            {
+                LogEntry("[ADP] Running in UWP mode");
+            }
+            else
+            {
+                LogEntry("[ADP] Running in legacy win32 mode");
+            }
             if (JSONArrayList.Count != 0 && WindowHandles.Count() == 0)
             {
                 StartSavedApps();
@@ -115,14 +125,7 @@ namespace ActiveDesktop
             {
                 StartupInit();
             }
-            if (IsRunningAsUWP())
-            {
-                LogEntry("[ADP] Running in UWP mode");
-            }
-            else
-            {
-                LogEntry("[ADP] Running in legacy win32 mode");
-            }
+
 
             CurrentAppsPage.TitleTextBox.Text = "[Hold Ctrl to select an app]";
             CurrentAppsPage.HwndInputTextBox.Text = "";
@@ -317,7 +320,10 @@ namespace ActiveDesktop
                 }
             }
             SavedListRefreshEvent();
-            StartupInit();
+            if (IsRunningAsUWP())
+            {
+                StartupInit();
+            }
             LogEntry("[ADP] Refreshed in-app lists");
         }
 
@@ -1110,8 +1116,16 @@ namespace ActiveDesktop
         // Checks if running as a UWP app
         public bool IsRunningAsUWP()
         {
-            Helpers helpers = new Helpers();
-            return helpers.IsRunningAsUwp();
+            try
+            {
+                Helpers helpers = new Helpers();
+                return helpers.IsRunningAsUwp();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
 
         // Actually removes the borders
