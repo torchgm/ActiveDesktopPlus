@@ -1,0 +1,20 @@
+﻿<Page x:Class="ActiveDesktop.Views.ImmersiveFinalise"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:ActiveDesktop.Views"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
+      mc:Ignorable="d" 
+      
+      Title="ImmersiveFinalise" Width="325" Height="488">
+
+    <Grid>
+        <Label x:Name="Label" Content="            Congratulations!&#xA; Your wallpaper is ready to go." Margin="10,73,10,351" FontFamily="Segoe UI Semibold" FontSize="22"/>
+        <Button x:Name="AdvancedButton" Content="Edit further..." HorizontalAlignment="Left" Margin="176,415,0,0" VerticalAlignment="Top" Width="112" Height="37" Click="AdvancedButton_Click"/>
+        <Button x:Name="FinaliseButton" Content="Save and apply" HorizontalAlignment="Left" Margin="37,415,0,0" VerticalAlignment="Top" Width="112" Height="37" Click="FinaliseButton_Click" />
+        <ui:PathIcon x:Name="CheckmarkIcon" Data="{StaticResource CheckmarkIcon}" Margin="112,179,112,205" />
+        <TextBlock x:Name="WarningBlock" TextAlignment="Center" Margin="50,322,50,0" TextWrapping="Wrap" Text="This app may not work correctly on your monitor setup. If not, the advanced 'Fix Alignment' option may help." VerticalAlignment="Top" Height="58" Foreground="Red"/>
+
+    </Grid>
+</Page>

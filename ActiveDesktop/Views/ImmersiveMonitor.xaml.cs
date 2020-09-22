@@ -28,6 +28,8 @@ namespace ActiveDesktop.Views
         Brush SBGBrush;
         Brush SOLBrush;
         MainWindow mw;
+        int WorkWidth;
+        int WorkHeight;
         public ImmersiveMonitor()
         {
             InitializeComponent();
@@ -42,8 +44,8 @@ namespace ActiveDesktop.Views
             mw = (MainWindow)Application.Current.MainWindow;
             if (mw.Displays.Count <= 4)
             {
-                int WorkWidth = Convert.ToInt32(MainWindow.GetWindowSize(mw.DesktopHandle).Width);
-                int WorkHeight = Convert.ToInt32(MainWindow.GetWindowSize(mw.DesktopHandle).Height);
+                WorkWidth = Convert.ToInt32(MainWindow.GetWindowSize(mw.DesktopHandle).Width);
+                WorkHeight = Convert.ToInt32(MainWindow.GetWindowSize(mw.DesktopHandle).Height);
                 double ScaleFactor = 1;
 
                 if (WorkWidth >= WorkHeight)
@@ -107,7 +109,7 @@ namespace ActiveDesktop.Views
             IntRect3.BorderBrush = UOLBrush;
             mw.SelectedDisplay = -1;
             mw.MonitorSelectButton_Click(null, null);
-
+            ContinueButton.IsEnabled = true;
         }
 
         private void IntRect1_Click(object sender, RoutedEventArgs e)
@@ -122,7 +124,7 @@ namespace ActiveDesktop.Views
             IntRect3.BorderBrush = UOLBrush;
             mw.SelectedDisplay = 0;
             mw.MonitorSelectButton_Click(null, null);
-
+            ContinueButton.IsEnabled = true;
         }
 
         private void IntRect2_Click(object sender, RoutedEventArgs e)
@@ -137,6 +139,7 @@ namespace ActiveDesktop.Views
             IntRect3.BorderBrush = UOLBrush;
             mw.SelectedDisplay = 1;
             mw.MonitorSelectButton_Click(null, null);
+            ContinueButton.IsEnabled = true;
         }
 
         private void IntRect3_Click(object sender, RoutedEventArgs e)
@@ -151,16 +154,37 @@ namespace ActiveDesktop.Views
             IntRect3.BorderBrush = SOLBrush;
             mw.SelectedDisplay = 2;
             mw.MonitorSelectButton_Click(null, null);
+            ContinueButton.IsEnabled = true;
+        }
+
+        public void Unclick()
+        {
+            IntRect0.Background = UBGBrush;
+            IntRect0.BorderBrush = UOLBrush;
+            IntRect1.Background = UBGBrush;
+            IntRect1.BorderBrush = UOLBrush;
+            IntRect2.Background = UBGBrush;
+            IntRect2.BorderBrush = UOLBrush;
+            IntRect3.Background = UBGBrush;
+            IntRect3.BorderBrush = UOLBrush;
+            mw.SelectedDisplay = -1;
+            mw.CmdBox_LostFocus(null, null);
+            ContinueButton.IsEnabled = false;
         }
 
         private void ContinueButton_Click(object sender, RoutedEventArgs e)
         {
             mw.SavedAppsPage.NameBox.Text = "Wallpaper (Monitor " + (mw.SelectedDisplay + 2).ToString() + ")";
             mw.SavedAppsPage.AutostartCheckBox.IsChecked = true;
-            mw.AddButton_Click(null, null);
-            mw.SaveButton_Click(null, null);
-            mw.SavedAppsPage.SavedListBox.SelectedIndex = (mw.SavedAppsPage.SavedListBox.Items.Count - 1);
-            mw.TestButton_Click(null, null);
+            mw.ContentFrame.Navigate(mw.ImmersiveFinalisePage);
+            if (mw.ImmersiveExperiencePage.SelectedFile.Contains(".exe") && !mw.ImmersiveExperiencePage.SelectedFile.Contains(".mp4") && WorkWidth + WorkHeight > 0)
+            {
+                mw.ImmersiveFinalisePage.WarningBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                mw.ImmersiveFinalisePage.WarningBlock.Visibility = Visibility.Hidden;
+            }
         }
     }
 }

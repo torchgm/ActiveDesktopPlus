@@ -53,6 +53,7 @@ namespace ActiveDesktop
         public Views.Debug DebugPage;
         public ImmersiveExperience ImmersiveExperiencePage;
         public ImmersiveMonitor ImmersiveMonitorPage;
+        public ImmersiveFinalise ImmersiveFinalisePage;
 
         // On-start tasks
         public MainWindow()
@@ -64,6 +65,7 @@ namespace ActiveDesktop
 
 
             ImmersiveExperiencePage = new ImmersiveExperience();
+            ImmersiveFinalisePage = new ImmersiveFinalise();
             CurrentAppsPage = new CurrentApps();
             SavedAppsPage = new SavedApps();
             SettingsPage = new Settings();

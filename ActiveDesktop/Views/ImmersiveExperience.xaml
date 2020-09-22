@@ -14,6 +14,7 @@
         <Label x:Name="FiletypeLabel" Content="(.mp4 and .exe only)" Margin="100,137,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
         <ui:PathIcon x:Name="AddWallpaperIcon" Data="{StaticResource ImageIcon}" Margin="106,179,118,205" />
         <Rectangle x:Name="DragAndDropDetector" Fill="#00FFFFFF" HorizontalAlignment="Left" Height="487" RadiusY="6.9" RadiusX="10" Stroke="#00000000" VerticalAlignment="Top" Width="324" Drop="DragAndDropDetector_Drop" DragDrop.DragEnter="DragAndDropDetector_DragEnter" DragLeave="DragAndDropDetector_DragLeave" AllowDrop="True"/>
-        <Button x:Name="ContinueButton" Content="Continue" HorizontalAlignment="Stretch" Margin="112,415,112,36" VerticalAlignment="Stretch" Click="ContinueButton_Click" IsEnabled="True"/>
+        <Button x:Name="ContinueButton" Content="Continue" HorizontalAlignment="Stretch" Margin="112,415,112,36" VerticalAlignment="Stretch" Click="ContinueButton_Click" IsEnabled="False"/>
+        <Label x:Name="FileValidLabel" Content="" Margin="70,306,70,0" VerticalAlignment="Top" HorizontalContentAlignment="Center"/>
     </Grid>
 </Page>

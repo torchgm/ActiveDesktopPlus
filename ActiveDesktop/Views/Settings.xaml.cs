@@ -59,7 +59,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.White);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
             }
             else
@@ -69,7 +71,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.Black);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
             }
             if (SetRep.UseDarkTrayIcon)
@@ -175,7 +179,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.White);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
                 mw.LogEntry("[SET] Switched to dark theme");
             }
@@ -187,7 +193,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.Black);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
                 mw.LogEntry("[SET] Switched to light theme");
 
@@ -245,7 +253,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Red);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Red);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Red);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Black);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.Black);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
                 mw.LogEntry("[SET] Switched to light theme (following system)");
             }
@@ -255,7 +265,9 @@ namespace ActiveDesktop.Views
                 mw.SavedAppsPage.WriteButton.Foreground = new SolidColorBrush(Colors.Yellow);
                 StartupWarningLabel.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ErrorIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                mw.ImmersiveFinalisePage.WarningBlock.Foreground = new SolidColorBrush(Colors.Yellow);
                 mw.ImmersiveExperiencePage.AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.White);
+                mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.White);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.White);
                 mw.LogEntry("[SET] Switched to dark theme (following system)");
             }

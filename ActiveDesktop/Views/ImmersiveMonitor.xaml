@@ -10,7 +10,7 @@
       Title="ImmersiveMonitor" Width="325" Height="488">
 
     <Grid>
-        <Button x:Name="ContinueButton" Content="Save" HorizontalAlignment="Stretch" Margin="112,415,112,36" VerticalAlignment="Stretch" Click="ContinueButton_Click"  IsEnabled="True"/>
+        <Button x:Name="ContinueButton" Content="Continue" HorizontalAlignment="Stretch" Margin="112,415,112,36" VerticalAlignment="Stretch" Click="ContinueButton_Click"  IsEnabled="False"/>
 
         <Label x:Name="Label" Content="        Select a monitor you&#xA; wish to use the wallpaper on" Margin="10,73,10,351" FontFamily="Segoe UI Semibold" FontSize="22"/>
         <Rectangle Fill="#39666666" Height="251" Margin="36,146,38,0" Stroke="#558B8B8B" VerticalAlignment="Top" RadiusX="7" RadiusY="7" StrokeThickness="2"/>

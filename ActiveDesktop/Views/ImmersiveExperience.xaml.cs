@@ -38,11 +38,13 @@ namespace ActiveDesktop.Views
         private void DragAndDropDetector_DragEnter(object sender, DragEventArgs e)
         {
             AddWallpaperIcon.Foreground = new SolidColorBrush((Color)ThemeManager.Current.AccentColor);
+            FileValidLabel.Content = "";
         }
 
         private void DragAndDropDetector_DragLeave(object sender, DragEventArgs e)
         {
             AddWallpaperIcon.Foreground = CurrentColour;
+            FileValidLabel.Content = "";
         }
 
         private void DragAndDropDetector_Drop(object sender, DragEventArgs e)
@@ -58,23 +60,28 @@ namespace ActiveDesktop.Views
                     if (ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark)
                     {
                         AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                        FileValidLabel.Content = "Invalid file!";
                     }
                     else
                     {
                         AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Red);
+                        FileValidLabel.Content = "Invalid file!";
                     }
                 }
                 else
                 {
-                    AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.ForestGreen);
+                    AddWallpaperIcon.Foreground = CurrentColour;
                     SelectedFile = files[0];
                     ContinueButton.IsEnabled = true;
+                    FileValidLabel.Content = "File accepted!";
+
                 }
 
             }
             else
             {
                 AddWallpaperIcon.Foreground = CurrentColour;
+                FileValidLabel.Content = "";
             }
         }
 
@@ -83,18 +90,20 @@ namespace ActiveDesktop.Views
         private void ContinueButton_Click(object sender, RoutedEventArgs e)
         {
 
-            
-            if (SelectedFile.Substring(SelectedFile.Length - 3) == "exe")
+            if (SelectedFile.Contains("exe") || SelectedFile.Contains("mp4"))
             {
-                mw.SavedAppsPage.CmdBox.Text = SelectedFile;
+                if (SelectedFile.Substring(SelectedFile.Length - 3) == "exe")
+                {
+                    mw.SavedAppsPage.CmdBox.Text = SelectedFile;
+                }
+                else if (SelectedFile.Substring(SelectedFile.Length - 3) == "mp4")
+                {
+                    mw.SavedAppsPage.CmdBox.Text = "MEDIA";
+                    mw.SavedAppsPage.FlagBox.Text = SelectedFile;
+                }
+                mw.ContentFrame.Navigate(mw.ImmersiveMonitorPage);
+                mw.ImmersiveMonitorPage.SetupMonitors();
             }
-            else if (SelectedFile.Substring(SelectedFile.Length - 3) == "mp4")
-            {
-                mw.SavedAppsPage.CmdBox.Text = "MEDIA";
-                mw.SavedAppsPage.FlagBox.Text = SelectedFile;
-            }
-            mw.ContentFrame.Navigate(mw.ImmersiveMonitorPage);
-            mw.ImmersiveMonitorPage.SetupMonitors();
         }
     }
 }
