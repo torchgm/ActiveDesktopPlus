@@ -13,6 +13,7 @@ namespace ActiveDesktop
     public partial class ADPVideoWallpaper : Window
     {
         // Things I need
+        MainWindow mw = (MainWindow)System.Windows.Application.Current.MainWindow;
         bool PauseOnBat = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnBattery;
         bool PauseOnMax = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnMaximise;
         bool PauseOnBatSave = ((MainWindow)System.Windows.Application.Current.MainWindow).PauseOnBatterySaver;
@@ -27,7 +28,7 @@ namespace ActiveDesktop
             Show();
             Random rnd = new Random();
             LogID = rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString();
-            ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Player started");
+            mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Player started");
             VideoPlayerHandle = new WindowInteropHelper(this).Handle;
             try
             {
@@ -35,7 +36,7 @@ namespace ActiveDesktop
             }
             catch (Exception e)
             {
-                ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[ERR] [ADPVideoPlayer" + LogID + "] failed to assign URI " + e.ToString());
+                mw.LogEntry("[ERR] [ADPVideoWallpaper" + LogID + "] failed to assign URI " + e.ToString());
                 Close();
             }
             VideoPlayer.Play();
@@ -60,7 +61,7 @@ namespace ActiveDesktop
         {
             Dispatcher.Invoke(() =>
             {
-                ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] BackgroundWorker started");
+                mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] BackgroundWorker started");
             });
             List<IntPtr> ObscuringList = new List<IntPtr>();
             List<IntPtr> RemoveList = new List<IntPtr>();
@@ -109,7 +110,7 @@ namespace ActiveDesktop
                                         VideoPlayer.Play();
                                         IsPlaying = true;
                                         // Spams the log, not sure why. Probably should fix that.
-                                        // ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (unobscured)");
+                                        // mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Video playing (unobscured)");
                                     });
                                     RemoveList.Add(wnd);
 
@@ -121,7 +122,7 @@ namespace ActiveDesktop
                                 {
                                     VideoPlayer.Play();
                                     IsPlaying = true;
-                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (not on battery)");
+                                    mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Video playing (not on battery)");
                                 });
                                 IsOnBattery = false;
                             }
@@ -131,7 +132,7 @@ namespace ActiveDesktop
                                 {
                                     VideoPlayer.Play();
                                     IsPlaying = true;
-                                    ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video playing (battery saver disabled)");
+                                    mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Video playing (battery saver disabled)");
                                 });
                                 IsOnBatterySaver = false;
                             }
@@ -150,7 +151,7 @@ namespace ActiveDesktop
                     {
                         VideoPlayer.Pause();
                         IsPlaying = false;
-                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video paused (on battery)");
+                        mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Video paused (on battery)");
                     });
                 }
                 else if (sps.SystemStatusFlag == 1 && PauseOnBatSave)
@@ -160,7 +161,7 @@ namespace ActiveDesktop
                     {
                         VideoPlayer.Pause();
                         IsPlaying = false;
-                        ((MainWindow)System.Windows.Application.Current.MainWindow).LogEntry("[VID] [ADPVideoPlayer" + LogID + "] Video paused (battery saver enabled)");
+                        mw.LogEntry("[VID] [ADPVideoWallpaper" + LogID + "] Video paused (battery saver enabled)");
                     });
                 }
             }

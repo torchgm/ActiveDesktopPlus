@@ -1276,7 +1276,7 @@ namespace ActiveDesktop
                     SavedAppsPage.HeightBox.Text = Displays[0].ScreenHeight;
                 }
 
-                if (i.Cmd != "MEDIA")
+                if (i.Cmd != "MEDIA" && i.Cmd != "WEB")
                 {
                     Process SavedProcess = Process.Start(i.Cmd, i.Flags);
                     SavedProcess.Refresh();
@@ -1284,7 +1284,7 @@ namespace ActiveDesktop
                     SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
                     LogEntry("[ADP] Started [" + i.Name + "] [" + i.Cmd + "]");
                 }
-                else
+                else if (i.Cmd == "MEDIA")
                 {
                     try
                     {
@@ -1304,11 +1304,31 @@ namespace ActiveDesktop
                     }
                     catch (Exception e)
                     {
-                        LogEntry("[ERR] ADPVideoPlayer creation failed " + e.ToString());
+                        LogEntry("[ERR] ADPVideoWallpaper creation failed " + e.ToString());
                     }
-
-
-
+                }
+                else if (i.Cmd == "WEB")
+                {
+                    try
+                    {
+                        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(i.Flags);
+                        IntPtr hweb = new WindowInteropHelper(GeneratedWebWallpaper).Handle;
+                        Thread.Sleep(Convert.ToInt32(t));
+                        LogEntry("[ADP] Started web window");
+                        try
+                        {
+                            SetWindowSizeAndLock(i, hweb);
+                            LogEntry("[ADP] SetWindowSizeAndLock successful");
+                        }
+                        catch (Exception e)
+                        {
+                            LogEntry("[ERR] SetWindowSizeAndLock " + e.ToString());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogEntry("[ERR] ADPWebWallpaper creation failed " + e.ToString());
+                    }
                 }
             }
             catch (Exception e)

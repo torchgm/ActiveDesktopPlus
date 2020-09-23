@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ModernWpf;
+using Microsoft.Win32;
 
 
 namespace ActiveDesktop.Views
@@ -104,6 +105,17 @@ namespace ActiveDesktop.Views
                 mw.ContentFrame.Navigate(mw.ImmersiveMonitorPage);
                 mw.ImmersiveMonitorPage.SetupMonitors();
             }
+        }
+
+        private void DragAndDropDetector_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Video files (*.mp4)|*.mp4|Executable files (*.exe)|*.exe";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SelectedFile = openFileDialog.FileName;
+            }
+            ContinueButton_Click(null, null);
         }
     }
 }
