@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Threading;
+using System.ComponentModel;
 
 namespace ActiveDesktop
 {
@@ -22,21 +23,14 @@ namespace ActiveDesktop
     {
         MainWindow mw = (MainWindow)Application.Current.MainWindow;
         string LogID;
+
         public ADPWebWallpaper(string url)
         {
             InitializeComponent();
             Show();
             Random rnd = new Random();
             LogID = rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString();
-            mw.LogEntry("[WEB] [ADPWebWallpaper" + LogID + "] WebView started");
-            LoadPage(url);
-            mw.LogEntry("[WEB] [ADPWebWallpaper" + LogID + "] WebView loaded: " + url);
-        }
-
-        private void LoadPage(string navto)
-        {
-            //Thread.Sleep(100);
-            WebView.Navigate(navto);
+            WebView.Navigate(url);
         }
     }
 }

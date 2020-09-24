@@ -21,6 +21,7 @@ namespace ActiveDesktop.Views
     /// </summary>
     public partial class SavedApps : Page
     {
+        MainWindow mw = (MainWindow)Application.Current.MainWindow;
         public SavedApps()
         {
             InitializeComponent();
@@ -28,27 +29,27 @@ namespace ActiveDesktop.Views
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).AddButton_Click(null, null);
+            mw.AddButton_Click(null, null);
         }
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).RemoveButton_Click(null, null);
+            mw.RemoveButton_Click(null, null);
         }
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).TestButton_Click(null, null);
+            mw.TestButton_Click(null, null);
         }
 
         public void WriteButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).WriteButton_Click(null, null);
+            mw.WriteButton_Click(null, null);
         }
 
         private void MonitorSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).MonitorSelectButton_Click(null, null);
+            mw.MonitorSelectButton_Click(null, null);
         }
 
         private void CmdBox_LostFocus(object sender, RoutedEventArgs e)
@@ -58,8 +59,8 @@ namespace ActiveDesktop.Views
                 CmdBox.IsEnabled = false;
                 FlagBox.Text = "Path to Video";
                 FlagBox.ToolTip = "The file path to the video you wish to use as a wallpaper";
-                MediaButton.Content = "    Use \nProgram";
-                MediaButton.Content = "    Use \nProgram";
+                MediaButton.Content = "    Use \nWebsite";
+                MediaButton.Content = "    Use \nWebsite";
                 FileSelectButton.Visibility = Visibility.Hidden;
                 VideoSelectButton.Visibility = Visibility.Visible;
                 FileOpenIcon.Visibility = Visibility.Hidden;
@@ -67,31 +68,49 @@ namespace ActiveDesktop.Views
                 CmdBox.Width = 236;
                 FlagBox.Width = 202;
             }
-            else
+            else if (CmdBox.Text == "WEB")
+            {
+                CmdBox.IsEnabled = false;
+                FlagBox.Text = "URL";
+                FlagBox.ToolTip = "The URL for the website you wish to use as a wallpaper";
+                MediaButton.Content = "    Use \nProgram";
+                MediaButton.Content = "    Use \nProgram";
+                FileSelectButton.Visibility = Visibility.Hidden;
+                VideoSelectButton.Visibility = Visibility.Hidden;
+                FileOpenIcon.Visibility = Visibility.Hidden;
+                VideoOpenIcon.Visibility = Visibility.Hidden;
+                CmdBox.Width = 236;
+                FlagBox.Width = 236;
+            } else
             {
                 FileSelectButton.Visibility = Visibility.Visible;
                 VideoSelectButton.Visibility = Visibility.Hidden;
                 FileOpenIcon.Visibility = Visibility.Visible;
                 VideoOpenIcon.Visibility = Visibility.Hidden;
             }
-            ((MainWindow)Application.Current.MainWindow).CmdBox_LostFocus(null, null);
+            mw.CmdBox_LostFocus(null, null);
 
         }
 
         private void ResetMonitorSelectButton(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).ResetMonitorSelectButton(null, null);
+            mw.ResetMonitorSelectButton(null, null);
         }
 
         private void MediaButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CmdBox.Text != "MEDIA")
+            if (CmdBox.Text != "MEDIA" && CmdBox.Text != "WEB")
             {
                 CmdBox.Text = "MEDIA";
                 CmdBox_LostFocus(null, null);
 
             }
-            else
+            else if (CmdBox.Text != "WEB")
+            {
+                CmdBox.Text = "WEB";
+                CmdBox_LostFocus(null, null);
+
+            } else 
             {
                 CmdBox.Text = "Command Line";
 
@@ -148,7 +167,10 @@ namespace ActiveDesktop.Views
                 {
                     FlagBox.Text = "Path to Video";
                 }
-                else
+                else if (CmdBox.Text == "WEB")
+                {
+                    FlagBox.Text = "URL";
+                } else
                 {
                     FlagBox.Text = "Flags";
                 }

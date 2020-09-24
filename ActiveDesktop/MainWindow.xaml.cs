@@ -324,7 +324,7 @@ namespace ActiveDesktop
             {
                 StartupInit();
             }
-            LogEntry("[ADP] Refreshed in-app lists");
+            // LogEntry("[ADP] Refreshed in-app lists");
         }
 
         // Refresh event for the saved apps list
@@ -336,14 +336,13 @@ namespace ActiveDesktop
                 if (i.Name == "Friendly Name")
                 {
                     SavedAppsPage.SavedListBox.Items.Add(i.Cmd);
-
                 }
                 else
                 {
                     SavedAppsPage.SavedListBox.Items.Add(i.Name);
                 }
             }
-            LogEntry("[ADP] Refreshed JSON lists");
+            //LogEntry("[ADP] Refreshed JSON lists");
         }
 
         // Probably a refresh event to do with debug information
@@ -356,7 +355,7 @@ namespace ActiveDesktop
             DebugPage.DebugMonitorCountBox.Text = Displays.Count.ToString();
             DebugPage.DebugDesktopWindowsBox.Text = DesktopWindowPropertyList.Count.ToString();
             DebugPage.DebugDesktopHandleBox.Text = DesktopHandle.ToString();
-            LogEntry("[ADP] Refreshed debug lists");
+            //LogEntry("[ADP] Refreshed debug lists");
         }
 
         // Handles adding a new app to the saved apps list
@@ -754,7 +753,7 @@ namespace ActiveDesktop
         // Limits media entry
         public void CmdBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (SavedAppsPage.CmdBox.Text == "MEDIA")
+            if (SavedAppsPage.CmdBox.Text == "MEDIA" || SavedAppsPage.CmdBox.Text == "WEB")
             {
                 SavedAppsPage.XBox.IsEnabled = false;
                 SavedAppsPage.YBox.IsEnabled = false;
