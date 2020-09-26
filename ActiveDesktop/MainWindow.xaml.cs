@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using DesktopBridge;
 using Windows.ApplicationModel;
 using System.Threading.Tasks;
@@ -62,6 +63,8 @@ namespace ActiveDesktop
             // Creating and doing important thingies, such as making pages
             InitializeComponent();
             FileSystem();
+            
+            System.Diagnostics.Debug.WriteLine("Hello uwu");
 
 
 
@@ -1223,7 +1226,7 @@ namespace ActiveDesktop
             //int fx = Displays[MonitorToApplyFrameTo].MonitorArea.Left;
             //int fy = Displays[MonitorToApplyFrameTo].MonitorArea.Top;
             //int fw = Convert.ToInt32(Displays[MonitorToApplyFrameTo].ScreenWidth);
-            //int fh = Convert.ToInt32(Displays[MonitorToApplyFrameTo].ScreenHeight);
+            //int fh = Convertno b.ToInt32(Displays[MonitorToApplyFrameTo].ScreenHeight);
             //MoveWindow(AriaWindowHandle, TranslateCanvasX(fx), TranslateCanvasY(fy), fw, fh, true);
             //SetParent(hwnd, AriaWindowHandle);
             return AriaWindowHandle;
@@ -1263,7 +1266,7 @@ namespace ActiveDesktop
         }
 
         // Actually deals with window properties or smth idk
-        private void WindowFromListToDesktop(App i, int t)
+        async void WindowFromListToDesktop(App i, int t)
         {
             try
             {
@@ -1310,8 +1313,8 @@ namespace ActiveDesktop
                 {
                     try
                     {
-                        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(i.Flags);
-                        IntPtr hweb = new WindowInteropHelper(GeneratedWebWallpaper).Handle;
+                        IntPtr hweb = await StartWebWallpaper(i.Flags);
+                        System.Diagnostics.Debug.WriteLine(hweb.ToString());
                         Thread.Sleep(Convert.ToInt32(t));
                         LogEntry("[ADP] Started web window");
                         try
@@ -1336,6 +1339,62 @@ namespace ActiveDesktop
             }
 
         }
+
+        // =====================================================================================
+        // Attempt #7, Sylly said this one would work and I'm going to debowel him if it doesn't
+        // =====================================================================================
+        Task<IntPtr> StartWebWallpaper(string url)
+        {
+            var tcs = new TaskCompletionSource<IntPtr>();
+            var thread = new Thread(() => {
+                ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(url);
+                //GeneratedWebWallpaper.Show();
+                tcs.SetResult(new WindowInteropHelper(GeneratedWebWallpaper).Handle);
+                LogEntry("Test");
+                Dispatcher.Run();
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+
+            return tcs.Task;
+        }
+
+        // =================
+        // Failed attempt #6
+        // =================
+        //async Task<IntPtr> StartWebWallpaper(string url)
+        //{
+        //    IntPtr result = await Task.Run(() => {
+        //        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(url);
+        //        GeneratedWebWallpaper.Show();
+        //        return new WindowInteropHelper(GeneratedWebWallpaper).Handle;
+        //    });
+        //    return result;
+        //}
+
+        // =================
+        // Failed attempt #5
+        // =================
+        //private IntPtr MakeThreadedWebWindow(string url)
+        //{
+        //    IntPtr handle = IntPtr.Zero;
+        //    Thread thread = new Thread(() =>
+        //    {
+        //        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(url);
+        //        GeneratedWebWallpaper.Show();
+        //        handle = new WindowInteropHelper(GeneratedWebWallpaper).Handle;
+        //        GeneratedWebWallpaper.Closed += (sender1, e1) => GeneratedWebWallpaper.Dispatcher.InvokeShutdown();
+
+        //        System.Windows.Threading.Dispatcher.Run();
+
+        //    });
+        //    thread.SetApartmentState(ApartmentState.STA);
+        //    thread.IsBackground = true;
+        //    thread.Start();
+
+        //    return handle;
+        //}
 
         // WindowFromListToDesktop 2 Electric Boogaloo
         public void SetWindowSizeAndLock(App i, IntPtr hwnd)

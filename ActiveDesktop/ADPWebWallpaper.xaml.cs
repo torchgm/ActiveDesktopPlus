@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
+using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Threading;
-using System.ComponentModel;
 
 namespace ActiveDesktop
 {
@@ -21,16 +9,27 @@ namespace ActiveDesktop
     /// </summary>
     public partial class ADPWebWallpaper : Window
     {
-        MainWindow mw = (MainWindow)Application.Current.MainWindow;
-        string LogID;
-
+        string navto = "";
         public ADPWebWallpaper(string url)
         {
+            navto = url;
             InitializeComponent();
+            WebView.Loaded += WebView_Loaded;
+            System.Diagnostics.Debug.WriteLine("Window created");
             Show();
-            Random rnd = new Random();
-            LogID = rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString() + rnd.Next(9).ToString();
-            WebView.Navigate(url);
         }
+
+        private void WebView_Loaded(object sender, RoutedEventArgs e)
+        {
+            Potato();
+        }
+
+        private void Potato()
+        {
+            System.Diagnostics.Debug.WriteLine("Potatoing to " + navto);
+            WebView.Navigate(navto);
+            System.Diagnostics.Debug.WriteLine("Potatoed");
+        }
+
     }
 }

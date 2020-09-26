@@ -21,6 +21,7 @@ namespace ActiveDesktop.Views
     /// </summary>
     public partial class CurrentApps : Page
     {
+        MainWindow mw = (MainWindow)Application.Current.MainWindow;
         public CurrentApps()
         {
             InitializeComponent();
@@ -28,27 +29,27 @@ namespace ActiveDesktop.Views
 
         private void ApplyHwndButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).ApplyHwndButton_Click(null, null);
+            mw.ApplyHwndButton_Click(null, null);
         }
         private void BorderlessButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).BorderlessButton_Click(null, null);
+            mw.BorderlessButton_Click(null, null);
         }
         private void LockButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).LockButton_Click(null, null);
+            mw.LockButton_Click(null, null);
         }
         private void FixButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).FixButton_Click(null, null);
+            mw.FixButton_Click(null, null);
         }
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).CloseButton_Click(null, null);
+            mw.CloseButton_Click(null, null);
         }
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            ((MainWindow)Application.Current.MainWindow).SaveButton_Click(null, null);
+            mw.SaveButton_Click(null, null);
         }
     }
 }
