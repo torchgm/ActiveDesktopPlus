@@ -152,10 +152,22 @@ namespace ActiveDesktop.Views
 
         private void CmdBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (CmdBox.Text == "MEDIA" || CmdBox.Text == "Command Line")
+            if (CmdBox.Text == "Command Line")
             {
                 CmdBox.Text = "";
                 FlagBox.Text = "Flags";
+            }
+
+            if (CmdBox.Text == "MEDIA")
+            {
+                CmdBox.Text = "";
+                FlagBox.Text = "Path to Video";
+            }
+
+            if (CmdBox.Text == "WEB")
+            {
+                CmdBox.Text = "";
+                FlagBox.Text = "URL";
             }
         }
 
@@ -179,7 +191,7 @@ namespace ActiveDesktop.Views
 
         private void FlagBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags")
+            if (FlagBox.Text == "Path to Video" || FlagBox.Text == "Flags" || FlagBox.Text == "URL")
             {
                 FlagBox.Text = "";
             }

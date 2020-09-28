@@ -19,6 +19,7 @@ using System.Windows.Threading;
 using DesktopBridge;
 using Windows.ApplicationModel;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
 
 namespace ActiveDesktop
 {
@@ -63,7 +64,6 @@ namespace ActiveDesktop
             // Creating and doing important thingies, such as making pages
             InitializeComponent();
             FileSystem();
-            
             System.Diagnostics.Debug.WriteLine("Hello uwu");
 
 

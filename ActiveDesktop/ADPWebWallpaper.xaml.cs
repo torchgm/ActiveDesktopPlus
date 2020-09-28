@@ -30,6 +30,5 @@ namespace ActiveDesktop
             WebView.Navigate(navto);
             System.Diagnostics.Debug.WriteLine("Potatoed");
         }
-
     }
 }
