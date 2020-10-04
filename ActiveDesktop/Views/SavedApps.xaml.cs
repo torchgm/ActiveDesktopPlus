@@ -89,7 +89,6 @@ namespace ActiveDesktop.Views
                 VideoOpenIcon.Visibility = Visibility.Hidden;
             }
             mw.CmdBox_LostFocus(null, null);
-
         }
 
         private void ResetMonitorSelectButton(object sender, RoutedEventArgs e)

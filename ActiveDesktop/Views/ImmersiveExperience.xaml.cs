@@ -25,6 +25,7 @@ namespace ActiveDesktop.Views
     {
         public Brush CurrentColour;
         public string SelectedFile = "";
+        public bool SelectedFileIsURL = false;
         MainWindow mw;
 
 
@@ -75,11 +76,35 @@ namespace ActiveDesktop.Views
                     SelectedFile = files[0];
                     ContinueButton.IsEnabled = true;
                     FileValidLabel.Content = "File accepted!";
-
                 }
 
             }
-            else
+            else if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                string dragdroptext = (string)e.Data.GetData(DataFormats.Text);
+                if (!IsValidUrl(dragdroptext))
+                {
+
+                    if (ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark)
+                    {
+                        AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Yellow);
+                        FileValidLabel.Content = "Invalid URL!";
+                    }
+                    else
+                    {
+                        AddWallpaperIcon.Foreground = new SolidColorBrush(Colors.Red);
+                        FileValidLabel.Content = "Invalid URL!";
+                    }
+                }
+                else
+                {
+                    AddWallpaperIcon.Foreground = CurrentColour;
+                    SelectedFileIsURL = true;
+                    SelectedFile = dragdroptext;
+                    ContinueButton.IsEnabled = true;
+                    FileValidLabel.Content = "URL accepted!";
+                }
+            } else
             {
                 AddWallpaperIcon.Foreground = CurrentColour;
                 FileValidLabel.Content = "";
@@ -91,16 +116,24 @@ namespace ActiveDesktop.Views
         private void ContinueButton_Click(object sender, RoutedEventArgs e)
         {
 
-            if (SelectedFile.Contains("exe") || SelectedFile.Contains("mp4"))
+            if (SelectedFile.Contains("exe") || SelectedFile.Contains("mp4") || SelectedFileIsURL)
             {
-                if (SelectedFile.Substring(SelectedFile.Length - 3) == "exe")
+                if (SelectedFileIsURL)
                 {
-                    mw.SavedAppsPage.CmdBox.Text = SelectedFile;
-                }
-                else if (SelectedFile.Substring(SelectedFile.Length - 3) == "mp4")
-                {
-                    mw.SavedAppsPage.CmdBox.Text = "MEDIA";
+                    mw.SavedAppsPage.CmdBox.Text = "WEB";
                     mw.SavedAppsPage.FlagBox.Text = SelectedFile;
+                }
+                else
+                {
+                    if (SelectedFile.Substring(SelectedFile.Length - 3) == "exe")
+                    {
+                        mw.SavedAppsPage.CmdBox.Text = SelectedFile;
+                    }
+                    else if (SelectedFile.Substring(SelectedFile.Length - 3) == "mp4")
+                    {
+                        mw.SavedAppsPage.CmdBox.Text = "MEDIA";
+                        mw.SavedAppsPage.FlagBox.Text = SelectedFile;
+                    }
                 }
                 mw.ContentFrame.Navigate(mw.ImmersiveMonitorPage);
                 mw.ImmersiveMonitorPage.SetupMonitors();
@@ -117,5 +150,8 @@ namespace ActiveDesktop.Views
             }
             ContinueButton_Click(null, null);
         }
+
+        static bool IsValidUrl(string urlString) => Uri.TryCreate(urlString, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeFtp);
     }
 }
+

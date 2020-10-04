@@ -11,6 +11,6 @@
         WindowState="Maximized" WindowStyle="None"
         Title="ADPWebWallpaper" Height="800" Width="800">
     <Grid>
-        <Controls:WebViewCompatible x:Name="WebView"/>
+        <Controls:WebView x:Name="WebView" NavigationCompleted="WebView_NavigationCompleted"/>
     </Grid>
 </Window>

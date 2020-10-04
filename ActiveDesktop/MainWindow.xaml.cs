@@ -849,6 +849,7 @@ namespace ActiveDesktop
                         {
                             case "Nav_Immersive1":
                                 ImmersiveExperiencePage.AddWallpaperIcon.Foreground = ImmersiveExperiencePage.CurrentColour;
+                                ImmersiveExperiencePage.FileValidLabel.Content = "";
                                 ContentFrame.Navigate(ImmersiveExperiencePage);
                                 break;
 
