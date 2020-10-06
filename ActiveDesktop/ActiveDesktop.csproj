@@ -274,8 +274,8 @@
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
       <Version>1.0.8</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.Toolkit.Wpf.UI.Controls.WebView">
-      <Version>6.1.2</Version>
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>0.9.579-prerelease</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Contracts">
       <Version>10.0.18362.2005</Version>

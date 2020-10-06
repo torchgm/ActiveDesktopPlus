@@ -19,7 +19,6 @@ using System.Windows.Threading;
 using DesktopBridge;
 using Windows.ApplicationModel;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Win32.UI.Controls.Interop.WinRT;
 
 namespace ActiveDesktop
 {
@@ -1267,7 +1266,7 @@ namespace ActiveDesktop
         }
 
         // Actually deals with window properties or smth idk
-        async void WindowFromListToDesktop(App i, int t)
+        private void WindowFromListToDesktop(App i, int t)
         {
             try
             {
@@ -1314,7 +1313,8 @@ namespace ActiveDesktop
                 {
                     try
                     {
-                        IntPtr hweb = await StartWebWallpaper(i.Flags);
+                        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(i.Flags);
+                        IntPtr hweb = new WindowInteropHelper(GeneratedWebWallpaper).Handle;
                         System.Diagnostics.Debug.WriteLine(hweb.ToString());
                         Thread.Sleep(Convert.ToInt32(t));
                         LogEntry("[ADP] Started web window");
