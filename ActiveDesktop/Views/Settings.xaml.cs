@@ -76,7 +76,7 @@ namespace ActiveDesktop.Views
                 mw.ImmersiveFinalisePage.CheckmarkIcon.Foreground = new SolidColorBrush(Colors.Black);
                 mw.ImmersiveExperiencePage.CurrentColour = new SolidColorBrush(Colors.Black);
             }
-            if (SetRep.UseDarkTrayIcon)
+            if (SetRep.UseDarkTrayIcon) // hi uwu
             {
                 mw.tbi.Icon = mw.DarkIcon.Icon;
                 TrayIconToggle.IsOn = true;

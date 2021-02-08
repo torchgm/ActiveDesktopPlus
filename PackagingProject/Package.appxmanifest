@@ -10,7 +10,7 @@
   <Identity
     Name="14082CryzenTechnologies.ActiveDesktopPlus"
     Publisher="CN=26093D81-5B64-4610-8EFB-00B295E6FE81"
-    Version="1.8.1.0" />
+    Version="1.10.0.0" />
 
   <Properties>
     <DisplayName>Active Desktop Plus</DisplayName>
@@ -48,7 +48,7 @@
         <uap:SplashScreen Image="Images\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
-        <desktop:Extension Category="windows.startupTask" Executable="ActiveDesktop.exe" EntryPoint="Windows.FullTrustApplication">
+        <desktop:Extension Category="windows.startupTask" Executable="ActiveDesktop\ActiveDesktop.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop:StartupTask TaskId="ADP" Enabled="true" DisplayName="Active Desktop Plus" />
         </desktop:Extension>
       </Extensions>

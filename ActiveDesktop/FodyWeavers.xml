@@ -1,3 +1,10 @@
 ﻿<Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
-  <Costura />
+  <Costura IncludeDebugSymbols='false' PreloadOrder='WebView2Loader'>
+    <Unmanaged32Assemblies>
+      WebView2Loader
+    </Unmanaged32Assemblies>
+    <Unmanaged64Assemblies>
+      WebView2Loader
+    </Unmanaged64Assemblies>
+  </Costura>
 </Weavers>

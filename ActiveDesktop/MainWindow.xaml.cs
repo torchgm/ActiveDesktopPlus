@@ -522,7 +522,7 @@ namespace ActiveDesktop
 
                     if (n == SavedAppsPage.SavedListBox.SelectedIndex)
                     {
-                        WindowFromListToDesktop(i, t);
+                        WindowFromListToDesktop(i, t); // Echidna's ass
                     }
 
 
@@ -1283,7 +1283,12 @@ namespace ActiveDesktop
                     Process SavedProcess = Process.Start(i.Cmd, i.Flags);
                     SavedProcess.Refresh();
                     Thread.Sleep(t);
-                    SetWindowSizeAndLock(i, SavedProcess.MainWindowHandle);
+                    IntPtr ip = SavedProcess.MainWindowHandle;
+                    if (ip == IntPtr.Zero)
+                    {
+                        ip = FindWindowExA(IntPtr.Zero, IntPtr.Zero, null, i.Name);
+                    }
+                    SetWindowSizeAndLock(i, ip);
                     LogEntry("[ADP] Started [" + i.Name + "] [" + i.Cmd + "]");
                 }
                 else if (i.Cmd == "MEDIA")
@@ -1313,7 +1318,7 @@ namespace ActiveDesktop
                 {
                     try
                     {
-                        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(i.Flags);
+                        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(i.Flags, i.Name);
                         IntPtr hweb = new WindowInteropHelper(GeneratedWebWallpaper).Handle;
                         System.Diagnostics.Debug.WriteLine(hweb.ToString());
                         Thread.Sleep(Convert.ToInt32(t));
@@ -1344,22 +1349,22 @@ namespace ActiveDesktop
         // =====================================================================================
         // Attempt #7, Sylly said this one would work and I'm going to debowel him if it doesn't
         // =====================================================================================
-        Task<IntPtr> StartWebWallpaper(string url)
-        {
-            var tcs = new TaskCompletionSource<IntPtr>();
-            var thread = new Thread(() => {
-                ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(url);
-                //GeneratedWebWallpaper.Show();
-                tcs.SetResult(new WindowInteropHelper(GeneratedWebWallpaper).Handle);
-                LogEntry("Test");
-                Dispatcher.Run();
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.IsBackground = true;
-            thread.Start();
+        //Task<IntPtr> StartWebWallpaper(string url)
+        //{
+        //    var tcs = new TaskCompletionSource<IntPtr>();
+        //    var thread = new Thread(() => {
+        //        ADPWebWallpaper GeneratedWebWallpaper = new ADPWebWallpaper(url);
+        //        //GeneratedWebWallpaper.Show();
+        //        tcs.SetResult(new WindowInteropHelper(GeneratedWebWallpaper).Handle);
+        //        LogEntry("Test");
+        //        Dispatcher.Run();
+        //    });
+        //    thread.SetApartmentState(ApartmentState.STA);
+        //    thread.IsBackground = true;
+        //    thread.Start();
 
-            return tcs.Task;
-        }
+        //    return tcs.Task;
+        //}
 
         // =================
         // Failed attempt #6

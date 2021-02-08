@@ -8,8 +8,9 @@ namespace ActiveDesktop
     public partial class ADPWebWallpaper : Window
     {
         string navto = "";
-        public ADPWebWallpaper(string url)
+        public ADPWebWallpaper(string url, string name)
         {
+            Title = name;
             navto = url;
             InitializeComponent();
             WebView2.EnsureCoreWebView2Async();
