@@ -1,4 +1,7 @@
 # Active Desktop Plus
+
+## This project is currently unmaintained. Please consider options such as Lively or WallpaperEngine for now. I might do something with it in the future.
+
 A simple app that lets you pin windows, videos and webpages to your desktop and use fullscreen programs as interactive wallpapers.
 
 <img src="/img/Bing.png" width="250"> <img src="/img/Terminal.png" width="250"> <img src="/img/Shader.png" width="250">
